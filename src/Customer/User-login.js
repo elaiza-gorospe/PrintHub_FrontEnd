@@ -11,13 +11,16 @@ function UserLoginPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     // Simple validation
-    if (!email || !password) {
-      setError('Please fill in all fields');
+    if (!email) {
+      setError('Please fill in Email field');
+      return;
+    } else if (!password) {
+      setError('Please fill in Password field');
       return;
     }
 
@@ -26,12 +29,28 @@ function UserLoginPage() {
       return;
     }
 
-    // TODO: Replace with actual API call
-    console.log('User login attempt:', { email, password, rememberMe });
-    
-    // Simulate successful login
-    alert('Login successful!');
-    navigate('/user-home');
+      try {
+          const response = await fetch('http://localhost:3000/api/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+              setError(data.message || 'Login failed');
+              return;
+          }
+
+          // Login success
+          console.log('Logged in user:', data.user);
+          navigate('/user-home');
+
+      } catch (err) {
+          setError('Network error, please try again later');
+          console.error(err);
+      }
   };
 
   return (
@@ -50,35 +69,35 @@ function UserLoginPage() {
 
                 {error && <div className="error-message">{error}</div>}
 
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                    <label htmlFor="email">Email Address</label>
-                    <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="customer@example.com"
-                    />
-                </div>
+                      <form onSubmit={handleSubmit}>
+                          <div className="form-group">
+                              <label htmlFor="email">Email Address</label>
+                              <input
+                                  type="email"
+                                  id="email"
+                                  value={email}
+                                  onChange={(e) => setEmail(e.target.value)}
+                                  placeholder="customer@example.com"
+                              />
+                          </div>
 
-                <div className="form-group">
-                    <label htmlFor="password">Password</label>
-                    <input
-                    type="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    />
-                </div>
+                          <div className="form-group">
+                              <label htmlFor="password">Password</label>
+                              <input
+                                  type="password"
+                                  id="password"
+                                  value={password}
+                                  onChange={(e) => setPassword(e.target.value)}
+                                  placeholder="Enter your password"
+                              />
+                          </div>
 
-                <div className="form-options">
-                    <a href="#forgot-password" className="forgot-password">Forgot password?</a>
-                </div>
+                          <div className="form-options">
+                              <a href="#forgot-password" className="forgot-password">Forgot password?</a>
+                          </div>
 
-                <button type="submit" className="login-button" onClick={() => navigate('/user-home')}>Sign In</button>
-                </form>
+                          <button type="submit" className="login-button">Sign In</button>
+                      </form>
 
                 <div className="login-footer">
                     <p>Don't have an account? <a href="#" onClick={() => navigate('/user-register')}>Create one here</a></p>

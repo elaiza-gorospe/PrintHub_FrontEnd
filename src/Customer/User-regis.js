@@ -26,7 +26,7 @@ function UserRegistrationPage() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -57,14 +57,28 @@ function UserRegistrationPage() {
       return;
     }
 
-    // TODO: Replace with actual API call
-    console.log('User registration data:', formData);
-    setSuccess('Account created successfully! Redirecting to login...');
-    
-    setTimeout(() => {
-      navigate('/user-login');
-    }, 2000);
-  };
+    try {
+      const response = await fetch('http://localhost:3000/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Registration failed');
+        return;
+      }
+
+      setSuccess('Account created successfully! Redirecting to login...');
+      setTimeout(() => navigate('/user-login'), 2000);
+
+    } catch (err) {
+      setError('Network error, please try again later');
+      console.error(err);
+    }
+};
 
   return (
     <div className="user-registration-container">
