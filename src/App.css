@@ -1,0 +1,210 @@
+.App {
+  text-align: center;
+  font-family: Poppins;
+}
+
+/* Navbar Styles */
+.navbar {
+  background-color: #0f3429;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 70px;
+}
+
+.navbar-logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.navbar-logo span:hover {
+  color: #e2d816;
+}
+
+.navbar-menu {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 30px;
+}
+
+.navbar-menu li {
+  position: relative;
+}
+
+.navbar-menu a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  padding: 8px 0;
+  display: inline-block;
+}
+
+.navbar-menu a:hover {
+  color: #e2d816;
+}
+
+.navbar-menu a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #e2d816;
+  transition: width 0.3s ease;
+}
+
+.navbar-menu a:hover::after {
+  width: 100%;
+}
+
+.navbar-login {
+  background-color: #ffffff;
+  color: #000000 !important;
+  padding: 10px 20px !important;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.navbar-login:hover {
+  background-color: #e2d816;
+  color: #ffffff !important;
+}
+
+.navbar-login::after {
+  display: none;
+}
+
+.App-header {
+  background: linear-gradient(135deg, #0f352a 0%, #1a4d3e 100%);
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 20px;
+}
+
+.content-section {
+  background: #f8f9fa;
+  padding: 40px;
+  border-radius: 8px;
+  margin-bottom: 40px;
+}
+
+.content-section h2 {
+  color: #0f352a;
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+.content-section p {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.AdminLoginBtn {
+  background-color: #c21111;
+  border: none;
+  color: rgb(0, 0, 0);
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 15px;
+    height: 60px;
+  }
+
+  .navbar-logo {
+    font-size: 20px;
+  }
+
+  .navbar-menu {
+    gap: 15px;
+  }
+
+  .navbar-menu a {
+    font-size: 14px;
+  }
+
+  .App-header {
+    min-height: 40vh;
+    padding: 40px 15px;
+    background-attachment: scroll;
+  }
+
+  .App-header h1 {
+    font-size: 36px;
+  }
+
+  .App-header p {
+    font-size: 16px;
+  }
+
+  .main-content {
+    padding: 40px 15px;
+  }
+
+  .content-section h2 {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-menu {
+    gap: 10px;
+  }
+
+  .navbar-menu a {
+    font-size: 12px;
+    padding: 5px 0 !important;
+  }
+
+  .navbar-login {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+
+  .App-header h1 {
+    font-size: 28px;
+  }
+
+  .App-header p {
+    font-size: 14px;
+  }
+}

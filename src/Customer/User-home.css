@@ -1,0 +1,100 @@
+.user-home-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+}
+
+.user-home-navbar {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-home-logo {
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.user-home-logo:hover {
+  color: #ffd700;
+  transform: scale(1.05);
+}
+
+.user-home-header {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 20px;
+  color: white;
+}
+
+.user-home-header h1 {
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.user-home-header p {
+  font-size: 18px;
+  margin: 0;
+  opacity: 0.95;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .user-home-navbar {
+    padding: 15px 20px;
+  }
+
+  .user-home-logo {
+    font-size: 24px;
+  }
+
+  .user-home-header {
+    padding: 40px 20px;
+  }
+
+  .user-home-header h1 {
+    font-size: 36px;
+  }
+
+  .user-home-header p {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-home-navbar {
+    padding: 10px 15px;
+  }
+
+  .user-home-logo {
+    font-size: 20px;
+  }
+
+  .user-home-header {
+    padding: 30px 15px;
+  }
+
+  .user-home-header h1 {
+    font-size: 28px;
+  }
+
+  .user-home-header p {
+    font-size: 14px;
+  }
+}
