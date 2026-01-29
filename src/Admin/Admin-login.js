@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './Admin-login.css';
 import { useNavigate } from 'react-router-dom';
+import backgroundImage from '../assets/images/pmg-image.jpg';
+import AdminDashboard from './Admin-dashboard';
 
 function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -37,7 +39,10 @@ function AdminLoginPage() {
       <button className="back-button" onClick={() => navigate(-1)} title="Go back">
         ← Back
       </button>
-      <div className="login-card">
+
+      <div className="login-split">
+        <div className="login-form-section">
+          <div className="login-card">
         <div className="login-header">
           <h1>Welcome, Admin!</h1>
           <p>Sign in to your account</p>
@@ -53,7 +58,6 @@ function AdminLoginPage() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@example.com"
             />
           </div>
 
@@ -64,7 +68,6 @@ function AdminLoginPage() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
             />
           </div>
 
@@ -80,12 +83,22 @@ function AdminLoginPage() {
             <a href="#forgot-password" className="forgot-password">Forgot password?</a>
           </div>
 
-          <button type="submit" className="login-button">Sign In</button>
+          <button type="submit" className="login-button" onClick={() => navigate('/admin-dashboard')}>Sign In</button>
         </form>
 
-        <div className="login-footer">
-          <p>Need help? <a href="#support">Contact support</a></p>
-          <p>Don't have an account? <a href="#" onClick={() => navigate('/admin-register')}>Create one here</a></p>
+            <div className="login-footer">
+              <p>Don't have an account? <a href="#" onClick={() => navigate('/admin-register')}>Create one here</a></p>
+            </div>
+          </div>
+        </div>
+
+        <div className="login-image-section"
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
         </div>
       </div>
     </div>

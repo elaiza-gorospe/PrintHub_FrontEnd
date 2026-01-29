@@ -9,7 +9,41 @@
   justify-content: center;
   background: linear-gradient(135deg, #0f352a 0%, #1a4d3e 100%);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding: 20px;
+  position: relative;
+}
+
+.registration-split {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.registration-form-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+
+.registration-image-section {
+  flex: 1;
+  background: linear-gradient(135deg, #0f352a 0%, #1a4d3e 100%);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.registration-image-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .registration-card {
@@ -175,6 +209,62 @@
   text-align: center;
   font-size: 14px;
   color: #666;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.registration-footer a {
+  color: #0f352a;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.registration-footer a:hover {
+  color: #c21111;
+}
+
+@media (max-width: 1024px) {
+  .registration-split {
+    flex-direction: column;
+  }
+
+  .registration-image-section {
+    display: none;
+  }
+
+  .admin-registration-container {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .registration-card {
+    max-width: 100%;
+    padding: 30px 20px;
+  }
+
+  .registration-header h1 {
+    font-size: 24px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row .form-group {
+    margin-bottom: 20px;
+  }
+}
+
+.registration-footer {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
 }
 
 .registration-footer a {
@@ -187,24 +277,4 @@
 
 .registration-footer a:hover {
   color: #c21111;
-}
-
-/* Responsive design */
-@media (max-width: 600px) {
-  .registration-card {
-    padding: 30px 20px;
-  }
-
-  .registration-header h1 {
-    font-size: 24px;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .form-row .form-group {
-    margin-bottom: 20px;
-  }
 }

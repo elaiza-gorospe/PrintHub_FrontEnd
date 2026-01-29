@@ -7,20 +7,24 @@ import UserRegistrationPage from './Customer/User-regis';
 import UserHomePage from './Customer/User-home';
 import backgroundImage from './assets/images/pmg-image.jpg';
 import UserOtpPage from './Customer/User-otp';
-import { Button } from '@heroui/react';
- 
+import RoleSelectionPage from './RoleSelection';
+import AdminDashboard from './Admin/Admin-dashboard';
+import AdminProfile from './Admin/Admin-profile';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<RoleSelectionPage />} />
         <Route path="/user-login" element={<UserLoginPage />} />
         <Route path="/user-register" element={<UserRegistrationPage />} />
         <Route path="/user-otp" element={<UserOtpPage />} />
         <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin-register" element={<AdminRegistrationPage />} />
         <Route path="/user-home" element={<UserHomePage />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/profile" element={<AdminProfile />} />
       </Routes>
     </BrowserRouter>
   );
@@ -40,7 +44,7 @@ function NavbarComponent() {
           <li><a href="#home" onClick={() => navigate('/')}>Home</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
-          <li><a href="#login" onClick={() => navigate('/user-login')} className="navbar-login">Login</a></li>
+          <li><a href="#login" onClick={() => navigate('/login')} className="navbar-login">Login</a></li>
         </ul>
       </div>
     </nav>
