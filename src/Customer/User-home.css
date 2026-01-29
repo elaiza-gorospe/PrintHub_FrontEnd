@@ -2,13 +2,13 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: white;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: relative;
 }
 
 .user-home-navbar {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(15, 52, 41, 0.9);
   padding: 20px 40px;
   display: flex;
   justify-content: space-between;
@@ -25,7 +25,7 @@
 }
 
 .user-home-logo:hover {
-  color: #ffd700;
+  color: #764ba2;
   transform: scale(1.05);
 }
 
@@ -37,24 +37,66 @@
   justify-content: center;
   text-align: center;
   padding: 60px 20px;
-  color: white;
+  color: #0f3429;
 }
 
 .user-home-header h1 {
   font-size: 48px;
   font-weight: 700;
   margin: 0 0 20px 0;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .user-home-header p {
   font-size: 18px;
   margin: 0;
-  opacity: 0.95;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  color: #333;
 }
 
-/* Responsive Design */
+.user-home-button {
+  padding: 12px 24px;
+  background: #0f3429;
+  color: white;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+}
+
+.user-home-button:hover {
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
+}
+
+.user-home-button:active {
+  transform: translateY(0);
+}
+
+/* LOGOUT BUTTON */
+.logout-button {
+  padding: 10px 22px;
+  background: #0f3429;
+  color: white;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #a37e2d; /* golden hover */
+  color: white;
+  box-shadow: 0 4px 12px rgba(163, 126, 45, 0.4); /* subtle golden shadow */
+  transform: translateY(-2px);
+}
+
+.logout-button:active {
+  transform: translateY(0);
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .user-home-navbar {
     padding: 15px 20px;

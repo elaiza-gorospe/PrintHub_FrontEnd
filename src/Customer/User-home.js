@@ -10,13 +10,12 @@ function UserHomePage() {
         <div className="user-home-container">
             <nav className="user-home-navbar">
                 <div className="user-home-logo" onClick={() => navigate('/')}>PMG</div>
-                <Button 
-                  color="danger" 
-                  size="sm"
+                <button 
+                  className="logout-button"
                   onClick={() => navigate('/')}
                 >
                   Logout
-                </Button>
+                </button>
             </nav>
 
             <header className="user-home-header">

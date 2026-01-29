@@ -6,6 +6,7 @@ import UserLoginPage from './Customer/User-login';
 import UserRegistrationPage from './Customer/User-regis';
 import UserHomePage from './Customer/User-home';
 import backgroundImage from './assets/images/pmg-image.jpg';
+import UserOtpPage from './Customer/User-otp';
 import { Button } from '@heroui/react';
  
 
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/user-login" element={<UserLoginPage />} />
         <Route path="/user-register" element={<UserRegistrationPage />} />
+        <Route path="/user-otp" element={<UserOtpPage />} />
         <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin-register" element={<AdminRegistrationPage />} />
         <Route path="/user-home" element={<UserHomePage />} />

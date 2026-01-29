@@ -291,4 +291,14 @@
   .form-row .form-group {
     margin-bottom: 20px;
   }
+
+  .form-group input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .register-button {
+    font-size: 14px;
+    padding: 10px;
+  }
 }
