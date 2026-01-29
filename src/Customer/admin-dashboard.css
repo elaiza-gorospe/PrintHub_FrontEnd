@@ -1,0 +1,147 @@
+.admin-dashboard-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* NAVBAR */
+.admin-dashboard-navbar {
+  background-color: rgba(15, 52, 41, 0.95);
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.admin-dashboard-logo {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-dashboard-logo:hover {
+  color: #a37e2d;
+  transform: scale(1.05);
+}
+
+/* HEADER */
+.admin-dashboard-header {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 20px;
+  color: #0f3429;
+}
+
+.admin-dashboard-header h1 {
+  font-size: 46px;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.admin-dashboard-header p {
+  font-size: 18px;
+  margin-bottom: 40px;
+  color: #333;
+}
+
+/* ACTION BUTTONS */
+.admin-dashboard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.admin-dashboard-button {
+  padding: 14px 28px;
+  background: #0f3429;
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 180px;
+}
+
+.admin-dashboard-button:hover {
+  background-color: #a37e2d;
+  box-shadow: 0 6px 14px rgba(163, 126, 45, 0.4);
+  transform: translateY(-3px);
+}
+
+.admin-dashboard-button:active {
+  transform: translateY(0);
+}
+
+.admin-dashboard-button.secondary {
+  background: transparent;
+  color: #0f3429;
+  border: 2px solid #0f3429;
+}
+
+.admin-dashboard-button.secondary:hover {
+  background: #0f3429;
+  color: white;
+}
+
+/* LOGOUT BUTTON (same style as user) */
+.logout-button {
+  padding: 10px 22px;
+  background: #0f3429;
+  color: white;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #a37e2d;
+  box-shadow: 0 4px 12px rgba(163, 126, 45, 0.4);
+  transform: translateY(-2px);
+}
+
+.logout-button:active {
+  transform: translateY(0);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .admin-dashboard-navbar {
+    padding: 15px 20px;
+  }
+
+  .admin-dashboard-logo {
+    font-size: 24px;
+  }
+
+  .admin-dashboard-header h1 {
+    font-size: 36px;
+  }
+
+  .admin-dashboard-header p {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-dashboard-header h1 {
+    font-size: 28px;
+  }
+
+  .admin-dashboard-button {
+    min-width: 150px;
+    padding: 12px 20px;
+  }
+}

@@ -45,7 +45,11 @@ function UserLoginPage() {
 
           // Login success
           console.log('Logged in user:', data.user);
-          navigate('/user-home');
+          if (data.user.role === 'admin') {
+              navigate('/admin-dashboard');
+          } else {
+              navigate('/user-home');
+          }
 
       } catch (err) {
           setError('Network error, please try again later');

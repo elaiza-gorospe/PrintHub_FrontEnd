@@ -44,8 +44,9 @@ function UserRegistrationPage() {
       return;
     }
 
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
+    const passwordPolicyRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])(.{8,})$/;
+    if (!passwordPolicyRegex.test(formData.password)) {
+      setError('Password must be at least 8 characters, include an uppercase letter, a number, and a special character');
       return;
     }
 
