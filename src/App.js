@@ -9,6 +9,7 @@ import backgroundImage from './assets/images/pmg-image.jpg';
 import UserOtpPage from './Customer/User-otp';
 import AdminDashboard from './Customer/admin-dashboard';
 import { Button } from '@heroui/react';
+import AdminProfile from './Customer/admin-profile';
  
 
 function App() {
@@ -19,9 +20,10 @@ function App() {
         <Route path="/user-login" element={<UserLoginPage />} />
         <Route path="/user-register" element={<UserRegistrationPage />} />
         <Route path="/user-otp" element={<UserOtpPage />} />
-        <Route path="/admin-login" element={<AdminLoginPage />} />
+        {/* <Route path="/admin-login" element={<AdminLoginPage />} /> */}
         <Route path="/admin-dashboard" element={<AdminDashboard/>} />
-        <Route path="/admin-register" element={<AdminRegistrationPage />} />
+        <Route path="/admin-profile" element={<AdminProfile />} />
+        {/* <Route path="/admin-register" element={<AdminRegistrationPage />} /> */}
         <Route path="/user-home" element={<UserHomePage />} />
       </Routes>
     </BrowserRouter>
