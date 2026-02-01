@@ -1,3 +1,5 @@
+/* User-registration.css (FULL UPDATED FILE — original CSS kept, only added modal styles at bottom) */
+
 .user-registration-container {
   min-height: 100vh;
   display: flex;
@@ -301,6 +303,7 @@
     padding: 10px;
   }
 }
+
 .show-password-button {
   position: absolute;
   right: 10px;
@@ -314,9 +317,8 @@
   justify-content: center;   /* horizontal centering */
   padding: 4px;              /* small padding around icon */
   font-size: 22px;           /* matches icon size */
-  box-sizing: content-box;   
+  box-sizing: content-box;
 }
-
 
 .password-criteria {
   margin-top: 8px;
@@ -324,4 +326,100 @@
 }
 .password-criteria p {
   margin: 2px 0;
+}
+
+/* ===== LEGAL MODAL (ADDED) ===== */
+.legal-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* above your UI */
+  padding: 18px;
+}
+
+.legal-modal {
+  width: 100%;
+  max-width: 720px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.legal-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.legal-modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #0f3429;
+}
+
+.legal-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  color: #333;
+  padding: 0 6px;
+}
+
+.legal-modal-body {
+  padding: 16px 18px;
+  max-height: 65vh;
+  overflow: auto;
+  color: #333;
+  font-size: 14px;
+}
+
+.legal-modal-body h3 {
+  margin: 14px 0 6px;
+  font-size: 14px;
+  color: #0f3429;
+}
+
+.legal-modal-body p {
+  margin: 8px 0;
+  line-height: 1.55;
+}
+
+.legal-modal-body ul {
+  margin: 8px 0 8px 18px;
+  padding: 0;
+}
+
+.legal-modal-body li {
+  margin: 6px 0;
+  line-height: 1.5;
+}
+
+.legal-modal-footer {
+  padding: 14px 18px;
+  border-top: 1px solid #eaeaea;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.legal-modal-btn {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #0f3429;
+  color: #fff;
+  font-weight: 600;
+}
+
+.legal-modal-btn:hover {
+  opacity: 0.95;
 }

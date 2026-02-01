@@ -1,9 +1,19 @@
-.App {
-  text-align: center;
-  font-family: Poppins;
+/* ---------- Base resets (helps responsiveness) ---------- */
+* {
+  box-sizing: border-box;
 }
 
-/* Navbar Styles */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.App {
+  text-align: center;
+  font-family: Poppins, sans-serif;
+}
+
+/* ---------- Navbar Styles ---------- */
 .navbar {
   background-color: #0f3429;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -15,11 +25,14 @@
 .navbar-container {
   max-width: 1200px;
   margin: 0 auto;
+  height: 70px;
+  padding: 0 20px;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  height: 70px;
+
+  position: relative;
 }
 
 .navbar-logo {
@@ -28,18 +41,17 @@
   color: #ffffff;
   cursor: pointer;
   transition: color 0.3s ease;
+  white-space: nowrap;
 }
 
-.navbar-logo span:hover {
-  color: #a37e2d;
-}
-
+/* ---------- Desktop menu ---------- */
 .navbar-menu {
   display: flex;
   list-style: none;
   margin: 0;
   padding: 0;
   gap: 30px;
+  align-items: center;
 }
 
 .navbar-menu li {
@@ -92,18 +104,22 @@
   display: none;
 }
 
+/* ---------- App header / sections ---------- */
 .App-header {
-  background: linear-gradient(135deg, #0f352a 0%, #1a4d3e 100%);
   min-height: 50vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 0;
+
+  background-image: url("./assets/images/pmg-image.jpg");
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
+
+
 
 .main-content {
   max-width: 1200px;
@@ -130,36 +146,52 @@
   line-height: 1.6;
 }
 
-.AdminLoginBtn {
-  background-color: #c21111;
-  border: none;
-  color: rgb(0, 0, 0);
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  cursor: pointer;
-}
-
-/* Responsive Design */
+/* ---------- Responsive Design ---------- */
 @media (max-width: 768px) {
+
   .navbar-container {
-    padding: 0 15px;
-    height: 60px;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 15px;
+    height: auto;
+    gap: 8px;
   }
 
   .navbar-logo {
     font-size: 20px;
   }
 
+  /* Always show menu */
   .navbar-menu {
-    gap: 15px;
+    position: static;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    width: 100%;
+    gap: 12px;
+    padding: 8px 0;
+
+    background: none;
+    box-shadow: none;
+  }
+
+  .navbar-menu li {
+    width: auto;
   }
 
   .navbar-menu a {
+    width: auto;
     font-size: 14px;
+    padding: 10px 0;
+  }
+
+  .navbar-login {
+    width: auto;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    margin-top: 0;
   }
 
   .App-header {
@@ -168,16 +200,12 @@
     background-attachment: scroll;
   }
 
-  .App-header h1 {
-    font-size: 36px;
-  }
-
-  .App-header p {
-    font-size: 16px;
-  }
-
   .main-content {
     padding: 40px 15px;
+  }
+
+  .content-section {
+    padding: 24px;
   }
 
   .content-section h2 {
@@ -186,25 +214,43 @@
 }
 
 @media (max-width: 480px) {
-  .navbar-menu {
-    gap: 10px;
+
+  .navbar-logo {
+    font-size: 18px;
   }
 
   .navbar-menu a {
-    font-size: 12px;
-    padding: 5px 0 !important;
+    font-size: 13px;
   }
 
   .navbar-login {
-    padding: 8px 12px !important;
-    font-size: 12px !important;
+    font-size: 13px !important;
   }
 
-  .App-header h1 {
-    font-size: 28px;
+  .content-section h2 {
+    font-size: 22px;
   }
 
-  .App-header p {
+  .content-section p {
     font-size: 14px;
   }
+
+  .App-header {
+    min-height: 35vh;
+  }
 }
+/* Mobile background image */
+@media (max-width: 768px) {
+  .App-header {
+    background-image: url("./assets/images/pmg-mobile.jpg");
+    min-height: 40vh;
+    background-position: center top;
+  }
+}
+
+@media (max-width: 480px) {
+  .App-header {
+    min-height: 35vh;
+  }
+}
+

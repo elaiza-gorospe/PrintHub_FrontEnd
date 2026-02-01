@@ -1,3 +1,4 @@
+// User-registration.js (FULL UPDATED FILE — only adds modal logic + markup, no UI/layout changes)
 import React, { useState } from 'react';
 import './User-registration.css';
 import { useNavigate } from 'react-router-dom';
@@ -31,6 +32,10 @@ function UserRegistrationPage() {
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const navigate = useNavigate();
+
+  // ===== MODAL STATES (ADDED) =====
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
 
   // ===================== ADDED HANDLERS (ONLY VALIDATION) =====================
 
@@ -313,7 +318,28 @@ function UserRegistrationPage() {
                     checked={formData.agreeTerms}
                     onChange={handleChange}
                   />
-                  <span>I agree to the <a href="#terms">Terms and Conditions</a> and <a href="#privacy">Privacy Policy</a></span>
+                  <span>
+                    I agree to the{' '}
+                    <a
+                      href="#terms"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsTermsOpen(true);
+                      }}
+                    >
+                      Terms and Conditions
+                    </a>{' '}
+                    and{' '}
+                    <a
+                      href="#privacy"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsPrivacyOpen(true);
+                      }}
+                    >
+                      Privacy Policy
+                    </a>
+                  </span>
                 </label>
               </div>
 
@@ -323,6 +349,185 @@ function UserRegistrationPage() {
             <div className="registration-footer">
               <p>Already have an account? <a href="#" onClick={() => navigate('/user-login')}>Sign in here</a></p>
             </div>
+
+            {/* ===== TERMS MODAL (ADDED) ===== */}
+            {isTermsOpen && (
+              <div
+                className="legal-modal-overlay"
+                onMouseDown={(e) => {
+                  if (e.target === e.currentTarget) setIsTermsOpen(false);
+                }}
+              >
+                <div
+                  className="legal-modal"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="termsTitle"
+                >
+                  <div className="legal-modal-header">
+                    <h2 id="termsTitle">Terms & Conditions</h2>
+                    <button
+                      type="button"
+                      className="legal-modal-close"
+                      onClick={() => setIsTermsOpen(false)}
+                      aria-label="Close Terms and Conditions"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  <div className="legal-modal-body">
+                    <p><strong>Last updated:</strong> February 1, 2026</p>
+
+                    <h3>1. Acceptance of Terms</h3>
+                    <p>
+                      By creating an account and using PMG Printing House services, you agree to follow these Terms & Conditions.
+                      If you do not agree, please do not proceed with registration.
+                    </p>
+
+                    <h3>2. Account Responsibilities</h3>
+                    <ul>
+                      <li>You are responsible for the accuracy of your information (name, email, phone, address).</li>
+                      <li>Keep your password confidential and do not share your account.</li>
+                      <li>You are responsible for activities done under your account.</li>
+                    </ul>
+
+                    <h3>3. Orders & Services</h3>
+                    <ul>
+                      <li>Service availability, pricing, and processing times may change without notice.</li>
+                      <li>Final output may vary slightly depending on materials and printing conditions.</li>
+                      <li>Custom orders may require confirmation/approval before production.</li>
+                    </ul>
+
+                    <h3>4. Payments</h3>
+                    <p>
+                      Payments (if applicable) must be completed based on the payment options provided. Unpaid orders may be
+                      cancelled or placed on hold.
+                    </p>
+
+                    <h3>5. Prohibited Use</h3>
+                    <ul>
+                      <li>Do not use the platform for fraudulent, abusive, or illegal activities.</li>
+                      <li>Do not attempt to access or disrupt the system or other users’ data.</li>
+                    </ul>
+
+                    <h3>6. Termination</h3>
+                    <p>
+                      We may suspend or terminate accounts that violate these terms or misuse the platform.
+                    </p>
+
+                    <h3>7. Limitation of Liability</h3>
+                    <p>
+                      To the extent allowed by law, PMG Printing House is not liable for indirect damages, loss of data,
+                      or issues caused by third-party services.
+                    </p>
+
+                    <h3>8. Changes to Terms</h3>
+                    <p>
+                      We may update these Terms from time to time. Continued use means you accept the updated Terms.
+                    </p>
+                  </div>
+
+                  <div className="legal-modal-footer">
+                    <button
+                      type="button"
+                      className="legal-modal-btn"
+                      onClick={() => setIsTermsOpen(false)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ===== PRIVACY MODAL (ADDED) ===== */}
+            {isPrivacyOpen && (
+              <div
+                className="legal-modal-overlay"
+                onMouseDown={(e) => {
+                  if (e.target === e.currentTarget) setIsPrivacyOpen(false);
+                }}
+              >
+                <div
+                  className="legal-modal"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="privacyTitle"
+                >
+                  <div className="legal-modal-header">
+                    <h2 id="privacyTitle">Privacy Policy</h2>
+                    <button
+                      type="button"
+                      className="legal-modal-close"
+                      onClick={() => setIsPrivacyOpen(false)}
+                      aria-label="Close Privacy Policy"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  <div className="legal-modal-body">
+                    <p><strong>Last updated:</strong> February 1, 2026</p>
+
+                    <h3>1. Information We Collect</h3>
+                    <ul>
+                      <li>Account data: name, email, phone number, address</li>
+                      <li>Security data: password (stored securely using hashing on the server)</li>
+                      <li>Order-related data: order history and transaction details (if you place orders)</li>
+                    </ul>
+
+                    <h3>2. How We Use Your Information</h3>
+                    <ul>
+                      <li>To create and manage your account</li>
+                      <li>To send OTP/verification messages and service-related notices</li>
+                      <li>To process orders and provide customer support</li>
+                      <li>To improve system security and prevent fraud</li>
+                    </ul>
+
+                    <h3>3. Sharing of Information</h3>
+                    <p>
+                      We do not sell your personal data. We may share limited data with service providers
+                      (e.g., email/OTP services) only when necessary to deliver the service.
+                    </p>
+
+                    <h3>4. Data Retention</h3>
+                    <p>
+                      We keep your information only as long as needed for account operation, order records,
+                      and legal/security purposes.
+                    </p>
+
+                    <h3>5. Security</h3>
+                    <p>
+                      We use reasonable safeguards to protect your data. However, no system is 100% secure.
+                      Please use a strong password and keep it private.
+                    </p>
+
+                    <h3>6. Your Choices</h3>
+                    <ul>
+                      <li>You may request account updates/corrections where applicable.</li>
+                      <li>You may request account deletion subject to retention requirements.</li>
+                    </ul>
+
+                    <h3>7. Updates to this Policy</h3>
+                    <p>
+                      We may update this Privacy Policy. Continued use means you accept the updated policy.
+                    </p>
+                  </div>
+
+                  <div className="legal-modal-footer">
+                    <button
+                      type="button"
+                      className="legal-modal-btn"
+                      onClick={() => setIsPrivacyOpen(false)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
 
