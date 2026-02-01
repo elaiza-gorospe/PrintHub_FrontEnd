@@ -135,7 +135,7 @@ function UserLoginPage() {
         </div>
       </div>
 
-      {/* Forgot / Change Password Modal */}
+      {/* Forgot / Change Password Modal
 {showForgotModal && (
   <div className="forgot-password-modal">
     <div className="modal-content">
@@ -176,7 +176,7 @@ function UserLoginPage() {
       </button>
     </div>
   </div>
-)}
+)} */}
     </div>
   );
 }

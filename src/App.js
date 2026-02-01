@@ -8,7 +8,6 @@ import UserRegistrationPage from './Customer/User-regis';
 import UserHomePage from './Customer/User-home';
 import UserOtpPage from './Customer/User-otp';
 import CustomerDashboard from './Customer/User-dashboard';
-import RoleSelectionPage from './RoleSelection';
 import AdminDashboard from './Admin/Admin-dashboard';
 import AdminProfile from './Admin/Admin-profile';
 
@@ -17,7 +16,6 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage/>} />
-        <Route path="/login" element={<RoleSelectionPage />} />
         <Route path="/user-login" element={<UserLoginPage />} />
         <Route path="/user-register" element={<UserRegistrationPage />} />
         <Route path="/user-otp" element={<UserOtpPage />} />
@@ -46,7 +44,7 @@ function NavbarComponent() {
           <li><a href="#home" onClick={() => navigate('/')}>Home</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
-          <li><a href="#login" onClick={() => navigate('/login')} className="navbar-login">Login</a></li>
+          <li><a href="User-login" onClick={() => navigate('/')} className="navbar-login">Login</a></li>
         </ul>
       </div>
     </nav>
