@@ -14,6 +14,9 @@ import UserOtpPage from './Customer/User-otp';
 import CustomerDashboard from './Customer/User-dashboard';
 import UserForgotOtpPage from './Customer/User-forgot-otp';
 import UserResetPasswordPage from './Customer/User-reset-password';
+import ProductOverview from "./Customer/Product-overview";
+
+
 
 function App() {
   return (
@@ -33,6 +36,8 @@ function App() {
         <Route path="/user-otp" element={<UserOtpPage />} />
         <Route path="/user-home" element={<UserHomePage />} />
         <Route path="/user-dashboard" element={<CustomerDashboard />} />
+        <Route path="/product-overview" element={<ProductOverview />} />
+
       </Routes>
     </BrowserRouter>
   );
