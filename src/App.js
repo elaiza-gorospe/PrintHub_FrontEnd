@@ -10,19 +10,23 @@ import UserOtpPage from './Customer/User-otp';
 import CustomerDashboard from './Customer/User-dashboard';
 import AdminDashboard from './Admin/Admin-dashboard';
 import AdminProfile from './Admin/Admin-profile';
+import UserForgotOtpPage from './Customer/User-forgot-otp';
+import UserResetPasswordPage from './Customer/User-reset-password';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage/>} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/user-login" element={<UserLoginPage />} />
         <Route path="/user-register" element={<UserRegistrationPage />} />
         <Route path="/user-otp" element={<UserOtpPage />} />
         <Route path="/admin-login" element={<AdminLoginPage />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard/>} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin-register" element={<AdminRegistrationPage />} />
         <Route path="/user-home" element={<UserHomePage />} />
+        <Route path="/user-forgot-otp" element={<UserForgotOtpPage />} />
+        <Route path="/user-reset-password" element={<UserResetPasswordPage />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin/profile" element={<AdminProfile />} />
       </Routes>
