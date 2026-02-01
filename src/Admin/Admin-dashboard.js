@@ -10,22 +10,22 @@ function AdminDashboard() {
   const [activeItem, setActiveItem] = useState('dashboard');
 
   const menuItems = [
-        { id: 'profile', label: 'Profile', external: true, path: '/admin-profile' },
-        { id: 'orders', label: 'Orders' },
-        { id: 'products', label: 'Products' },
-        { id: 'customers', label: 'Manage Accounts' },
-        { id: 'settings', label: 'Settings' },
-    ];
+    { id: 'profile', label: 'Profile', external: true, path: '/admin-profile' },
+    { id: 'orders', label: 'Orders' },
+    { id: 'products', label: 'Products' },
+    { id: 'customers', label: 'Manage Accounts' },
+    { id: 'settings', label: 'Settings' },
+  ];
 
+  const handleMenuItemClick = (item) => {
+    // Profile = separate page
+    if (item.external) {
+      navigate(item.path);
+      return;
+    }
+    setActiveItem(item.id);
+  };
 
-    const handleMenuItemClick = (item) => {
-        // Profile = separate page
-        if (item.external) {
-            navigate(item.path);
-            return;
-        }
-        setActiveItem(item.id);
-    };
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -34,7 +34,9 @@ function AdminDashboard() {
     sessionStorage.clear();
 
     document.cookie.split(";").forEach(function (c) {
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
 
     setTimeout(() => navigate('/'), 100);
@@ -102,7 +104,7 @@ function AdminDashboard() {
             <h1>
               {activeItem === "dashboard" && "Dashboard"}
               {activeItem === "profile" && "Profile"}
-              {activeItem === "manage accounts" && "Manage Accounts"}
+              {activeItem === "customers" && "Manage Accounts"}
               {activeItem === "orders" && "Orders"}
               {activeItem === "products" && "Products"}
               {activeItem === "settings" && "Settings"}
@@ -115,7 +117,6 @@ function AdminDashboard() {
           {/* ✅ Switch what shows INSIDE dashboard */}
           {activeItem === "dashboard" && (
             <div className="content-grid">
-              {/* your existing dashboard cards here */}
               <div className="stats-card">
                 <h3>Total Revenue</h3>
                 <p className="stat-number">$45,678</p>
@@ -137,12 +138,20 @@ function AdminDashboard() {
 
           {activeItem === "profile" && <AdminProfile />}
 
-          {/* ✅ THIS IS THE PART YOU ASKED: shows within dashboard */}
-          {activeItem === "Manage Accounts" && <AdminManageAccounts />}
+          {/* ✅ Manage Accounts shows within dashboard */}
+          {activeItem === "customers" && <AdminManageAccounts />}
 
-          {activeItem === "orders" && <div className="profile-card"><h2>Orders</h2></div>}
-          {activeItem === "products" && <div className="profile-card"><h2>Products</h2></div>}
-          {activeItem === "settings" && <div className="profile-card"><h2>Settings</h2></div>}
+          {activeItem === "orders" && (
+            <div className="profile-card"><h2>Orders</h2></div>
+          )}
+
+          {activeItem === "products" && (
+            <div className="profile-card"><h2>Products</h2></div>
+          )}
+
+          {activeItem === "settings" && (
+            <div className="profile-card"><h2>Settings</h2></div>
+          )}
         </div>
       </main>
     </div>
