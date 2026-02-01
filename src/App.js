@@ -5,6 +5,7 @@ import AdminLoginPage from './Admin/Admin-login';
 import AdminRegistrationPage from './Admin/Admin-registration';
 import AdminDashboard from './Admin/Admin-dashboard';
 import AdminProfile from './Admin/Admin-profile';
+import AdminManageAccounts from './Admin/Admin-manageacc';
 
 import UserLoginPage from './Customer/User-login';
 import UserRegistrationPage from './Customer/User-regis';
@@ -23,6 +24,7 @@ function App() {
         <Route path="/admin-register" element={<AdminRegistrationPage />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin-profile" element={<AdminProfile />} />
+        <Route path="/admin-manageaccount" element={<AdminManageAccounts />} />
 
         <Route path="/user-login" element={<UserLoginPage />} />
         <Route path="/user-register" element={<UserRegistrationPage />} />
