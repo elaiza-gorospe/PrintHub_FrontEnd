@@ -1,40 +1,69 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import "./Admin-manageacc.css";
+import { FaEdit, FaTrash, FaSearch, FaPlus, FaTimes } from "react-icons/fa";
 
 function getInitials(name = "") {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   const first = parts[0]?.[0] || "";
-  const last = parts.length > 1 ? parts[parts.length - 1][0] : (parts[0]?.[1] || "");
+  const last =
+    parts.length > 1 ? parts[parts.length - 1][0] : (parts[0]?.[1] || "");
   return (first + last).toUpperCase();
 }
 
 function AdminManageAccounts() {
-  // sample data (later you can replace with DB fetch)
-  const [users, setUsers] = useState([
-    { id: 1, name: "Admin User", email: "admin@example.com", role: "admin", status: "active", lastLogin: "2/1/2026", joinDate: "1/15/2024" },
-    { id: 2, name: "Sarah Johnson", email: "sarah@example.com", role: "manager", status: "active", lastLogin: "1/31/2026", joinDate: "3/20/2024" },
-    { id: 3, name: "Mike Chen", email: "mike@example.com", role: "user", status: "active", lastLogin: "1/30/2026", joinDate: "6/10/2024" },
-    { id: 4, name: "Emily Davis", email: "emily@example.com", role: "manager", status: "active", lastLogin: "1/29/2026", joinDate: "4/5/2024" },
-    { id: 5, name: "James Wilson", email: "james@example.com", role: "viewer", status: "inactive", lastLogin: "12/15/2025", joinDate: "8/22/2024" },
-    { id: 6, name: "Lisa Anderson", email: "lisa@example.com", role: "user", status: "suspended", lastLogin: "12/10/2025", joinDate: "9/10/2024" },
-  ]);
+  // ✅ DB data now
+  const [users, setUsers] = useState([]);
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
+  // ✅ Modal states
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // ✅ Selected user for edit/delete
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  // ✅ Form state (used by Add + Edit)
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    role: "user",
+    status: "active",
+    password: "", // Add only
+  });
+
+  // ✅ fetch users from DB
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/api/admin/users");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to fetch users");
+      setUsers(data);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Error fetching users");
+    }
+  };
+
   const stats = useMemo(() => {
     const total = users.length;
-    const active = users.filter(u => u.status === "active").length;
-    const admins = users.filter(u => u.role === "admin").length;
-    const suspended = users.filter(u => u.status === "suspended").length;
+    const active = users.filter((u) => u.status === "active").length;
+    const admins = users.filter((u) => u.role === "admin").length;
+    const suspended = users.filter((u) => u.status === "suspended").length;
     return { total, active, admins, suspended };
   }, [users]);
 
   const filteredUsers = useMemo(() => {
     const q = search.trim().toLowerCase();
 
-    return users.filter(u => {
+    return users.filter((u) => {
       const matchesSearch =
         !q ||
         u.name.toLowerCase().includes(q) ||
@@ -47,16 +76,137 @@ function AdminManageAccounts() {
     });
   }, [users, search, roleFilter, statusFilter]);
 
+  // =========================
+  // ✅ OPEN MODALS
+  // =========================
   const handleAddUser = () => {
-    alert("Add User modal goes here (tell me if you want a modal + form).");
+    setForm({
+      name: "",
+      email: "",
+      role: "user",
+      status: "active",
+      password: "",
+    });
+    setShowAddModal(true);
   };
 
-  const handleEdit = (user) => alert(`Edit user: ${user.name}`);
-  const handleEmail = (user) => alert(`Email user: ${user.email}`);
+  const handleEdit = (user) => {
+    setSelectedUser(user);
+    setForm({
+      name: user.name || "",
+      email: user.email || "",
+      role: (user.role || "user").toLowerCase(),
+      status: (user.status || "active").toLowerCase(),
+      password: "", // not used on edit
+    });
+    setShowEditModal(true);
+  };
+
   const handleDelete = (user) => {
-    if (window.confirm(`Delete ${user.name}?`)) {
-      setUsers(prev => prev.filter(u => u.id !== user.id));
+    setSelectedUser(user);
+    setShowDeleteModal(true);
+  };
+
+  // =========================
+  // ✅ SUBMIT ACTIONS
+  // =========================
+  const submitAdd = async (e) => {
+    e.preventDefault();
+
+    if (!form.name.trim()) return alert("Name is required");
+    if (!form.email.trim()) return alert("Email is required");
+    if (!form.password.trim()) return alert("Temporary password is required");
+
+    try {
+      const res = await fetch("http://localhost:3000/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          role: form.role,
+          status: form.status,
+          password: form.password,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to add user");
+
+      setShowAddModal(false);
+      await fetchUsers();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Error adding user");
     }
+  };
+
+  const submitEdit = async (e) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+
+    if (!form.name.trim()) return alert("Name is required");
+    if (!form.email.trim()) return alert("Email is required");
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/admin/users/${selectedUser.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: form.name,
+            email: form.email,
+            role: form.role,
+            status: form.status,
+          }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to update user");
+
+      setShowEditModal(false);
+      setSelectedUser(null);
+      await fetchUsers();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Error updating user");
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedUser) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/admin/users/${selectedUser.id}`,
+        { method: "DELETE" }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to delete user");
+
+      setShowDeleteModal(false);
+      setSelectedUser(null);
+      await fetchUsers();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Error deleting user");
+    }
+  };
+
+  // =========================
+  // ✅ CLOSE MODALS
+  // =========================
+  const closeAdd = () => setShowAddModal(false);
+  const closeEdit = () => {
+    setShowEditModal(false);
+    setSelectedUser(null);
+  };
+  const closeDelete = () => {
+    setShowDeleteModal(false);
+    setSelectedUser(null);
   };
 
   return (
@@ -69,7 +219,9 @@ function AdminManageAccounts() {
         </div>
 
         <button className="manageacc-add-btn" type="button" onClick={handleAddUser}>
-          <span className="manageacc-plus">＋</span>
+          <span className="manageacc-plus">
+            <FaPlus size={14} />
+          </span>
           Add User
         </button>
       </div>
@@ -100,7 +252,10 @@ function AdminManageAccounts() {
       {/* toolbar */}
       <div className="manageacc-toolbar">
         <div className="manageacc-search">
-          <span className="manageacc-search-icon">🔍</span>
+          <span className="manageacc-search-icon">
+            <FaSearch size={14} />
+          </span>
+
           <input
             type="text"
             placeholder="Search by name or email..."
@@ -112,17 +267,17 @@ function AdminManageAccounts() {
         <div className="manageacc-filters">
           <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
             <option value="all">All Roles</option>
-            <option value="admin">admin</option>
-            <option value="manager">manager</option>
-            <option value="user">user</option>
-            <option value="viewer">viewer</option>
+            <option value="admin">Admin</option>
+            <option value="staff">Staff</option>
+            <option value="user">User</option>
+            <option value="customer">Customer</option>
           </select>
 
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="all">All Status</option>
-            <option value="active">active</option>
-            <option value="inactive">inactive</option>
-            <option value="suspended">suspended</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="suspended">Suspended</option>
           </select>
         </div>
       </div>
@@ -167,14 +322,22 @@ function AdminManageAccounts() {
 
                 <td className="manageacc-actions-col">
                   <div className="manageacc-actions">
-                    <button type="button" className="manageacc-iconbtn" title="Edit" onClick={() => handleEdit(u)}>
-                      ✏️
+                    <button
+                      type="button"
+                      className="manageacc-iconbtn"
+                      title="Edit"
+                      onClick={() => handleEdit(u)}
+                    >
+                      <FaEdit size={16} />
                     </button>
-                    <button type="button" className="manageacc-iconbtn" title="Email" onClick={() => handleEmail(u)}>
-                      ✉️
-                    </button>
-                    <button type="button" className="manageacc-iconbtn danger" title="Delete" onClick={() => handleDelete(u)}>
-                      🗑️
+
+                    <button
+                      type="button"
+                      className="manageacc-iconbtn danger"
+                      title="Delete"
+                      onClick={() => handleDelete(u)}
+                    >
+                      <FaTrash size={16} />
                     </button>
                   </div>
                 </td>
@@ -191,6 +354,195 @@ function AdminManageAccounts() {
           </tbody>
         </table>
       </div>
+
+      {/* ========================= */}
+      {/* ✅ ADD MODAL */}
+      {/* ========================= */}
+      {showAddModal && (
+        <div className="manageacc-modal-overlay" onMouseDown={closeAdd}>
+          <div className="manageacc-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="manageacc-modal-header">
+              <h3>Add User</h3>
+              <button className="manageacc-modal-close" onClick={closeAdd} type="button">
+                <FaTimes />
+              </button>
+            </div>
+
+            <form onSubmit={submitAdd} className="manageacc-modal-body">
+              <div className="manageacc-modal-grid">
+                <div className="manageacc-field">
+                  <label>Full Name</label>
+                  <input
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="Enter full name"
+                  />
+                </div>
+
+                <div className="manageacc-field">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="Enter email"
+                  />
+                </div>
+
+                <div className="manageacc-field">
+                  <label>Role</label>
+                  <select
+                    value={form.role}
+                    onChange={(e) => setForm({ ...form, role: e.target.value })}
+                  >
+                    <option value="admin">admin</option>
+                    <option value="staff">staff</option>
+                    <option value="user">user</option>
+                    <option value="customer">customer</option>
+                  </select>
+                </div>
+
+                <div className="manageacc-field">
+                  <label>Status</label>
+                  <select
+                    value={form.status}
+                    onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  >
+                    <option value="active">active</option>
+                    <option value="inactive">inactive</option>
+                    <option value="suspended">suspended</option>
+                  </select>
+                </div>
+
+                <div className="manageacc-field manageacc-field-full">
+                  <label>Temporary Password</label>
+                  <input
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    placeholder="Enter temporary password"
+                  />
+                </div>
+              </div>
+
+              <div className="manageacc-modal-actions">
+                <button type="button" className="manageacc-btn ghost" onClick={closeAdd}>
+                  Cancel
+                </button>
+                <button type="submit" className="manageacc-btn primary">
+                  Add User
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================= */}
+      {/* ✅ EDIT MODAL */}
+      {/* ========================= */}
+      {showEditModal && (
+        <div className="manageacc-modal-overlay" onMouseDown={closeEdit}>
+          <div className="manageacc-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="manageacc-modal-header">
+              <h3>Edit User</h3>
+              <button className="manageacc-modal-close" onClick={closeEdit} type="button">
+                <FaTimes />
+              </button>
+            </div>
+
+            <form onSubmit={submitEdit} className="manageacc-modal-body">
+              <div className="manageacc-modal-grid">
+                <div className="manageacc-field">
+                  <label>Full Name</label>
+                  <input
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="Enter full name"
+                  />
+                </div>
+
+                <div className="manageacc-field">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="Enter email"
+                  />
+                </div>
+
+                <div className="manageacc-field">
+                  <label>Role</label>
+                  <select
+                    value={form.role}
+                    onChange={(e) => setForm({ ...form, role: e.target.value })}
+                  >
+                    <option value="admin">admin</option>
+                    <option value="staff">staff</option>
+                    <option value="user">user</option>
+                    <option value="customer">customer</option>
+                  </select>
+                </div>
+
+                <div className="manageacc-field">
+                  <label>Status</label>
+                  <select
+                    value={form.status}
+                    onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  >
+                    <option value="active">active</option>
+                    <option value="inactive">inactive</option>
+                    <option value="suspended">suspended</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="manageacc-modal-actions">
+                <button type="button" className="manageacc-btn ghost" onClick={closeEdit}>
+                  Cancel
+                </button>
+                <button type="submit" className="manageacc-btn primary">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================= */}
+      {/* ✅ DELETE MODAL */}
+      {/* ========================= */}
+      {showDeleteModal && (
+        <div className="manageacc-modal-overlay" onMouseDown={closeDelete}>
+          <div className="manageacc-modal small" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="manageacc-modal-header">
+              <h3>Delete User</h3>
+              <button className="manageacc-modal-close" onClick={closeDelete} type="button">
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="manageacc-modal-body">
+              <p className="manageacc-delete-text">
+                Are you sure you want to delete{" "}
+                <strong>{selectedUser?.name}</strong>?
+              </p>
+
+              <div className="manageacc-modal-actions">
+                <button type="button" className="manageacc-btn ghost" onClick={closeDelete}>
+                  Cancel
+                </button>
+                <button type="button" className="manageacc-btn danger" onClick={confirmDelete}>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

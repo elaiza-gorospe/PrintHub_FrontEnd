@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Admin-dashboard.css';
 import AdminProfile from './Admin-profile';
@@ -9,13 +9,36 @@ function AdminDashboard() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState('dashboard');
 
-  const menuItems = [
-    { id: 'profile', label: 'Profile', external: true, path: '/admin-profile' },
-    { id: 'orders', label: 'Orders' },
-    { id: 'products', label: 'Products' },
-    { id: 'customers', label: 'Manage Accounts' },
-    { id: 'settings', label: 'Settings' },
-  ];
+  // ✅ Get logged in user from localStorage (from your /api/login response)
+  const storedUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('adminUser')) || null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // ✅ role can be: 'admin' | 'staff' | 'customer'
+  const role = storedUser?.role || 'admin';
+
+  // ✅ Keep same menu, BUT staff won't see Manage Accounts
+  const menuItems = useMemo(() => {
+    const base = [
+      { id: 'profile', label: 'Profile', external: true, path: '/admin-profile' },
+      { id: 'orders', label: 'Orders' },
+      { id: 'products', label: 'Products' },
+      { id: 'customers', label: 'Manage Accounts' },
+      { id: 'settings', label: 'Settings' },
+    ];
+
+    // Staff: remove Manage Accounts
+    if (role === 'staff') {
+      return base.filter(i => i.id !== 'customers');
+    }
+
+    // Admin: full menu
+    return base;
+  }, [role]);
 
   const handleMenuItemClick = (item) => {
     // Profile = separate page
@@ -23,6 +46,10 @@ function AdminDashboard() {
       navigate(item.path);
       return;
     }
+
+    // ✅ Extra safety: staff can't open Manage Accounts even if forced
+    if (role === 'staff' && item.id === 'customers') return;
+
     setActiveItem(item.id);
   };
 
@@ -42,6 +69,11 @@ function AdminDashboard() {
     setTimeout(() => navigate('/'), 100);
     alert('You have been logged out successfully!');
   };
+
+  // ✅ If staff somehow lands on customers, kick back to dashboard
+  if (role === 'staff' && activeItem === 'customers') {
+    setActiveItem('dashboard');
+  }
 
   return (
     <div className="admin-dashboard">
@@ -64,8 +96,10 @@ function AdminDashboard() {
               <div className="avatar-circle">AD</div>
             </div>
             <div className="user-details">
-              <h4 className="user-name">Admin User</h4>
-              <p className="user-role">Administrator</p>
+              <h4 className="user-name">{storedUser?.firstName || 'Admin User'}</h4>
+              <p className="user-role">
+                {role === 'admin' ? 'Administrator' : role === 'staff' ? 'Staff' : 'Customer'}
+              </p>
             </div>
           </div>
         )}
@@ -109,7 +143,9 @@ function AdminDashboard() {
               {activeItem === "products" && "Products"}
               {activeItem === "settings" && "Settings"}
             </h1>
-            <p className="subtitle">Welcome back, Admin!</p>
+            <p className="subtitle">
+              Welcome back{storedUser?.firstName ? `, ${storedUser.firstName}` : ''}!
+            </p>
           </div>
         </header>
 
@@ -138,8 +174,8 @@ function AdminDashboard() {
 
           {activeItem === "profile" && <AdminProfile />}
 
-          {/* ✅ Manage Accounts shows within dashboard */}
-          {activeItem === "customers" && <AdminManageAccounts />}
+          {/* ✅ Only admin can see Manage Accounts */}
+          {activeItem === "customers" && role !== 'staff' && <AdminManageAccounts />}
 
           {activeItem === "orders" && (
             <div className="profile-card"><h2>Orders</h2></div>

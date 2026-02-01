@@ -59,10 +59,16 @@ function UserLoginPage() {
 
             setLoginAttempts(0);
 
+            // ✅ SAVE LOGGED IN USER (so Admin-dashboard can read role)
+            localStorage.setItem('user', JSON.stringify(data.user));
+
+            // ✅ Role routing: admin/staff/customer
             if (data.user.role === 'admin') {
                 navigate('/admin-dashboard');
+            } else if (data.user.role === 'staff') {
+                navigate('/admin-dashboard'); // staff uses same dashboard but no Manage Accounts
             } else {
-                navigate('/user-home');
+                navigate('/user-home'); // customer
             }
 
         } catch (err) {

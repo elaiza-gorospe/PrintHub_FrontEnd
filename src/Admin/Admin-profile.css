@@ -245,3 +245,24 @@ img, svg {
     padding: 16px;
   }
 }
+/* ✅ Make select match input styling */
+.form-row select {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: clamp(13px, 2vw, 14px);
+  background: #fff;
+}
+
+/* ✅ Focus state (same as input) */
+.form-row select:focus {
+  outline: none;
+  border-color: #135e30;
+}
+
+/* ✅ Disabled state (same as input) */
+.form-row select:disabled {
+  background: #f1f1f1;
+  color: #777;
+}
