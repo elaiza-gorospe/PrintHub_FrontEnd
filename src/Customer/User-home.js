@@ -143,7 +143,8 @@ function UserHomePage() {
                     type="button"
                     onClick={() => {
                       setIsProfileOpen(false);
-                      navigate("/user-dashboard");
+                      navigate("/user-account-settings");
+
                     }}
                   >
                     ⚙️ <span>Account settings</span>
@@ -152,7 +153,10 @@ function UserHomePage() {
                   <button
                     className="uh-dd-item"
                     type="button"
-                    onClick={() => alert("Customize profile (add modal later)")}
+                    onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate("/user-customize-profile");
+                    }}
                   >
                     ✏️ <span>Customize your profile</span>
                   </button>
@@ -162,7 +166,7 @@ function UserHomePage() {
                     type="button"
                     onClick={() => alert("Sync toggled (demo)")}
                   >
-                    🔄 <span>Sync is on</span>
+                    🔄 <span>Orders</span>
                   </button>
                 </div>
 

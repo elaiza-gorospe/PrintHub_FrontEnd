@@ -15,6 +15,11 @@ import CustomerDashboard from './Customer/User-dashboard';
 import UserForgotOtpPage from './Customer/User-forgot-otp';
 import UserResetPasswordPage from './Customer/User-reset-password';
 import ProductOverview from "./Customer/Product-overview";
+import UserCustomizeProfile from './Customer/User-customize-profile';
+import UserAccountSettings from "./Customer/User-account-settings";
+
+
+
 
 
 
@@ -37,6 +42,11 @@ function App() {
         <Route path="/user-home" element={<UserHomePage />} />
         <Route path="/user-dashboard" element={<CustomerDashboard />} />
         <Route path="/product-overview" element={<ProductOverview />} />
+        <Route path="/user-customize-profile" element={<UserCustomizeProfile />} />
+        <Route path="/user-account-settings" element={<UserAccountSettings />} />
+
+
+
 
       </Routes>
     </BrowserRouter>
