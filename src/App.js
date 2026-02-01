@@ -3,13 +3,14 @@ import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import backgroundImage from './assets/images/pmg-image.jpg';
 import AdminLoginPage from './Admin/Admin-login';
 import AdminRegistrationPage from './Admin/Admin-registration';
+import AdminDashboard from './Admin/Admin-dashboard';
+import AdminProfile from './Admin/Admin-profile';
+
 import UserLoginPage from './Customer/User-login';
 import UserRegistrationPage from './Customer/User-regis';
 import UserHomePage from './Customer/User-home';
 import UserOtpPage from './Customer/User-otp';
 import CustomerDashboard from './Customer/User-dashboard';
-import AdminDashboard from './Admin/Admin-dashboard';
-import AdminProfile from './Admin/Admin-profile';
 import UserForgotOtpPage from './Customer/User-forgot-otp';
 import UserResetPasswordPage from './Customer/User-reset-password';
 
@@ -18,17 +19,18 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/admin-login" element={<AdminLoginPage />} />
+        <Route path="/admin-register" element={<AdminRegistrationPage />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin-profile" element={<AdminProfile />} />
+
         <Route path="/user-login" element={<UserLoginPage />} />
         <Route path="/user-register" element={<UserRegistrationPage />} />
-        <Route path="/user-otp" element={<UserOtpPage />} />
-        <Route path="/admin-login" element={<AdminLoginPage />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/admin-register" element={<AdminRegistrationPage />} />
-        <Route path="/user-home" element={<UserHomePage />} />
         <Route path="/user-forgot-otp" element={<UserForgotOtpPage />} />
         <Route path="/user-reset-password" element={<UserResetPasswordPage />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/profile" element={<AdminProfile />} />
+        <Route path="/user-otp" element={<UserOtpPage />} />
+        <Route path="/user-home" element={<UserHomePage />} />
+        <Route path="/user-dashboard" element={<CustomerDashboard />} />
       </Routes>
     </BrowserRouter>
   );

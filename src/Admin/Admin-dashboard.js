@@ -10,13 +10,11 @@ function AdminDashboard() {
     const [activeItem, setActiveItem] = useState('dashboard');
 
     const menuItems = [
-        {id: 'profile', label: 'Profile', path: '/Admin/Admin-profile'},
-        {id: 'dashboard', label: 'Dashboard', path: '/Admin/Admin-dashboard'},
-        {id: 'orders', label: 'Orders', path: '/admin/orders'},
-        {id: 'products', label: 'Products', path: '/admin/products'},
-        {id: 'customers', label: 'Customers', path: '/admin/customers'},
-        {id: 'analytics', label: 'Analytics', path: '/admin/analytics'},
-        {id: 'settings', label: 'Settings', path: '/admin/settings'},
+        { id: 'profile', label: 'Profile', path: '/admin-profile' },
+        { id: 'orders', label: 'Orders', path: '/admin/orders' },
+        { id: 'products', label: 'Products', path: '/admin/products' },
+        { id: 'customers', label: 'Manage Accounts', path: '/admin/customers' },
+        { id: 'settings', label: 'Settings', path: '/admin/settings' },
     ];
 
     const handleMenuItemClick = (item) => {

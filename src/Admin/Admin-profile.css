@@ -1,18 +1,247 @@
-.admin-profile{
-    min-height: 100vh;
-    background-color: #0c502b;
-    display: flex;
-    padding: 0;
+/* ✅ Global reset + predictable sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-.back-button{
-    background-color: #135e30;
-    border: none;
-    padding: 10px 20px;
+html, body {
+  height: 100%;
+}
+
+img, svg {
+  max-width: 100%;
+  display: block;
+}
+
+/* ✅ Page wrapper */
+.admin-profile {
+  min-height: 100vh;
+  background-color: #0c502b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  /* responsive padding */
+  padding: clamp(16px, 4vw, 44px) clamp(12px, 3vw, 24px);
+
+  font-family: Arial, sans-serif;
+
+  /* prevent horizontal overflow on small screens */
+  overflow-x: hidden;
+}
+
+/* ✅ Back button */
+.back-button {
+  align-self: flex-start;
+  background-color: #135e30;
+  color: #ffffff;
+  border: none;
+
+  padding: clamp(10px, 2.5vw, 12px) clamp(14px, 3vw, 18px);
+  font-size: clamp(13px, 2.8vw, 14px);
+
+  margin-bottom: clamp(12px, 3vw, 18px);
+  border-radius: 8px;
+  cursor: pointer;
+
+  /* better tap target */
+  min-height: 44px;
+
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: #0f4a27;
+  transform: translateY(-1px);
+}
+
+/* ✅ Card (scales on large screens but stays readable) */
+.profile-card {
+  width: min(100%, 720px); /* better for tablets/desktops */
+  background: #fff;
+  border-radius: 14px;
+  padding: clamp(16px, 3.5vw, 30px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+
+  /* keeps card from touching edges on very small screens */
+  margin-inline: auto;
+}
+
+/* ✅ TOP DISPLAY */
+.profile-top {
+  display: flex;
+  gap: clamp(12px, 2.5vw, 18px);
+  align-items: center;
+  padding-bottom: clamp(12px, 2.5vw, 16px);
+  border-bottom: 1px solid #eee;
+}
+
+.profile-avatar {
+  width: clamp(70px, 14vw, 96px);
+  height: clamp(70px, 14vw, 96px);
+  border-radius: 50%;
+  background: #135e30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(30px, 6vw, 42px);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.profile-summary {
+  flex: 1;
+  min-width: 0; /* prevents overflow */
+}
+
+.profile-name {
+  margin: 0;
+  color: #135e30;
+  font-size: clamp(18px, 2.8vw, 26px);
+  line-height: 1.2;
+
+  /* handle long names nicely */
+  word-break: break-word;
+}
+
+.profile-role {
+  margin: 6px 0 0;
+  color: #444;
+  font-size: clamp(13px, 2.2vw, 15px);
+}
+
+/* ✅ ACTION BUTTONS */
+.profile-actions {
+  display: flex;
+  gap: 10px;
+  margin: clamp(12px, 2.5vw, 18px) 0 8px;
+}
+
+.edit-button,
+.save-button {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: clamp(14px, 2.2vw, 16px);
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.edit-button {
+  background: #e6f3ea;
+  color: #135e30;
+  border: 1px solid #b8dbc6;
+}
+
+.edit-button:hover {
+  background: #d8efe1;
+}
+
+.save-button {
+  background: #135e30;
+  color: white;
+}
+
+.save-button:hover {
+  background: #0f4a27;
+}
+
+.edit-button:disabled,
+.save-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ✅ EDITABLE FORM */
+.profile-form {
+  margin-top: 10px;
+  display: grid;
+  gap: 12px;
+}
+
+/* Default (desktop/tablet): label + input */
+.form-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 200px) 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.form-row label {
+  font-size: clamp(13px, 2vw, 14px);
+  color: #333;
+}
+
+/* Inputs */
+.form-row input {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: clamp(13px, 2vw, 14px);
+}
+
+.form-row input:focus {
+  outline: none;
+  border-color: #135e30;
+}
+
+.form-row input:disabled {
+  background: #f1f1f1;
+  color: #777;
+}
+
+/* ✅ Phone (small and normal) */
+@media (max-width: 480px) {
+  .back-button {
+    width: 100%;
     text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-    margin-bottom: 20px;
-    cursor: pointer;
+  }
+
+  .profile-top {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-actions {
+    flex-direction: column;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
+/* ✅ Tablet (portrait) — make labels smaller, layout still nice */
+@media (min-width: 481px) and (max-width: 768px) {
+  .profile-card {
+    width: min(100%, 620px);
+  }
+
+  .form-row {
+    grid-template-columns: minmax(120px, 170px) 1fr;
+  }
+}
+
+/* ✅ Large screens — don’t let it stretch too wide */
+@media (min-width: 1200px) {
+  .profile-card {
+    width: 760px;
+  }
+}
+
+/* ✅ Short-height screens (landscape phones) */
+@media (max-height: 620px) {
+  .admin-profile {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .profile-card {
+    padding: 16px;
+  }
 }
