@@ -134,7 +134,7 @@
 }
 
 .form-group {
-  margin-bottom: 20px;
+  position: relative;
 }
 
 .form-row .form-group {
@@ -151,11 +151,10 @@
 
 .form-group input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 12px 45px 12px 14px; /* 45px right padding for icon */
   border: 2px solid #e0e0e0;
   border-radius: 6px;
   font-size: 14px;
-  transition: border-color 0.3s ease;
   box-sizing: border-box;
 }
 
@@ -301,4 +300,28 @@
     font-size: 14px;
     padding: 10px;
   }
+}
+.show-password-button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;       /* vertical centering */
+  justify-content: center;   /* horizontal centering */
+  padding: 4px;              /* small padding around icon */
+  font-size: 22px;           /* matches icon size */
+  box-sizing: content-box;   
+}
+
+
+.password-criteria {
+  margin-top: 8px;
+  font-size: 13px;
+}
+.password-criteria p {
+  margin: 2px 0;
 }

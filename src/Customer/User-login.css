@@ -238,3 +238,69 @@
     gap: 12px;
   }
 }
+/* Forgot Password Modal */
+.forgot-password-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 52, 41, 0.7); /* semi-transparent dark overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.4s ease-out;
+}
+
+.modal-content h2 {
+  font-size: 22px;
+  color: #0f3429;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.modal-content p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.modal-button {
+  padding: 12px 20px;
+  margin: 0 10px;
+  border: none;
+  border-radius: 6px;
+  background-color: #0f3429;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-button:hover {
+  background-color: #764ba2;
+  transform: translateY(-2px);
+}
+
+.modal-button.cancel {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.modal-button.cancel:hover {
+  background-color: #ccc;
+  transform: translateY(-2px);
+}

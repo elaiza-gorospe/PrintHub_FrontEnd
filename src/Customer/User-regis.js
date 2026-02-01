@@ -2,23 +2,67 @@ import React, { useState } from 'react';
 import './User-registration.css';
 import { useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/images/pmg-image.jpg';
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
 function UserRegistrationPage() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
-    phone: '',
+    phone: '+63',
+    address: '',
     password: '',
     confirmPassword: '',
     agreeTerms: false,
   });
 
-  const [showPassword, setShowPassword] = useState(false); // show/hide password
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // for confirm password
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [criteria, setCriteria] = useState({
+    uppercase: false,
+    number: false,
+    special: false,
+    length: false,
+  });
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const navigate = useNavigate();
+
+  // ===================== ADDED HANDLERS (ONLY VALIDATION) =====================
+
+  const handleNameChange = (e) => {
+    const { name, value } = e.target;
+    if (/^[A-Za-z\s]*$/.test(value)) {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handlePhoneChange = (e) => {
+    // Remove non-numeric characters
+    let digits = e.target.value.replace(/[^0-9]/g, '');
+
+    // Always start with 63
+    if (!digits.startsWith('63')) digits = '63';
+
+    // Limit to 63 + 10 digits
+    if (digits.length > 12) digits = digits.slice(0, 12);
+
+    // Update formData
+    setFormData(prev => ({ ...prev, phone: '+' + digits }));
+
+    // Validate length (must have 10 digits after 63)
+    if (digits.length < 12) {
+      setPhoneError('Phone number must have 10 digits after +63');
+    } else {
+      setPhoneError('');
+    }
+  };
+
+  // ===================== ORIGINAL CODE (UNCHANGED) =====================
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -28,34 +72,71 @@ function UserRegistrationPage() {
     }));
   };
 
+  const handlePasswordChange = (e) => {
+    const { value } = e.target;
+    setFormData(prev => ({ ...prev, password: value }));
+
+    setCriteria({
+      uppercase: /[A-Z]/.test(value),
+      number: /\d/.test(value),
+      special: /[^A-Za-z0-9]/.test(value),
+      length: value.length >= 8 && value.length <= 12,
+    });
+
+    if (formData.confirmPassword && value !== formData.confirmPassword) {
+      setConfirmPasswordError('Passwords do not match');
+    } else {
+      setConfirmPasswordError('');
+    }
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    const { value } = e.target;
+    setFormData(prev => ({ ...prev, confirmPassword: value }));
+
+    if (formData.password && value !== formData.password) {
+      setConfirmPasswordError('Passwords do not match');
+    } else {
+      setConfirmPasswordError('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setConfirmPasswordError('');
+    setPhoneError('');
 
-    // Validation
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+    const { firstName, lastName, email, password, confirmPassword, agreeTerms, phone } = formData;
+
+    if (!firstName || !lastName || !email || !password) {
       setError('Please fill in all required fields');
       return;
     }
 
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    if (!/\S+@\S+\.\S+/.test(email)) {
       setError('Please enter a valid email address');
       return;
     }
 
-    const passwordPolicyRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])(.{8,})$/;
-    if (!passwordPolicyRegex.test(formData.password)) {
-      setError('Password must be at least 8 characters, include an uppercase letter, a number, and a special character');
+    if (!criteria.uppercase || !criteria.number || !criteria.special || !criteria.length) {
+      setError('Password does not meet all criteria');
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    if (password !== confirmPassword) {
+      setConfirmPasswordError('Passwords do not match');
       return;
     }
 
-    if (!formData.agreeTerms) {
+    // Phone validation on submit
+    if (phone.replace(/[^0-9]/g, '').length < 12) {
+      setPhoneError('Phone number must have 10 digits after +63');
+      return;
+    }
+
+    if (!agreeTerms) {
       setError('Please agree to the terms and conditions');
       return;
     }
@@ -81,12 +162,18 @@ function UserRegistrationPage() {
     }
   };
 
+  const renderCriteria = (label, met) => (
+    <p style={{ color: met ? 'green' : 'red', margin: '2px 0', fontSize: '13px' }}>
+      {met ? '✔' : '✖'} {label}
+    </p>
+  );
+
   return (
     <div className="user-registration-container">
-      <button className="back-button" onClick={() => navigate(-1)} title="Go back">
+      <button className="back-button" onClick={() => navigate("/User-login")} title="Go back">
         ← Back
       </button>
-      
+
       <div className="registration-split">
         <div className="registration-form-section">
           <div className="registration-card">
@@ -107,7 +194,7 @@ function UserRegistrationPage() {
                     id="firstName"
                     name="firstName"
                     value={formData.firstName}
-                    onChange={handleChange}
+                    onChange={handleNameChange}
                   />
                 </div>
 
@@ -118,7 +205,7 @@ function UserRegistrationPage() {
                     id="lastName"
                     name="lastName"
                     value={formData.lastName}
-                    onChange={handleChange}
+                    onChange={handleNameChange}
                   />
                 </div>
               </div>
@@ -130,8 +217,13 @@ function UserRegistrationPage() {
                   id="phone"
                   name="phone"
                   value={formData.phone}
-                  onChange={handleChange}
+                  onChange={handlePhoneChange}
                 />
+                {phoneError && (
+                  <div className="error-message" style={{ marginTop: '5px' }}>
+                    {phoneError}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
@@ -156,65 +248,62 @@ function UserRegistrationPage() {
                 />
               </div>
 
-              <div className="form-row">
-                <div className="form-group" style={{ position: 'relative' }}>
-                  <label htmlFor="password">Password *</label>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="show-password-button"
-                    style={{
-                      position: 'absolute',
-                      right: '10px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontWeight: '600',
-                      color: '#0f3429'
-                    }}
-                  >
-                    {showPassword ? 'Hide' : 'Show'}
-                  </button>
-                </div>
-
-                <div className="form-group" style={{ position: 'relative' }}>
-                  <label htmlFor="confirmPassword">Confirm Password *</label>
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="show-password-button"
-                    style={{
-                      position: 'absolute',
-                      right: '10px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontWeight: '600',
-                      color: '#0f3429'
-                    }}
-                  >
-                    {showConfirmPassword ? 'Hide' : 'Show'}
-                  </button>
-                </div>
+              <div className="form-group" style={{ position: 'relative' }}>
+                <label htmlFor="password">Password *</label>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handlePasswordChange}
+                  onCopy={(e) => e.preventDefault()}
+                  onPaste={(e) => e.preventDefault()}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="show-password-button"
+                  style={{ paddingTop: "35px" }}
+                >
+                  {showPassword ? <MdVisibilityOff size={22} color="#555" /> : <MdVisibility size={22} color="#555" />}
+                </button>
               </div>
+
+              {formData.password.length > 0 && (
+                <div className="password-criteria">
+                  {renderCriteria('At least 1 Uppercase', criteria.uppercase)}
+                  {renderCriteria('At least 1 Number', criteria.number)}
+                  {renderCriteria('At least 1 Special Character', criteria.special)}
+                  {renderCriteria('8-12 Characters', criteria.length)}
+                </div>
+              )}
+
+              <div className="form-group" style={{ position: 'relative' }}>
+                <label htmlFor="confirmPassword">Confirm Password *</label>
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                  onCopy={(e) => e.preventDefault()}
+                  onPaste={(e) => e.preventDefault()}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="show-password-button"
+                  style={{ paddingTop: "35px" }}
+                >
+                  {showConfirmPassword ? <MdVisibilityOff size={22} color="#555" /> : <MdVisibility size={22} color="#555" />}
+                </button>
+              </div>
+
+              {confirmPasswordError && (
+                <div className="error-message" style={{ marginTop: '5px' }}>
+                  {confirmPasswordError}
+                </div>
+              )}
 
               <div className="form-agreement">
                 <label className="checkbox-label">
@@ -237,7 +326,7 @@ function UserRegistrationPage() {
           </div>
         </div>
 
-        <div 
+        <div
           className="registration-image-section"
           style={{
             backgroundImage: `url(${backgroundImage})`,
