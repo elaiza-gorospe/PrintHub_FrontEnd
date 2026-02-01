@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './admin-dashboard.css';
-import AdminProfile from './admin-profile';
+import './User-dashboard.css';
 
-function AdminDashboard() {
+function CustomerDashboard() {
     const navigate = useNavigate();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [activeItem, setActiveItem] = useState('dashboard');
@@ -234,5 +233,4 @@ function AdminDashboard() {
         </div>
     );
 }
-
-export default AdminDashboard;
+export default CustomerDashboard;

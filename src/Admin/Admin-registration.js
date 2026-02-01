@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Admin-registration.css';
 import { useNavigate } from 'react-router-dom';
+import backgroundImage from '../assets/images/pmg-image.jpg';
 
 function AdminRegistrationPage() {
   const [formData, setFormData] = useState({
@@ -69,7 +70,13 @@ function AdminRegistrationPage() {
 
   return (
     <div className="admin-registration-container">
-      <div className="registration-card">
+      <button className="back-button" onClick={() => navigate(-1)} title="Go back">
+        ← Back
+      </button>
+
+      <div className="registration-split">
+        <div className="registration-form-section">
+          <div className="registration-card">
         <div className="registration-header">
           <h1>Create Admin Account</h1>
           <p>Register your admin account</p>
@@ -192,8 +199,19 @@ function AdminRegistrationPage() {
           <button type="submit" className="register-button">Create Account</button>
         </form>
 
-        <div className="registration-footer">
-          <p>Already have an account? <a href="#" onClick={() => navigate('/admin-login')}>Sign in here</a></p>
+            <div className="registration-footer">
+              <p>Already have an account? <a href="#" onClick={() => navigate('/admin-login')}>Sign in here</a></p>
+            </div>
+          </div>
+        </div>
+
+        <div className="registration-image-section"
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
         </div>
       </div>
     </div>

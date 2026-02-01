@@ -10,7 +10,39 @@
   background: linear-gradient(135deg, #0f352a 0%, #1a4d3e 100%);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: relative;
-  padding: 20px;
+}
+
+.login-split {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.login-form-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  padding: 40px 20px;
+}
+
+.login-image-section {
+  flex: 1;
+  background: linear-gradient(135deg, #0f352a 0%, #1a4d3e 100%);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.login-image-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .back-button {
@@ -183,6 +215,13 @@
 .login-footer {
   text-align: center;
   font-size: 13px;
+  margin-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 20px;
+}
+
+.login-footer p {
+  margin: 8px 0;
   color: #666;
 }
 
@@ -197,10 +236,23 @@
   color: #c21111;
 }
 
-/* Responsive design */
-@media (max-width: 480px) {
+@media (max-width: 1024px) {
+  .login-split {
+    flex-direction: column;
+  }
+
+  .login-image-section {
+    display: none;
+  }
+
+  .admin-login-container {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 600px) {
   .login-card {
-    margin: 20px;
+    max-width: 100%;
     padding: 30px 20px;
   }
 
@@ -210,7 +262,31 @@
 
   .form-options {
     flex-direction: column;
-    align-items: flex-start;
     gap: 12px;
+    align-items: flex-start;
   }
+
+  .forgot-password {
+    align-self: flex-start;
+  }
+}
+
+.login-footer {
+  text-align: center;
+  font-size: 13px;
+  margin-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 20px;
+  color: #666;
+}
+
+.login-footer a {
+  color: #0f352a;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.login-footer a:hover {
+  color: #c21111;
 }

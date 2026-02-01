@@ -1,0 +1,18 @@
+.admin-profile{
+    min-height: 100vh;
+    background-color: #0c502b;
+    display: flex;
+    padding: 0;
+}
+
+.back-button{
+    background-color: #135e30;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
