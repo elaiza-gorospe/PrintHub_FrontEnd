@@ -58,6 +58,7 @@ html, body {
   position: relative;
 }
 
+/* LINKS */
 .navbar-menu a {
   color: #ffffff;
   text-decoration: none;
@@ -87,12 +88,52 @@ html, body {
   width: 100%;
 }
 
+/* ---------- BUTTON NAV LINKS (Home, About, Contact) ---------- */
+.navbar-menu .navlink-btn {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  padding: 8px 0;
+  display: inline-block;
+
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  position: relative;
+}
+
+.navbar-menu .navlink-btn:hover {
+  color: #a37e2d;
+}
+
+.navbar-menu .navlink-btn::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #a37e2d;
+  transition: width 0.3s ease;
+}
+
+.navbar-menu .navlink-btn:hover::after {
+  width: 100%;
+}
+
+/* ---------- LOGIN BUTTON ---------- */
 .navbar-login {
   background-color: #ffffff;
   color: #000000 !important;
   padding: 10px 20px !important;
   border-radius: 6px;
   transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .navbar-login:hover {
@@ -118,8 +159,6 @@ html, body {
   background-position: center;
   background-repeat: no-repeat;
 }
-
-
 
 .main-content {
   max-width: 1200px;
@@ -161,7 +200,6 @@ html, body {
     font-size: 20px;
   }
 
-  /* Always show menu */
   .navbar-menu {
     position: static;
     display: flex;
@@ -181,7 +219,8 @@ html, body {
     width: auto;
   }
 
-  .navbar-menu a {
+  .navbar-menu a,
+  .navbar-menu .navlink-btn {
     width: auto;
     font-size: 14px;
     padding: 10px 0;
@@ -219,7 +258,8 @@ html, body {
     font-size: 18px;
   }
 
-  .navbar-menu a {
+  .navbar-menu a,
+  .navbar-menu .navlink-btn {
     font-size: 13px;
   }
 
@@ -239,7 +279,8 @@ html, body {
     min-height: 35vh;
   }
 }
-/* Mobile background image */
+
+/* ---------- Mobile background image ---------- */
 @media (max-width: 768px) {
   .App-header {
     background-image: url("./assets/images/pmg-mobile.jpg");
@@ -254,3 +295,91 @@ html, body {
   }
 }
 
+/* ==========================================================
+   ✅ NEW: HOW TO ORDER SECTION (like your screenshot)
+   ========================================================== */
+
+.howto-wrap {
+  background: #ffffff; /* make it white like the sample */
+}
+
+.howto-title {
+  margin: 0 0 18px;
+  font-size: 28px;
+  color: #0f352a;
+  font-weight: 700;
+}
+
+.howto-title span {
+  color: #a37e2d;
+}
+
+.howto-box {
+  border: 2px solid #a37e2d;
+  border-radius: 10px;
+  padding: 18px 16px;
+  background: #fff;
+}
+
+.howto-steps {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.howto-step {
+  text-align: center;
+  padding: 6px 6px;
+}
+
+.howto-step-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.howto-step-label {
+  color: #a37e2d;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  font-size: 14px;
+}
+
+.howto-arrow {
+  color: #a37e2d;
+  font-size: 14px;
+  transform: translateY(-1px);
+}
+
+.howto-step-title {
+  font-weight: 700;
+  color: #111;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.howto-step-text {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.4;
+}
+
+/* Responsive: stack steps nicely */
+@media (max-width: 992px) {
+  .howto-steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .howto-arrow {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .howto-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

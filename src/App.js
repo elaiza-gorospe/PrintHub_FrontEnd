@@ -1,33 +1,64 @@
-import './App.css';
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
-import backgroundImage from './assets/images/pmg-image.jpg';
-import AdminLoginPage from './Admin/Admin-login';
-import AdminRegistrationPage from './Admin/Admin-registration';
-import AdminDashboard from './Admin/Admin-dashboard';
-import AdminProfile from './Admin/Admin-profile';
-import AdminManageAccounts from './Admin/Admin-manageacc';
+import "./App.css";
+import React, { useEffect } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 
-import UserLoginPage from './Customer/User-login';
-import UserRegistrationPage from './Customer/User-regis';
-import UserHomePage from './Customer/User-home';
-import UserOtpPage from './Customer/User-otp';
-import CustomerDashboard from './Customer/User-dashboard';
-import UserForgotOtpPage from './Customer/User-forgot-otp';
-import UserResetPasswordPage from './Customer/User-reset-password';
+import AdminLoginPage from "./Admin/Admin-login";
+import AdminRegistrationPage from "./Admin/Admin-registration";
+import AdminDashboard from "./Admin/Admin-dashboard";
+import AdminProfile from "./Admin/Admin-profile";
+import AdminManageAccounts from "./Admin/Admin-manageacc";
+
+import UserLoginPage from "./Customer/User-login";
+import UserRegistrationPage from "./Customer/User-regis";
+import UserHomePage from "./Customer/User-home";
+import UserOtpPage from "./Customer/User-otp";
+import CustomerDashboard from "./Customer/User-dashboard";
+import UserForgotOtpPage from "./Customer/User-forgot-otp";
+import UserResetPasswordPage from "./Customer/User-reset-password";
 import ProductOverview from "./Customer/Product-overview";
-import UserCustomizeProfile from './Customer/User-customize-profile';
+import UserCustomizeProfile from "./Customer/User-customize-profile";
 import UserAccountSettings from "./Customer/User-account-settings";
 
-
-
-
-
+/* ✅ PRODUCT CATALOG DATA */
+const products = [
+  {
+    id: 1,
+    title: "Business Cards",
+    desc: "Make first impressions last with premium business cards.",
+    cta: "SHOP BUSINESS CARDS >>",
+  },
+  {
+    id: 2,
+    title: "Stickers & Labels",
+    desc: "Accentuate your products with unique labels and stickers.",
+    cta: "SHOP STICKERS & LABELS >>",
+  },
+  {
+    id: 3,
+    title: "Product Hang Tags",
+    desc: "Add more information about your products with hang tags.",
+    cta: "SHOP HANG TAGS >>",
+  },
+  {
+    id: 4,
+    title: "Note Cards",
+    desc: "Thank-you cards are always welcome. Gain trust with customers.",
+    cta: "SHOP THANK YOU CARDS >>",
+  },
+];
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+
         <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin-register" element={<AdminRegistrationPage />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
@@ -44,35 +75,68 @@ function App() {
         <Route path="/product-overview" element={<ProductOverview />} />
         <Route path="/user-customize-profile" element={<UserCustomizeProfile />} />
         <Route path="/user-account-settings" element={<UserAccountSettings />} />
-
-
-
-
       </Routes>
     </BrowserRouter>
   );
 }
 
+/* ---------- NAVBAR ---------- */
 function NavbarComponent() {
   const navigate = useNavigate();
-  
+  const location = useLocation();
+
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleNavToSection = (id) => {
+    if (location.pathname === "/") {
+      scrollToSection(id);
+    } else {
+      navigate("/", { state: { scrollTo: id } });
+    }
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <div className="navbar-logo">
-          <span onClick={() => navigate('/')}>PMG</span>
+        <div className="navbar-logo" onClick={() => navigate("/")}>
+          PMG
         </div>
 
         <ul className="navbar-menu">
-          <li><a href="#home" onClick={() => navigate('/')}>Home</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#contact">Contact</a></li>
           <li>
-            <a href="User-login" 
-               onClick={() => navigate('/')} 
-               className="navbar-login">
+            <button className="navlink-btn" onClick={() => navigate("/")}>
+              Home
+            </button>
+          </li>
+
+          <li>
+            <button
+              className="navlink-btn"
+              onClick={() => handleNavToSection("about")}
+            >
+              About
+            </button>
+          </li>
+
+          <li>
+            <button
+              className="navlink-btn"
+              onClick={() => handleNavToSection("contact")}
+            >
+              Contact
+            </button>
+          </li>
+
+          <li>
+            <button
+              className="navbar-login"
+              onClick={() => navigate("/user-login")}
+            >
               Login
-            </a>
+            </button>
           </li>
         </ul>
       </div>
@@ -80,35 +144,145 @@ function NavbarComponent() {
   );
 }
 
+/* ---------- HOME ---------- */
 function HomePage() {
-  const navigate = useNavigate();
-  
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.scrollTo) {
+      const el = document.getElementById(location.state.scrollTo);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [location]);
+
   return (
     <div className="App">
       <NavbarComponent />
-      <header className="App-header"
-      
-        style={{
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed'
-        }}
-      >
-      </header>
-      
+
+      {/* HERO */}
+      <header className="App-header"></header>
+
       <main className="main-content">
-        <section className="content-section">
-          <h2>About PrintHub</h2>
-          <p>PrintHub is a modern printing management platform designed to streamline your printing needs.</p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '20px' }}>
+
+        {/* HOW TO ORDER (HTML/CSS) */}
+<section className="content-section howto-wrap">
+  <h2 className="howto-title">
+    Print Your Own Design With <span>PMG</span>!
+  </h2>
+
+  <div className="howto-box">
+    <div className="howto-steps">
+      {[
+        {
+          step: "STEP 1",
+          title: "Choose your product",
+          text: "Pick an item and select size/quantity.",
+        },
+        {
+          step: "STEP 2",
+          title: "Upload or create design",
+          text: "Upload your file or create your design.",
+        },
+        {
+          step: "STEP 3",
+          title: "Check guidelines",
+          text: "We verify quality and printable format.",
+        },
+        {
+          step: "STEP 4",
+          title: "Printing starts",
+          text: "Your order is queued and printed.",
+        },
+        {
+          step: "STEP 5",
+          title: "Pay securely",
+          text: "Pay via your selected payment method.",
+        },
+        {
+          step: "STEP 6",
+          title: "Claim / delivery",
+          text: "Pick up your item or choose delivery.",
+        },
+      ].map((s, idx) => (
+        <div className="howto-step" key={idx}>
+          <div className="howto-step-top">
+            <span className="howto-step-label">{s.step}</span>
+            {idx !== 5 && <span className="howto-arrow">▶</span>}
           </div>
+          <div className="howto-step-title">{s.title}</div>
+          <div className="howto-step-text">{s.text}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+
+        {/* ✅ PRODUCT CATALOG */}
+        <section className="content-section">
+          <h2>Product Catalog</h2>
+          <p>Discover our bestselling print essentials for your business.</p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "24px",
+              marginTop: "30px",
+            }}
+          >
+            {products.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  background: "#fff",
+                  padding: "30px 20px",
+                  borderRadius: "10px",
+                  boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+                }}
+              >
+                <h3 style={{ color: "#0f352a", marginBottom: "10px" }}>
+                  {item.title}
+                </h3>
+
+                <p style={{ fontSize: "14px", marginBottom: "20px" }}>
+                  {item.desc}
+                </p>
+
+                <span
+                  style={{
+                    color: "#a37e2d",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                  }}
+                >
+                  {item.cta}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ✅ ABOUT */}
+        <section className="content-section" id="about">
+          <h2>About PrintHub</h2>
+          <p>
+            PrintHub is a modern printing management platform designed to
+            streamline your printing needs.
+          </p>
+        </section>
+
+        {/* ✅ CONTACT */}
+        <section className="content-section" id="contact">
+          <h2>Contact</h2>
+          <p>Email: printhub@gmail.com</p>
+          <p>Phone: +63 900 000 0000</p>
+          <p>Address: Your City, Philippines</p>
         </section>
       </main>
     </div>
   );
 }
-
-
 
 export default App;
