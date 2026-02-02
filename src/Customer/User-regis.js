@@ -161,6 +161,7 @@ function UserRegistrationPage() {
       }
 
       navigate('/user-otp', { state: { email: formData.email } });
+      localStorage.setItem('pending_registration', JSON.stringify(formData));
 
     } catch (err) {
       setError('Network error, please try again later');

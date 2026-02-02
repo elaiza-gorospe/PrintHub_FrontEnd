@@ -1,113 +1,351 @@
-.ucp-page {
-  min-height: 100vh;
-  background: #f6f8fb;
-  padding: 28px 18px 40px;
+/* ✅ Global reset + predictable sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-.ucp-topbar {
-  max-width: 820px;
-  margin: 0 auto 14px;
+html, body {
+  height: 100%;
+}
+
+img, svg {
+  max-width: 100%;
+  display: block;
+}
+
+/* ✅ Page wrapper (match Admin-profile background) */
+.ucp-adminlike-page {
+  min-height: 100vh;
+  background-color: #0c502b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: clamp(16px, 4vw, 44px) clamp(12px, 3vw, 24px);
+  font-family: Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ✅ Back button (match Admin-profile style) */
+.ucp-back-button {
+  align-self: flex-start;
+  background-color: #135e30;
+  color: #ffffff;
+  border: none;
+
+  padding: clamp(10px, 2.5vw, 12px) clamp(14px, 3vw, 18px);
+  font-size: clamp(13px, 2.8vw, 14px);
+
+  margin-bottom: clamp(12px, 3vw, 18px);
+  border-radius: 8px;
+  cursor: pointer;
+
+  min-height: 44px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.ucp-back-button:hover {
+  background-color: #0f4a27;
+  transform: translateY(-1px);
+}
+
+/* ✅ Card (match Admin-profile sizing) */
+.ucp-profile-card {
+  width: min(100%, 720px);
+  background: #fff;
+  border-radius: 14px;
+  padding: clamp(16px, 3.5vw, 30px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+  margin-inline: auto;
+}
+
+/* ✅ TOP DISPLAY */
+.ucp-profile-top {
+  display: flex;
+  gap: clamp(12px, 2.5vw, 18px);
+  align-items: center;
+  padding-bottom: clamp(12px, 2.5vw, 16px);
+  border-bottom: 1px solid #eee;
+}
+
+.ucp-profile-avatar {
+  width: clamp(70px, 14vw, 96px);
+  height: clamp(70px, 14vw, 96px);
+  border-radius: 50%;
+  background: #135e30;
   display: flex;
   align-items: center;
+  justify-content: center;
+  font-size: clamp(30px, 6vw, 42px);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.ucp-profile-summary {
+  flex: 1;
+  min-width: 0;
+}
+
+.ucp-profile-name {
+  margin: 0;
+  color: #135e30;
+  font-size: clamp(18px, 2.8vw, 26px);
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.ucp-profile-role {
+  margin: 6px 0 0;
+  color: #444;
+  font-size: clamp(13px, 2.2vw, 15px);
+}
+
+/* ✅ ACTION BUTTONS (same vibe as Admin profile buttons) */
+.ucp-profile-actions {
+  display: flex;
+  gap: 10px;
+  margin: clamp(12px, 2.5vw, 18px) 0 8px;
+}
+
+.ucp-cancel-button,
+.ucp-save-button {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: clamp(14px, 2.2vw, 16px);
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.ucp-cancel-button {
+  background: #e6f3ea;
+  color: #135e30;
+  border: 1px solid #b8dbc6;
+}
+
+.ucp-cancel-button:hover {
+  background: #d8efe1;
+}
+
+.ucp-save-button {
+  background: #135e30;
+  color: #fff;
+}
+
+.ucp-save-button:hover {
+  background: #0f4a27;
+}
+
+/* ✅ FORM (Admin-profile style: label + field) */
+.ucp-profile-form {
+  margin-top: 10px;
+  display: grid;
   gap: 12px;
 }
 
-.ucp-back {
-  border: none;
-  background: #214b2f;
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.ucp-title {
-  margin: 0;
-  font-size: 26px;
-  color: #102018;
-  font-weight: 800;
-}
-
-.ucp-card {
-  max-width: 820px;
-  margin: 0 auto;
-  background: #fff;
-  border-radius: 18px;
-  padding: 22px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e8eef3;
-}
-
-.ucp-row {
+.ucp-form-row {
   display: grid;
-  gap: 8px;
-  margin-bottom: 14px;
+  grid-template-columns: minmax(140px, 200px) 1fr;
+  gap: 12px;
+  align-items: center;
 }
 
-.ucp-label {
-  font-weight: 700;
-  color: #1b2b22;
-  font-size: 14px;
+.ucp-form-row label {
+  font-size: clamp(13px, 2vw, 14px);
+  color: #333;
 }
 
-.ucp-input {
+.ucp-form-row input,
+.ucp-form-row select {
   width: 100%;
-  padding: 12px 12px;
-  border-radius: 12px;
-  border: 1px solid #dbe3ea;
-  outline: none;
-  font-size: 14px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: clamp(13px, 2vw, 14px);
   background: #fff;
 }
 
-.ucp-input:focus {
-  border-color: #214b2f;
-  box-shadow: 0 0 0 3px rgba(33, 75, 47, 0.12);
+.ucp-form-row input:focus,
+.ucp-form-row select:focus {
+  outline: none;
+  border-color: #135e30;
 }
 
-.ucp-textarea {
+/* ✅ Address textarea */
+.ucp-form-row-textarea {
+  align-items: start;
+}
+
+.ucp-form-row textarea {
   width: 100%;
   min-height: 92px;
   resize: vertical;
-  padding: 12px 12px;
-  border-radius: 12px;
-  border: 1px solid #dbe3ea;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: clamp(13px, 2vw, 14px);
+}
+
+.ucp-form-row textarea:focus {
   outline: none;
-  font-size: 14px;
+  border-color: #135e30;
 }
 
-.ucp-textarea:focus {
-  border-color: #214b2f;
-  box-shadow: 0 0 0 3px rgba(33, 75, 47, 0.12);
+/* ✅ Mobile responsive (matches Admin-profile behavior) */
+@media (max-width: 480px) {
+  .ucp-back-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .ucp-profile-top {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .ucp-profile-actions {
+    flex-direction: column;
+  }
+
+  .ucp-form-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 }
 
-.ucp-actions {
-  margin-top: 18px;
+@media (min-width: 481px) and (max-width: 768px) {
+  .ucp-profile-card {
+    width: min(100%, 620px);
+  }
+
+  .ucp-form-row {
+    grid-template-columns: minmax(120px, 170px) 1fr;
+  }
+}
+
+@media (min-width: 1200px) {
+  .ucp-profile-card {
+    width: 760px;
+  }
+}
+
+@media (max-height: 620px) {
+  .ucp-adminlike-page {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .ucp-profile-card {
+    padding: 16px;
+  }
+}
+/* ✅ Inline messages */
+.ucp-message {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.ucp-message-error {
+  background: #ffe9ec;
+  border: 1px solid #ffb7c1;
+  color: #8a0016;
+}
+
+.ucp-message-success {
+  background: #e7f7ee;
+  border: 1px solid #b8e3c8;
+  color: #0c502b;
+}
+
+/* ✅ Toast */
+.ucp-toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+  z-index: 9999;
+}
+
+.ucp-toast-success {
+  background: #135e30;
+  color: #fff;
+}
+
+.ucp-toast-error {
+  background: #b00020;
+  color: #fff;
+}
+/* ✅ Discard Changes Modal */
+.ucp-discard-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 9999;
+}
+
+.ucp-discard-modal {
+  width: min(100%, 480px);
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.3);
+}
+
+.ucp-discard-title {
+  margin: 0 0 8px;
+  color: #135e30;
+}
+
+.ucp-discard-text {
+  margin: 0 0 14px;
+  color: #444;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.ucp-discard-actions {
+  display: flex;
   gap: 10px;
 }
 
-.ucp-cancel {
-  border: 1px solid #dbe3ea;
-  background: #fff;
-  padding: 11px 14px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.ucp-save {
+.ucp-discard-cancel,
+.ucp-discard-confirm {
+  flex: 1;
   border: none;
-  background: #214b2f;
-  color: #fff;
-  padding: 11px 16px;
-  border-radius: 12px;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
   cursor: pointer;
-  font-weight: 800;
+  min-height: 44px;
 }
 
-.ucp-save:hover {
-  background: #193a25;
+.ucp-discard-cancel {
+  background: #e6f3ea;
+  color: #135e30;
+  border: 1px solid #b8dbc6;
+}
+
+.ucp-discard-cancel:hover {
+  background: #d8efe1;
+}
+
+.ucp-discard-confirm {
+  background: #b00020;
+  color: #fff;
+}
+
+.ucp-discard-confirm:hover {
+  background: #8d0019;
 }

@@ -9,7 +9,6 @@ function AdminDashboard() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState('dashboard');
 
-  // ✅ Get logged in user from localStorage (from your /api/login response)
   const storedUser = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('adminUser')) || null;
@@ -18,10 +17,8 @@ function AdminDashboard() {
     }
   }, []);
 
-  // ✅ role can be: 'admin' | 'staff' | 'customer'
   const role = storedUser?.role || 'admin';
 
-  // ✅ Keep same menu, BUT staff won't see Manage Accounts
   const menuItems = useMemo(() => {
     const base = [
       { id: 'profile', label: 'Profile', external: true, path: '/admin-profile' },
@@ -47,7 +44,7 @@ function AdminDashboard() {
       return;
     }
 
-    // ✅ Extra safety: staff can't open Manage Accounts even if forced
+    //  Extra safety: staff can't open Manage Accounts even if forced
     if (role === 'staff' && item.id === 'customers') return;
 
     setActiveItem(item.id);
@@ -70,7 +67,7 @@ function AdminDashboard() {
     alert('You have been logged out successfully!');
   };
 
-  // ✅ If staff somehow lands on customers, kick back to dashboard
+  //  If staff somehow lands on customers, kick back to dashboard
   if (role === 'staff' && activeItem === 'customers') {
     setActiveItem('dashboard');
   }
@@ -131,7 +128,6 @@ function AdminDashboard() {
         </div>
       </div>
 
-      {/* Main Content Area */}
       <main className="dashboard-content">
         <header className="dashboard-header">
           <div className="header-left">
@@ -150,7 +146,6 @@ function AdminDashboard() {
         </header>
 
         <div className="content-wrapper">
-          {/* ✅ Switch what shows INSIDE dashboard */}
           {activeItem === "dashboard" && (
             <div className="content-grid">
               <div className="stats-card">
@@ -174,7 +169,6 @@ function AdminDashboard() {
 
           {activeItem === "profile" && <AdminProfile />}
 
-          {/* ✅ Only admin can see Manage Accounts */}
           {activeItem === "customers" && role !== 'staff' && <AdminManageAccounts />}
 
           {activeItem === "orders" && (

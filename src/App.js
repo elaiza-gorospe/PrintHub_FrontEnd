@@ -24,8 +24,9 @@ import UserResetPasswordPage from "./Customer/User-reset-password";
 import ProductOverview from "./Customer/Product-overview";
 import UserCustomizeProfile from "./Customer/User-customize-profile";
 import UserAccountSettings from "./Customer/User-account-settings";
+import UserCartPage from "./Customer/User-cart";
+import UserPasswordSecurityPage from "./Customer/User-password-security";
 
-/* ✅ PRODUCT CATALOG DATA */
 const products = [
   {
     id: 1,
@@ -64,13 +65,14 @@ function App() {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin-profile" element={<AdminProfile />} />
         <Route path="/admin-manageaccount" element={<AdminManageAccounts />} />
-
         <Route path="/user-login" element={<UserLoginPage />} />
         <Route path="/user-register" element={<UserRegistrationPage />} />
         <Route path="/user-forgot-otp" element={<UserForgotOtpPage />} />
         <Route path="/user-reset-password" element={<UserResetPasswordPage />} />
         <Route path="/user-otp" element={<UserOtpPage />} />
         <Route path="/user-home" element={<UserHomePage />} />
+        <Route path="/user-password-security" element={<UserPasswordSecurityPage />} />
+        <Route path="/user-cart" element={<UserCartPage />} />
         <Route path="/user-dashboard" element={<CustomerDashboard />} />
         <Route path="/product-overview" element={<ProductOverview />} />
         <Route path="/user-customize-profile" element={<UserCustomizeProfile />} />
@@ -266,10 +268,9 @@ function HomePage() {
 
         {/* ✅ ABOUT */}
         <section className="content-section" id="about">
-          <h2>About PrintHub</h2>
+          <h2>About PMG</h2>
           <p>
-            PrintHub is a modern printing management platform designed to
-            streamline your printing needs.
+            PMG is your one stop printhing shop.
           </p>
         </section>
 

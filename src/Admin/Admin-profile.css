@@ -266,3 +266,165 @@ img, svg {
   background: #f1f1f1;
   color: #777;
 }
+/* ✅ Change Password button (matches existing style) */
+.change-password-button {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: clamp(14px, 2.2vw, 16px);
+  cursor: pointer;
+  min-height: 44px;
+
+  background: #135e30;
+  color: #fff;
+}
+
+.change-password-button:hover {
+  background: #0f4a27;
+}
+
+/* ✅ Change Password Modal */
+.cp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 9999;
+}
+
+.cp-modal {
+  width: min(100%, 520px);
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.3);
+}
+
+.cp-title {
+  margin: 0 0 12px;
+  color: #135e30;
+}
+
+.cp-form {
+  display: grid;
+  gap: 10px;
+}
+
+.cp-row {
+  display: grid;
+  gap: 6px;
+}
+
+.cp-row label {
+  font-size: 14px;
+  color: #333;
+}
+
+.cp-row input {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.cp-row input:focus {
+  outline: none;
+  border-color: #135e30;
+}
+
+.cp-error {
+  margin: 0;
+  color: #b00020;
+  font-size: 13px;
+}
+
+.cp-success {
+  margin: 0;
+  color: #0c502b;
+  font-size: 13px;
+}
+
+.cp-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.cp-cancel,
+.cp-save {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.cp-cancel {
+  background: #e6f3ea;
+  color: #135e30;
+  border: 1px solid #b8dbc6;
+}
+
+.cp-cancel:hover {
+  background: #d8efe1;
+}
+
+.cp-save {
+  background: #135e30;
+  color: #fff;
+}
+
+.cp-save:hover {
+  background: #0f4a27;
+}
+
+/* ✅ Small screens: stack the 3 buttons neatly */
+@media (max-width: 480px) {
+  .change-password-button {
+    width: 100%;
+  }
+}
+/* ✅ Eye icon button for change password modal */
+.cp-eye-button {
+  position: absolute;
+  right: 10px;
+  top: 34px; /* aligns below label */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cp-eye-button:focus {
+  outline: none;
+}
+
+/* ✅ Criteria box (same idea as registration) */
+.cp-criteria {
+  background: #f7faf8;
+  border: 1px solid #dbe7df;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: -2px;
+}
+
+.cp-criteria-item {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #444;
+}
+
+.cp-criteria-item.ok {
+  color: #0c502b;
+  font-weight: 600;
+}

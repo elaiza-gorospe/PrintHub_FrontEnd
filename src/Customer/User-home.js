@@ -2,6 +2,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./User-home.css";
 
+// ✅ ICONS
+import {
+  FaSearch,
+  FaShoppingCart,
+  FaUserCircle,
+  FaKey,
+  FaCog,
+  FaEdit,
+  FaBoxOpen,
+} from "react-icons/fa";
 
 function UserHomePage() {
   const navigate = useNavigate();
@@ -16,36 +26,31 @@ function UserHomePage() {
   };
 
   const products = [
-  {
-    id: 1,
-    title: "Business Cards",
-    desc: "Make first impressions last with premium business cards.",
-    cta: "SHOP BUSINESS CARDS >>",
-    //image: require("../assets/images/business-card.jpg"),
-  },
-  {
-    id: 2,
-    title: "Stickers & Labels",
-    desc: "Accentuate your products with unique labels and stickers.",
-    cta: "SHOP STICKERS & LABELS >>",
-    //image: require("../assets/images/stick.png"),
-  },
-  {
-    id: 3,
-    title: "Product Hang Tags",
-    desc: "Add more information about your products with hang tags.",
-    cta: "SHOP HANG TAGS >>",
-    //image: require("../assets/images/tag.png"),
-  },
-  {
-    id: 4,
-    title: "Note Cards",
-    desc: "Thank-you cards are always welcome. Gain trust with customers.",
-    cta: "SHOP THANK YOU CARDS >>",
-    //image: require("../assets/images/note.jpg"),
-  },
-];
-
+    {
+      id: 1,
+      title: "Business Cards",
+      desc: "Make first impressions last with premium business cards.",
+      cta: "SHOP BUSINESS CARDS >>",
+    },
+    {
+      id: 2,
+      title: "Stickers & Labels",
+      desc: "Accentuate your products with unique labels and stickers.",
+      cta: "SHOP STICKERS & LABELS >>",
+    },
+    {
+      id: 3,
+      title: "Product Hang Tags",
+      desc: "Add more information about your products with hang tags.",
+      cta: "SHOP HANG TAGS >>",
+    },
+    {
+      id: 4,
+      title: "Note Cards",
+      desc: "Thank-you cards are always welcome. Gain trust with customers.",
+      cta: "SHOP THANK YOU CARDS >>",
+    },
+  ];
 
   // close dropdown when clicking outside
   useEffect(() => {
@@ -62,33 +67,35 @@ function UserHomePage() {
     localStorage.clear();
     sessionStorage.clear();
     setIsProfileOpen(false);
-    navigate("/user-login");
+    navigate("/");
   };
 
   return (
     <div className="uh-page">
-      {/* NAVBAR (same theme) */}
+      {/* NAVBAR */}
       <nav className="uh-nav">
         <div className="uh-logo" onClick={() => navigate("/user-home")}>
           <span className="uh-logo-text">PMG</span>
           <span className="uh-logo-sub">PRINTING HOUSE</span>
         </div>
 
+        {/* SEARCH */}
         <div className="uh-search">
           <input type="text" placeholder="Search products or services" />
           <button className="uh-search-btn" type="button" aria-label="Search">
-            🔍
+            <FaSearch />
           </button>
         </div>
 
         <div className="uh-actions">
+          {/* CART */}
           <button
             className="uh-icon-btn"
             type="button"
             title="Cart"
-            onClick={() => navigate("/user-dashboard")}
+            onClick={() => navigate("/user-cart")}
           >
-            🛒
+            <FaShoppingCart />
           </button>
 
           <button className="uh-link" type="button">
@@ -98,7 +105,7 @@ function UserHomePage() {
             Contact
           </button>
 
-          {/* Profile dropdown */}
+          {/* PROFILE DROPDOWN */}
           <div className="uh-profile-wrap" ref={dropdownRef}>
             <button
               className="uh-profile"
@@ -106,7 +113,7 @@ function UserHomePage() {
               title="Account"
               onClick={() => setIsProfileOpen((v) => !v)}
             >
-              👤
+              <FaUserCircle />
             </button>
 
             {isProfileOpen && (
@@ -132,11 +139,12 @@ function UserHomePage() {
                     type="button"
                     onClick={() => {
                       setIsProfileOpen(false);
-                      navigate("/user-reset-password");
+                      navigate("/user-password-security");
                     }}
                   >
-                    🔑 <span>Passwords and security</span>
+                    <FaKey /> <span>Passwords and security</span>
                   </button>
+
 
                   <button
                     className="uh-dd-item"
@@ -144,29 +152,28 @@ function UserHomePage() {
                     onClick={() => {
                       setIsProfileOpen(false);
                       navigate("/user-account-settings");
-
                     }}
                   >
-                    ⚙️ <span>Account settings</span>
+                    <FaCog /> <span>Account settings</span>
                   </button>
 
                   <button
                     className="uh-dd-item"
                     type="button"
                     onClick={() => {
-                        setIsProfileOpen(false);
-                        navigate("/user-customize-profile");
+                      setIsProfileOpen(false);
+                      navigate("/user-customize-profile");
                     }}
                   >
-                    ✏️ <span>Customize your profile</span>
+                    <FaEdit /> <span>Customize your profile</span>
                   </button>
 
                   <button
                     className="uh-dd-item"
                     type="button"
-                    onClick={() => alert("Sync toggled (demo)")}
+                    onClick={() => alert("Orders (demo)")}
                   >
-                    🔄 <span>Orders</span>
+                    <FaBoxOpen /> <span>Orders</span>
                   </button>
                 </div>
 
@@ -190,7 +197,6 @@ function UserHomePage() {
       {/* HERO SECTION */}
       <section className="uh-hero">
         <div className="uh-hero-overlay" />
-
         <div className="uh-hero-content">
           <h1>Elevate Your Brand with Print and Packaging Essentials.</h1>
           <p>
@@ -225,8 +231,7 @@ function UserHomePage() {
                 <button
                   type="button"
                   className="uh-card-link"
-                  onClick={() => navigate("/Product-overview")}
-                >
+                  onClick={() => navigate("/user-cart")}>
                   {p.cta}
                 </button>
               </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/images/pmg-image.jpg';
 import './User-login.css';
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md'; // ✅ ADD
 
 function UserLoginPage() {
     const [email, setEmail] = useState('');
@@ -17,6 +18,9 @@ function UserLoginPage() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [resetError, setResetError] = useState('');
     const [resetSuccess, setResetSuccess] = useState('');
+
+    // ✅ NEW: show/hide password
+    const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate();
 
@@ -139,14 +143,27 @@ function UserLoginPage() {
                                 />
                             </div>
 
-                            <div className="form-group">
+                            {/* ✅ PASSWORD WITH EYE ICON */}
+                            <div className="form-group" style={{ position: 'relative' }}>
                                 <label>Password</label>
                                 <input
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter your password"
                                 />
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="show-password-button"
+                                    style={{ paddingTop: "35px" }}
+                                >
+                                    {showPassword
+                                        ? <MdVisibilityOff size={22} color="#555" />
+                                        : <MdVisibility size={22} color="#555" />
+                                    }
+                                </button>
                             </div>
 
                             <div className="form-options">

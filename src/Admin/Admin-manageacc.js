@@ -10,32 +10,40 @@ function getInitials(name = "") {
   return (first + last).toUpperCase();
 }
 
+// ✅ date-only formatter (YYYY-MM-DD)
+function formatDateOnly(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  return d.toISOString().slice(0, 10);
+}
+
 function AdminManageAccounts() {
-  // ✅ DB data now
+  //DB data now
   const [users, setUsers] = useState([]);
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // ✅ Modal states
+  // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  // ✅ Selected user for edit/delete
+  // Selected user for edit/delete
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // ✅ Form state (used by Add + Edit)
+  // Form state (used by Add + Edit)
   const [form, setForm] = useState({
     name: "",
     email: "",
-    role: "user",
+    role: "customer",
     status: "active",
-    password: "", // Add only
+    password: "",
   });
 
-  // ✅ fetch users from DB
+  // fetch users from DB
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -76,14 +84,12 @@ function AdminManageAccounts() {
     });
   }, [users, search, roleFilter, statusFilter]);
 
-  // =========================
-  // ✅ OPEN MODALS
-  // =========================
+  // open modal
   const handleAddUser = () => {
     setForm({
       name: "",
       email: "",
-      role: "user",
+      role: "customer",
       status: "active",
       password: "",
     });
@@ -95,9 +101,9 @@ function AdminManageAccounts() {
     setForm({
       name: user.name || "",
       email: user.email || "",
-      role: (user.role || "user").toLowerCase(),
+      role: (user.role || "customer").toLowerCase(),
       status: (user.status || "active").toLowerCase(),
-      password: "", // not used on edit
+      password: "",
     });
     setShowEditModal(true);
   };
@@ -107,9 +113,7 @@ function AdminManageAccounts() {
     setShowDeleteModal(true);
   };
 
-  // =========================
-  // ✅ SUBMIT ACTIONS
-  // =========================
+  // sumbit modal
   const submitAdd = async (e) => {
     e.preventDefault();
 
@@ -163,8 +167,26 @@ function AdminManageAccounts() {
         }
       );
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "Failed to update user");
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        console.log("❌ UPDATE USER FAILED:", {
+          status: res.status,
+          data,
+          sentPayload: {
+            name: form.name,
+            email: form.email,
+            role: form.role,
+            status: form.status,
+          },
+        });
+
+        throw new Error(
+          data?.message ||
+          data?.error?.sqlMessage ||
+          "Database update error"
+        );
+      }
 
       setShowEditModal(false);
       setSelectedUser(null);
@@ -196,9 +218,7 @@ function AdminManageAccounts() {
     }
   };
 
-  // =========================
-  // ✅ CLOSE MODALS
-  // =========================
+  // close modal
   const closeAdd = () => setShowAddModal(false);
   const closeEdit = () => {
     setShowEditModal(false);
@@ -269,7 +289,6 @@ function AdminManageAccounts() {
             <option value="all">All Roles</option>
             <option value="admin">Admin</option>
             <option value="staff">Staff</option>
-            <option value="user">User</option>
             <option value="customer">Customer</option>
           </select>
 
@@ -317,8 +336,11 @@ function AdminManageAccounts() {
                   <span className={`manageacc-pill status-${u.status}`}>{u.status}</span>
                 </td>
 
-                <td>{u.lastLogin}</td>
-                <td>{u.joinDate}</td>
+                {/* ✅ CHANGED: date only */}
+                <td>{formatDateOnly(u.lastLogin)}</td>
+
+                {/* ✅ CHANGED: show join date */}
+                <td>{formatDateOnly(u.joinDate)}</td>
 
                 <td className="manageacc-actions-col">
                   <div className="manageacc-actions">
@@ -355,9 +377,7 @@ function AdminManageAccounts() {
         </table>
       </div>
 
-      {/* ========================= */}
-      {/* ✅ ADD MODAL */}
-      {/* ========================= */}
+      {/* add modal */}
       {showAddModal && (
         <div className="manageacc-modal-overlay" onMouseDown={closeAdd}>
           <div className="manageacc-modal" onMouseDown={(e) => e.stopPropagation()}>
@@ -397,7 +417,6 @@ function AdminManageAccounts() {
                   >
                     <option value="admin">admin</option>
                     <option value="staff">staff</option>
-                    <option value="user">user</option>
                     <option value="customer">customer</option>
                   </select>
                 </div>
@@ -438,9 +457,7 @@ function AdminManageAccounts() {
         </div>
       )}
 
-      {/* ========================= */}
-      {/* ✅ EDIT MODAL */}
-      {/* ========================= */}
+      {/* edit modal */}
       {showEditModal && (
         <div className="manageacc-modal-overlay" onMouseDown={closeEdit}>
           <div className="manageacc-modal" onMouseDown={(e) => e.stopPropagation()}>
@@ -480,7 +497,6 @@ function AdminManageAccounts() {
                   >
                     <option value="admin">admin</option>
                     <option value="staff">staff</option>
-                    <option value="user">user</option>
                     <option value="customer">customer</option>
                   </select>
                 </div>
@@ -511,9 +527,7 @@ function AdminManageAccounts() {
         </div>
       )}
 
-      {/* ========================= */}
-      {/* ✅ DELETE MODAL */}
-      {/* ========================= */}
+      {/* delete modal */}
       {showDeleteModal && (
         <div className="manageacc-modal-overlay" onMouseDown={closeDelete}>
           <div className="manageacc-modal small" onMouseDown={(e) => e.stopPropagation()}>
