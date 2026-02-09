@@ -414,3 +414,277 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ✅ Table scroll on small screens (keeps your layout) */
+.manageacc-table-card{
+  overflow-x: auto;
+}
+
+.manageacc-table{
+  min-width: 920px; /* forces horizontal scroll instead of squishing */
+}
+
+@media (max-width: 640px){
+  .manageacc-table{
+    font-size: 13px;
+  }
+
+  .manageacc-actions-col{
+    width: 120px;
+  }
+}
+
+/* =========================
+   ✅ MOBILE FIXES (Manage Accounts)
+   ========================= */
+
+/* prevent page from causing sideways scroll */
+.manageacc {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* stats: 4 -> 2 -> 1 columns */
+@media (max-width: 900px) {
+  .manageacc-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .manageacc-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .manageacc-title {
+    font-size: 20px;
+  }
+
+  .manageacc-subtitle {
+    font-size: 13px;
+  }
+
+  .manageacc-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* toolbar stacks nicely on mobile */
+@media (max-width: 640px) {
+  .manageacc-toolbar {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .manageacc-search {
+    width: 100%;
+  }
+
+  .manageacc-filters {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .manageacc-filters select {
+    width: 100%;
+  }
+}
+
+/* ✅ TABLE FIX: allow horizontal scroll on mobile */
+.manageacc-table-card {
+  width: 100%;
+  overflow-x: auto;              /* key fix */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* keep table readable + not squished */
+.manageacc-table {
+  min-width: 760px;              /* forces scroll instead of overflow */
+}
+
+/* smaller padding on mobile so it looks fitted */
+@media (max-width: 520px) {
+  .manageacc-table thead th {
+    padding: 10px 10px;
+    font-size: 12px;
+  }
+
+  .manageacc-table tbody td {
+    padding: 12px 10px;
+  }
+
+  .manageacc-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .manageacc-name {
+    font-size: 13px;
+  }
+
+  .manageacc-email {
+    font-size: 12px;
+  }
+
+  .manageacc-actions-col {
+    width: 120px;
+  }
+}
+
+/* =========================
+   ✅ TRUE MOBILE LAYOUT (Manage Accounts)
+   turns table into card list on small screens
+   ========================= */
+@media (max-width: 480px) {
+
+  /* tighten overall spacing */
+  .manageacc { padding: 10px; }
+  .manageacc-top { gap: 10px; }
+  .manageacc-title { font-size: 18px; }
+  .manageacc-subtitle { font-size: 12px; }
+
+  /* Add button full width */
+  .manageacc-add-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  /* stats become 2 columns like mobile dashboard */
+  .manageacc-stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .manageacc-stat-card { padding: 12px; }
+  .manageacc-stat-value { font-size: 20px; }
+
+  /* toolbar stacked + compact */
+  .manageacc-toolbar {
+    padding: 10px;
+    gap: 10px;
+  }
+  .manageacc-search { padding: 10px 12px; }
+  .manageacc-search input { font-size: 13px; }
+
+  .manageacc-filters {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .manageacc-filters select {
+    width: 100%;
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  /* ========================
+     ✅ MOBILE TABLE -> CARDS
+     ======================== */
+  .manageacc-table-card {
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  /* remove table scrolling */
+  .manageacc-table {
+    min-width: 0 !important;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px; /* space between "cards" */
+    padding: 10px;
+  }
+
+  /* hide table header */
+  .manageacc-table thead {
+    display: none;
+  }
+
+  /* each row becomes a card */
+  .manageacc-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr;
+    background: #fff;
+    border: 1px solid #e9eef3;
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+  }
+
+  /* each cell full width */
+  .manageacc-table tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px;
+    border: none;
+    border-bottom: 1px solid #eef1f4;
+    font-size: 13px;
+  }
+
+  /* remove last divider */
+  .manageacc-table tbody td:last-child {
+    border-bottom: none;
+  }
+
+  /* first cell = user info (keep big) */
+  .manageacc-table tbody td:first-child {
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  /* add labels to each cell */
+  .manageacc-table tbody td:nth-child(2)::before { content: "Role"; font-weight: 800; color: #64748b; }
+  .manageacc-table tbody td:nth-child(3)::before { content: "Status"; font-weight: 800; color: #64748b; }
+  .manageacc-table tbody td:nth-child(4)::before { content: "Last Login"; font-weight: 800; color: #64748b; }
+  .manageacc-table tbody td:nth-child(5)::before { content: "Join Date"; font-weight: 800; color: #64748b; }
+
+  /* make pills smaller */
+  .manageacc-pill {
+    font-size: 11px;
+    padding: 5px 9px;
+  }
+
+  /* actions row looks like buttons row */
+  .manageacc-actions-col {
+    width: auto !important;
+  }
+  .manageacc-table tbody td.manageacc-actions-col {
+    justify-content: flex-end;
+    border-bottom: none;
+    padding-top: 10px;
+  }
+
+  .manageacc-actions {
+    gap: 12px;
+  }
+
+  .manageacc-iconbtn {
+    background: #f3f4f6;
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  .manageacc-iconbtn.danger {
+    background: rgba(220, 38, 38, 0.12);
+  }
+
+  /* avatar smaller */
+  .manageacc-avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 12px;
+  }
+
+  .manageacc-name { font-size: 13px; }
+  .manageacc-email { font-size: 11px; }
+}
+
+
+

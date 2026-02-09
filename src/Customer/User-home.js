@@ -11,11 +11,14 @@ import {
   FaCog,
   FaEdit,
   FaBoxOpen,
+  FaBars,
+  FaTimes,
 } from "react-icons/fa";
 
 function UserHomePage() {
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   // demo user (replace later with localStorage/user data)
@@ -57,6 +60,7 @@ function UserHomePage() {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsProfileOpen(false);
+        setIsMobileMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -67,6 +71,7 @@ function UserHomePage() {
     localStorage.clear();
     sessionStorage.clear();
     setIsProfileOpen(false);
+    setIsMobileMenuOpen(false);
     navigate("/");
   };
 
@@ -98,11 +103,22 @@ function UserHomePage() {
             <FaShoppingCart />
           </button>
 
-          <button className="uh-link" type="button">
+          {/* Desktop links */}
+          <button className="uh-link uh-desktop-only" type="button">
             About
           </button>
-          <button className="uh-link" type="button">
+          <button className="uh-link uh-desktop-only" type="button">
             Contact
+          </button>
+
+          {/* Mobile menu toggle */}
+          <button
+            className="uh-icon-btn uh-mobile-only"
+            type="button"
+            aria-label="Menu"
+            onClick={() => setIsMobileMenuOpen((v) => !v)}
+          >
+            {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
           </button>
 
           {/* PROFILE DROPDOWN */}
@@ -111,7 +127,10 @@ function UserHomePage() {
               className="uh-profile"
               type="button"
               title="Account"
-              onClick={() => setIsProfileOpen((v) => !v)}
+              onClick={() => {
+                setIsProfileOpen((v) => !v);
+                setIsMobileMenuOpen(false);
+              }}
             >
               <FaUserCircle />
             </button>
@@ -144,7 +163,6 @@ function UserHomePage() {
                   >
                     <FaKey /> <span>Passwords and security</span>
                   </button>
-
 
                   <button
                     className="uh-dd-item"
@@ -190,6 +208,18 @@ function UserHomePage() {
                 </div>
               </div>
             )}
+
+            {/* Mobile menu dropdown (About/Contact) */}
+            {isMobileMenuOpen && (
+              <div className="uh-mobile-menu">
+                <button className="uh-mobile-item" type="button">
+                  About
+                </button>
+                <button className="uh-mobile-item" type="button">
+                  Contact
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -231,7 +261,8 @@ function UserHomePage() {
                 <button
                   type="button"
                   className="uh-card-link"
-                  onClick={() => navigate("/user-cart")}>
+                  onClick={() => navigate("/user-cart")}
+                >
                   {p.cta}
                 </button>
               </div>
