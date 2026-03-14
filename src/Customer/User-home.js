@@ -21,12 +21,12 @@ function UserHomePage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // demo user (replace later with localStorage/user data)
-  const user = {
-    name: "Kathleen",
-    email: "kathbuhay@gmail.com",
+  // ✅ dynamic user (from localStorage + DB profile)
+  const [user, setUser] = useState({
+    name: "",
+    email: "",
     avatarUrl: "",
-  };
+  });
 
   const products = [
     {
@@ -54,6 +54,46 @@ function UserHomePage() {
       cta: "SHOP THANK YOU CARDS >>",
     },
   ];
+
+  // ✅ Load logged-in user for dropdown (same idea as User-customize-profile.js)
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (!stored) return;
+
+    let u;
+    try {
+      u = JSON.parse(stored);
+    } catch {
+      return;
+    }
+
+    if (!u?.id) return;
+
+    // show something immediately (fast fallback)
+    setUser((prev) => ({
+      ...prev,
+      name: u.firstName || u.name || "",
+      email: u.email || "",
+    }));
+
+    // then load full name from profile endpoint
+    fetch(`http://localhost:3000/api/user-profile/${u.id}`)
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.message || "Failed to load profile");
+
+        setUser((prev) => ({
+          ...prev,
+          name: data.name || prev.name || u.firstName || "User",
+          email: u.email || prev.email || "",
+          avatarUrl: prev.avatarUrl || "",
+        }));
+      })
+      .catch((err) => {
+        console.error(err);
+        // keep fallback if fetch fails
+      });
+  }, []);
 
   // close dropdown when clicking outside
   useEffect(() => {
@@ -147,8 +187,8 @@ function UserHomePage() {
                   </div>
 
                   <div className="uh-dd-info">
-                    <div className="uh-dd-name">{user.name}</div>
-                    <div className="uh-dd-email">{user.email}</div>
+                    <div className="uh-dd-name">{user.name || "User"}</div>
+                    <div className="uh-dd-email">{user.email || ""}</div>
                   </div>
                 </div>
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./User-password-security.css";
-
 import { FaArrowLeft, FaLock, FaShieldAlt } from "react-icons/fa";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 function UserPasswordSecurityPage() {
   const navigate = useNavigate();
@@ -22,6 +22,10 @@ function UserPasswordSecurityPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   const [criteria, setCriteria] = useState({
     uppercase: false,
@@ -227,44 +231,85 @@ function UserPasswordSecurityPage() {
           <form onSubmit={handleChangePassword} className="ups-form">
             <label className="ups-label">
               Current Password
-              <input
-                type="password"
-                className="ups-input"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter current password"
-                onPaste={blockClipboard}
-                onCopy={blockClipboard}
-                onCut={blockClipboard}
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showCurrentPassword ? "text" : "password"}
+                  className="ups-input"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password"
+                  onPaste={blockClipboard}
+                  onCopy={blockClipboard}
+                  onCut={blockClipboard}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="show-password-button"
+                >
+                  {showCurrentPassword ? (
+                    <MdVisibilityOff size={22} color="#555" />
+                  ) : (
+                    <MdVisibility size={22} color="#555" />
+                  )}
+                </button>
+              </div>
             </label>
 
             <label className="ups-label">
               New Password
-              <input
-                type="password"
-                className="ups-input"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Create a new password"
-                onPaste={blockClipboard}
-                onCopy={blockClipboard}
-                onCut={blockClipboard}
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  className="ups-input"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Create a new password"
+                  onPaste={blockClipboard}
+                  onCopy={blockClipboard}
+                  onCut={blockClipboard}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="show-password-button"
+                >
+                  {showNewPassword ? (
+                    <MdVisibilityOff size={22} color="#555" />
+                  ) : (
+                    <MdVisibility size={22} color="#555" />
+                  )}
+                </button>
+              </div>
             </label>
 
             <label className="ups-label">
               Confirm New Password
-              <input
-                type="password"
-                className="ups-input"
-                value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-                placeholder="Confirm new password"
-                onPaste={blockClipboard}
-                onCopy={blockClipboard}
-                onCut={blockClipboard}
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showConfirmNewPassword ? "text" : "password"}
+                  className="ups-input"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  onPaste={blockClipboard}
+                  onCopy={blockClipboard}
+                  onCut={blockClipboard}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowConfirmNewPassword(!showConfirmNewPassword)
+                  }
+                  className="show-password-button"
+                >
+                  {showConfirmNewPassword ? (
+                    <MdVisibilityOff size={22} color="#555" />
+                  ) : (
+                    <MdVisibility size={22} color="#555" />
+                  )}
+                </button>
+              </div>
             </label>
 
             <div className="ups-criteria">
@@ -275,9 +320,7 @@ function UserPasswordSecurityPage() {
               <div className={criteria.special ? "ok" : ""}>
                 • At least 1 special character
               </div>
-              <div className={criteria.length ? "ok" : ""}>
-                • 8–12 characters
-              </div>
+              <div className={criteria.length ? "ok" : ""}>• 8–12 characters</div>
             </div>
 
             <button className="ups-save" type="submit">

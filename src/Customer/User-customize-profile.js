@@ -37,7 +37,6 @@ function UserCustomizeProfile() {
     );
   };
 
-  // ================= LOAD PROFILE =================
   useEffect(() => {
     const stored = localStorage.getItem("user");
     if (!stored) return;
@@ -75,8 +74,7 @@ function UserCustomizeProfile() {
         setError(err.message || "Error loading profile");
       });
   }, []);
-
-  // ================= DIRTY CHECK =================
+  
   const isDirty = useMemo(() => {
     const normalize = (v) => String(v ?? "").trim();
     return (
@@ -88,24 +86,20 @@ function UserCustomizeProfile() {
     );
   }, [form, initialForm]);
 
-  // ================= VALIDATION =================
   const validate = () => {
     const name = String(form.name || "").trim();
     const phone = String(form.phone || "").trim();
     const birthday = String(form.birthday || "").trim();
 
     if (!name) return "Name is required.";
-
     if (!/^[A-Za-z.\-\s]+$/.test(name)) {
-      return "Name can only contain letters and spaces.";
+      return "Name must not contain numbers or special characters.";
     }
 
-    // ✅ phone must be +63 + 10 digits (no letters)
     if (!/^\+63\d{10}$/.test(phone)) {
       return "Phone number must be +63 followed by 10 digits.";
     }
 
-    // ✅ birthday must be 2011 or earlier
     if (birthday) {
       const year = new Date(birthday).getFullYear();
       if (year > 2011) {
@@ -116,7 +110,6 @@ function UserCustomizeProfile() {
     return "";
   };
 
-  // ================= SAVE =================
   const handleSave = async () => {
     setError("");
     setSuccess("");
@@ -148,7 +141,6 @@ function UserCustomizeProfile() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to update profile");
 
-      // sync navbar name
       const stored = localStorage.getItem("user");
       if (stored) {
         const user = JSON.parse(stored);
@@ -167,10 +159,9 @@ function UserCustomizeProfile() {
 
   const handleDiscard = () => {
     setShowDiscardModal(false);
-    setForm(initialForm); 
+    setForm(initialForm);
   };
 
-  // ✅ if dirty show modal, if not dirty just go back
   const handleBackOrCancel = () => {
     if (isDirty) {
       setShowDiscardModal(true);
@@ -179,7 +170,6 @@ function UserCustomizeProfile() {
     }
   };
 
-  // ================= RENDER =================
   return (
     <div className="ucp-adminlike-page">
       <button className="ucp-back-button" onClick={handleBackOrCancel}>
@@ -214,7 +204,6 @@ function UserCustomizeProfile() {
         {success && <div className="ucp-message ucp-message-success">{success}</div>}
 
         <div className="ucp-profile-form">
-          {/* NAME */}
           <div className="ucp-form-row">
             <label>Name</label>
             <input
@@ -224,7 +213,6 @@ function UserCustomizeProfile() {
             />
           </div>
 
-          {/* BIRTHDAY */}
           <div className="ucp-form-row">
             <label>Birthday</label>
             <input
@@ -235,7 +223,6 @@ function UserCustomizeProfile() {
             />
           </div>
 
-          {/* GENDER */}
           <div className="ucp-form-row">
             <label>Gender</label>
             <select
@@ -250,7 +237,6 @@ function UserCustomizeProfile() {
             </select>
           </div>
 
-          {/* PHONE */}
           <div className="ucp-form-row">
             <label>Phone Number</label>
             <input
@@ -259,14 +245,13 @@ function UserCustomizeProfile() {
               onChange={(e) => {
                 let val = e.target.value.replace(/[^0-9+]/g, "");
                 if (!val.startsWith("+63")) val = "+63";
-                if (val.length > 13) return; // +63 + 10 digits
+                if (val.length > 13) return;
                 setForm({ ...form, phone: val });
               }}
               placeholder="+63XXXXXXXXXX"
             />
           </div>
 
-          {/* ADDRESS */}
           <div className="ucp-form-row ucp-form-row-textarea">
             <label>Address</label>
             <textarea
@@ -278,7 +263,6 @@ function UserCustomizeProfile() {
         </div>
       </div>
 
-      {/* TOAST */}
       {toast.show && (
         <div
           className={`ucp-toast ${
@@ -289,7 +273,6 @@ function UserCustomizeProfile() {
         </div>
       )}
 
-      {/* ✅ DISCARD MODAL (NOW USES YOUR CSS CLASSES) */}
       {showDiscardModal && (
         <div className="ucp-discard-overlay" onClick={() => setShowDiscardModal(false)}>
           <div className="ucp-discard-modal" onClick={(e) => e.stopPropagation()}>

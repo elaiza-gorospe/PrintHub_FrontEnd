@@ -10,7 +10,6 @@ function getInitials(name = "") {
   return (first + last).toUpperCase();
 }
 
-// ✅ date-only formatter (YYYY-MM-DD)
 function formatDateOnly(value) {
   if (!value) return "";
   const d = new Date(value);
@@ -19,22 +18,19 @@ function formatDateOnly(value) {
 }
 
 function AdminManageAccounts() {
-  //DB data now
   const [users, setUsers] = useState([]);
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  // Selected user for edit/delete
+  // selected user for edit/delete
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // Form state (used by Add + Edit)
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -43,7 +39,21 @@ function AdminManageAccounts() {
     password: "",
   });
 
-  // fetch users from DB
+  // get currently logged-in user (admin)
+  const currentUser = useMemo(() => {
+    try {
+      return (
+        JSON.parse(localStorage.getItem("adminUser")) ||
+        JSON.parse(localStorage.getItem("user")) ||
+        null
+      );
+    } catch {
+      return null;
+    }
+  }, []);
+
+
+  // fetch users from db
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -94,6 +104,22 @@ function AdminManageAccounts() {
       password: "",
     });
     setShowAddModal(true);
+  };
+  // ✅ check if row user is the currently logged-in admin
+  const isSelf = (u) => {
+    if (!u || !currentUser) return false;
+
+    // best check: ID
+    if (currentUser.id != null && u.id != null) {
+      return String(u.id) === String(currentUser.id);
+    }
+
+    // fallback: email
+    if (currentUser.email && u.email) {
+      return currentUser.email.toLowerCase() === u.email.toLowerCase();
+    }
+
+    return false;
   };
 
   const handleEdit = (user) => {
@@ -355,12 +381,14 @@ function AdminManageAccounts() {
 
                     <button
                       type="button"
-                      className="manageacc-iconbtn danger"
-                      title="Delete"
-                      onClick={() => handleDelete(u)}
+                      className={`manageacc-iconbtn danger ${isSelf(u) ? "disabled" : ""}`}
+                      title={isSelf(u) ? "You can't delete your own account" : "Delete"}
+                      onClick={() => !isSelf(u) && handleDelete(u)}
+                      disabled={isSelf(u)}
                     >
                       <FaTrash size={16} />
                     </button>
+
                   </div>
                 </td>
               </tr>

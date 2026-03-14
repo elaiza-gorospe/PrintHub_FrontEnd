@@ -33,11 +33,8 @@ function UserRegistrationPage() {
   const [phoneError, setPhoneError] = useState('');
   const navigate = useNavigate();
 
-  // ===== MODAL STATES (ADDED) =====
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
-
-  // ===================== ADDED HANDLERS (ONLY VALIDATION) =====================
 
   const handleNameChange = (e) => {
     const { name, value } = e.target;
@@ -47,27 +44,30 @@ function UserRegistrationPage() {
   };
 
   const handlePhoneChange = (e) => {
-    // Remove non-numeric characters
-    let digits = e.target.value.replace(/[^0-9]/g, '');
+    // keep only digits
+    let digits = e.target.value.replace(/[^0-9]/g, "");
 
-    // Always start with 63
-    if (!digits.startsWith('63')) digits = '63';
+    // allow user to type 09xxxxxxxxx or 9xxxxxxxxx -> normalize to 63...
+    if (digits.startsWith("09")) digits = "63" + digits.slice(1); // 09... -> 639...
+    if (digits.startsWith("9")) digits = "63" + digits;          // 9...  -> 639...
 
-    // Limit to 63 + 10 digits
+    // always start with 63
+    if (!digits.startsWith("63")) digits = "63";
+
+    // max: 63 + 10 digits = 12 total digits
     if (digits.length > 12) digits = digits.slice(0, 12);
 
-    // Update formData
-    setFormData(prev => ({ ...prev, phone: '+' + digits }));
+    setFormData((prev) => ({ ...prev, phone: "+" + digits }));
 
-    // Validate length (must have 10 digits after 63)
+    // validation: must be 639 + 9 digits  => total 12 digits and starts with 639
     if (digits.length < 12) {
-      setPhoneError('Phone number must have 10 digits after +63');
+      setPhoneError("Phone number must be +639 followed by 9 digits");
+    } else if (!/^639\d{9}$/.test(digits)) {
+      setPhoneError("Phone number must start with +639");
     } else {
-      setPhoneError('');
+      setPhoneError("");
     }
   };
-
-  // ===================== ORIGINAL CODE (UNCHANGED) =====================
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -135,11 +135,12 @@ function UserRegistrationPage() {
       return;
     }
 
-    // Phone validation on submit
-    if (phone.replace(/[^0-9]/g, '').length < 12) {
-      setPhoneError('Phone number must have 10 digits after +63');
+    const phoneDigits = phone.replace(/[^0-9]/g, '');
+    if (!/^639\d{9}$/.test(phoneDigits)) {
+      setPhoneError('Phone number must be +639 followed by 9 digits');
       return;
     }
+
 
     if (!agreeTerms) {
       setError('Please agree to the terms and conditions');

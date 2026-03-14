@@ -428,3 +428,23 @@ img, svg {
   color: #0c502b;
   font-weight: 600;
 }
+.cp-subtext {
+  font-size: 13px;
+  color: #666;
+  margin: 6px 0 12px;
+  text-align: center;
+}
+/* ✅ Inline message (matches screenshot style) */
+.profile-msg {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.profile-msg-error {
+  background: #ffe6ea;
+  border: 1px solid #ffb3c1;
+  color: #b00020;
+}

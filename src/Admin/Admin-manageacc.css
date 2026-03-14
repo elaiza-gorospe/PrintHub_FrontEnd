@@ -685,6 +685,9 @@
   .manageacc-name { font-size: 13px; }
   .manageacc-email { font-size: 11px; }
 }
-
-
-
+.manageacc-iconbtn.disabled,
+.manageacc-iconbtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}

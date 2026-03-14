@@ -1274,3 +1274,70 @@
     margin-right: 0;
   }
 }
+/* Add this at the VERY BOTTOM of Admin-dashboard.css (logout confirm modal only) */
+.ad-logout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.ad-logout-modal {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e9eef3;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+  padding: 18px;
+}
+
+.ad-logout-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.ad-logout-text {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ad-logout-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.ad-logout-btn {
+  border: none;
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 10px 12px;
+  min-height: 44px;
+  font-weight: 900;
+}
+
+.ad-logout-btn.ghost {
+  background: rgba(51, 80, 44, 0.10);
+  color: #33502c;
+  border: 1px solid rgba(51, 80, 44, 0.20);
+}
+
+.ad-logout-btn.danger {
+  background: rgba(231, 76, 60, 0.16);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.28);
+}
+
+.ad-logout-btn:hover {
+  filter: brightness(0.97);
+}

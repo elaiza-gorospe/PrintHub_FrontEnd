@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './User-reset-password.css';
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
 function UserResetPasswordPage() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // ✅ criteria states
     const [criteria, setCriteria] = useState({
@@ -44,6 +48,11 @@ function UserResetPasswordPage() {
             setConfirmPasswordError('');
         }
     };
+
+    const nocopypaste = (e) => {
+        e.preventDefault();
+    };
+
 
     // ✅ handle confirm password typing
     const handleConfirmPasswordChange = (e) => {
@@ -122,11 +131,26 @@ function UserResetPasswordPage() {
                     <div className="form-group">
                         <label>New Password</label>
                         <input
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             value={newPassword}
                             onChange={handlePasswordChange}
                             placeholder="Enter new password"
+                            onCopy={nocopypaste}
+                            onPaste={nocopypaste}
+                            onCut={nocopypaste}
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="show-password-button"
+                            style={{ paddingTop: '35px' }}
+                        >
+                            {showPassword ? (
+                                <MdVisibilityOff size={22} color="#555" />
+                            ) : (
+                                <MdVisibility size={22} color="#555" />
+                            )}
+                        </button>
                     </div>
 
                     {/* Live Criteria */}
@@ -143,11 +167,26 @@ function UserResetPasswordPage() {
                     <div className="form-group">
                         <label>Confirm Password</label>
                         <input
-                            type="password"
+                            type={showConfirmPassword ? 'text' : 'password'}
                             value={confirmPassword}
                             onChange={handleConfirmPasswordChange}
                             placeholder="Confirm new password"
+                            onCopy={nocopypaste}
+                            onPaste={nocopypaste}
+                            onCut={nocopypaste}
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="show-password-button"
+                            style={{ paddingTop: '35px' }}
+                        >
+                            {showConfirmPassword ? (
+                                <MdVisibilityOff size={22} color="#555" />
+                            ) : (
+                                <MdVisibility size={22} color="#555" />
+                            )}
+                        </button>
                     </div>
 
                     {confirmPasswordError && (

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./User-account-settings.css";
 
@@ -16,11 +16,48 @@ function UserAccountSettings() {
     { id: "account", label: "Account Management" },
   ];
 
-  // demo user (replace later)
-  const user = {
-    name: "Kathleen",
+  const [user, setUser] = useState({
+    name: "",
     role: "Customer",
-  };
+  });
+
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (!stored) return;
+
+    let u;
+    try {
+      u = JSON.parse(stored);
+    } catch {
+      return;
+    }
+
+    if (!u?.id) return;
+
+    setUser((prev) => ({
+      ...prev,
+      name: u.firstName || u.name || prev.name || "",
+      role:
+        String(u.role || prev.role || "Customer")
+          .charAt(0)
+          .toUpperCase() +
+        String(u.role || prev.role || "Customer").slice(1),
+    }));
+
+    fetch(`http://localhost:3000/api/user-profile/${u.id}`)
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.message || "Failed to load profile");
+
+        setUser((prev) => ({
+          ...prev,
+          name: data.name || prev.name || u.firstName || "User",
+        }));
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -38,7 +75,6 @@ function UserAccountSettings() {
 
   return (
     <div className="user-settings-dashboard">
-      {/* Sidebar */}
       <div className={`us-sidebar ${isCollapsed ? "collapsed" : ""}`}>
         <div className="us-sidebar-header">
           {!isCollapsed && <h2 className="us-sidebar-title">Settings</h2>}
@@ -64,13 +100,15 @@ function UserAccountSettings() {
               </div>
             </div>
             <div className="us-user-details">
-              <h4 className="us-user-name">{user.name}</h4>
+              <h4 className="us-user-name">{user.name || "User"}</h4>
               <p className="us-user-role">{user.role}</p>
             </div>
           </div>
         ) : (
           <div className="us-user-collapsed">
-            <div className="us-avatar-small">U</div>
+            <div className="us-avatar-small">
+              {((user.name || "U")[0] || "U").toUpperCase()}
+            </div>
           </div>
         )}
 
@@ -105,7 +143,6 @@ function UserAccountSettings() {
         </div>
       </div>
 
-      {/* Main Content Area */}
       <main className="us-content">
         <header className="us-header">
           <div className="us-header-left">
@@ -122,7 +159,6 @@ function UserAccountSettings() {
         </header>
 
         <div className="us-wrapper">
-          {/* Notifications */}
           {activeItem === "notifications" && (
             <div className="us-card">
               <h2>Email & App Notifications</h2>
@@ -156,7 +192,6 @@ function UserAccountSettings() {
             </div>
           )}
 
-          {/* Print Files & Designs */}
           {activeItem === "files" && (
             <div className="us-card">
               <h2>Print Files & Designs</h2>
@@ -179,7 +214,6 @@ function UserAccountSettings() {
             </div>
           )}
 
-          {/* Billing Method */}
           {activeItem === "billing" && (
             <div className="us-card">
               <h2>Billing Method</h2>
@@ -202,7 +236,6 @@ function UserAccountSettings() {
             </div>
           )}
 
-          {/* Security */}
           {activeItem === "security" && (
             <div className="us-card">
               <h2>Security</h2>
@@ -225,7 +258,6 @@ function UserAccountSettings() {
             </div>
           )}
 
-          {/* Preferences */}
           {activeItem === "preference" && (
             <div className="us-card">
               <h2>Preferences</h2>
@@ -258,7 +290,6 @@ function UserAccountSettings() {
             </div>
           )}
 
-          {/* Account Management */}
           {activeItem === "account" && (
             <div className="us-card">
               <h2>Account Management</h2>

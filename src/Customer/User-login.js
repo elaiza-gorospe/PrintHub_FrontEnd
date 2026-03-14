@@ -1,118 +1,168 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import backgroundImage from '../assets/images/pmg-image.jpg';
-import './User-login.css';
-import { MdVisibility, MdVisibilityOff } from 'react-icons/md'; // ✅ ADD
+// User-login.js (FULL UPDATED FILE — adds Reactivation OTP modal + logic, no UI/layout changes)
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import backgroundImage from "../assets/images/pmg-image.jpg";
+import "./User-login.css";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md"; // ✅ ADD
 
 function UserLoginPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
-    const [error, setError] = useState('');
+    const [error, setError] = useState("");
 
     const [loginAttempts, setLoginAttempts] = useState(0);
     const [showForgotModal, setShowForgotModal] = useState(false);
 
-    // 🔹 reset password states (kept - not used in this new flow, but unchanged as you had it)
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [resetError, setResetError] = useState('');
-    const [resetSuccess, setResetSuccess] = useState('');
-
-    // ✅ NEW: show/hide password
+    // ✅ show/hide password
     const [showPassword, setShowPassword] = useState(false);
+
+    // ✅ Reactivation OTP modal states (NEW)
+    const [showReactivateModal, setShowReactivateModal] = useState(false);
+    const [reactivateOtp, setReactivateOtp] = useState("");
+    const [reactivateMsg, setReactivateMsg] = useState("");
+
+    const blockClipboard = (e) => {
+        e.preventDefault();
+    };
 
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
+        setError("");
 
         if (!email) {
-            setError('Please fill in Email field');
+            setError("Please fill in Email field");
             return;
         } else if (!password) {
-            setError('Please fill in Password field');
+            setError("Please fill in Password field");
             return;
         }
 
         if (!/\S+@\S+\.\S+/.test(email)) {
-            setError('Please enter a valid email address');
+            setError("Please enter a valid email address");
             return;
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const response = await fetch("http://localhost:3000/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
+                // ✅ archived account -> show reactivation OTP modal
+                if (data?.needsReactivation) {
+                    setReactivateMsg(
+                        data.message || "This account is archived. OTP sent for reactivation."
+                    );
+                    setShowReactivateModal(true);
+                    return;
+                }
+
                 setLoginAttempts((prev) => prev + 1);
 
                 if (loginAttempts + 1 >= 3) {
                     setShowForgotModal(true);
                 }
 
-                setError(data.message || 'Login failed');
+                setError(data.message || "Login failed");
                 return;
             }
 
             setLoginAttempts(0);
 
             // ✅ SAVE LOGGED IN USER (so Admin-dashboard can read role)
-            localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem("user", JSON.stringify(data.user));
 
             // ✅ Role routing: admin/staff/customer
-            if (data.user.role === 'admin') {
-                navigate('/admin-dashboard');
-            } else if (data.user.role === 'staff') {
-                navigate('/admin-dashboard'); // staff uses same dashboard but no Manage Accounts
+            if (data.user.role === "admin") {
+                navigate("/admin-dashboard");
+            } else if (data.user.role === "staff") {
+                navigate("/admin-dashboard"); // staff uses same dashboard but no Manage Accounts
             } else {
-                navigate('/user-home'); // customer
+                navigate("/user-home"); // customer
             }
-
         } catch (err) {
-            setError('Network error, please try again later');
+            setError("Network error, please try again later");
         }
     };
 
-    // ✅ Send OTP for Forgot Password (NEW)
+    // ✅ Send OTP for Forgot Password (existing)
     const handleForgotSendOtp = async () => {
-        setError('');
+        setError("");
 
         if (!email) {
-            setError('Please enter your email');
+            setError("Please enter your email");
             return;
         }
 
         if (!/\S+@\S+\.\S+/.test(email)) {
-            setError('Please enter a valid email address');
+            setError("Please enter a valid email address");
             return;
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/password/send-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const response = await fetch("http://localhost:3000/api/password/send-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                setError(data.message || 'Failed to send OTP');
+                setError(data.message || "Failed to send OTP");
                 return;
             }
 
             setShowForgotModal(false);
-            navigate('/user-forgot-otp', { state: { email } });
-
+            navigate("/user-forgot-otp", { state: { email } });
         } catch (err) {
-            setError('Network error, please try again later');
+            setError("Network error, please try again later");
+        }
+    };
+
+    // ✅ Verify Reactivation OTP (NEW)
+    const handleVerifyReactivationOtp = async () => {
+        setError("");
+
+        if (!email) {
+            setError("Email is required");
+            return;
+        }
+
+        if (!reactivateOtp || reactivateOtp.length !== 6) {
+            setError("Please enter the 6-digit OTP");
+            return;
+        }
+
+        try {
+            const res = await fetch("http://localhost:3000/api/reactivate/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, otp: reactivateOtp }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                setError(data.message || "Reactivation failed");
+                return;
+            }
+
+            setShowReactivateModal(false);
+            setReactivateOtp("");
+            setReactivateMsg("");
+            setError("");
+
+            alert("Account reactivated! Please login again.");
+        } catch (e) {
+            setError("Network error");
         }
     };
 
@@ -144,13 +194,16 @@ function UserLoginPage() {
                             </div>
 
                             {/* ✅ PASSWORD WITH EYE ICON */}
-                            <div className="form-group" style={{ position: 'relative' }}>
+                            <div className="form-group" style={{ position: "relative" }}>
                                 <label>Password</label>
                                 <input
-                                    type={showPassword ? 'text' : 'password'}
+                                    type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter your password"
+                                    onPaste={blockClipboard}
+                                    onCopy={blockClipboard}
+                                    onCut={blockClipboard}
                                 />
 
                                 <button
@@ -159,19 +212,20 @@ function UserLoginPage() {
                                     className="show-password-button"
                                     style={{ paddingTop: "35px" }}
                                 >
-                                    {showPassword
-                                        ? <MdVisibilityOff size={22} color="#555" />
-                                        : <MdVisibility size={22} color="#555" />
-                                    }
+                                    {showPassword ? (
+                                        <MdVisibilityOff size={22} color="#555" />
+                                    ) : (
+                                        <MdVisibility size={22} color="#555" />
+                                    )}
                                 </button>
                             </div>
 
                             <div className="form-options">
-                                {/* ✅ make it open modal */}
+                                {/* ✅ open modal */}
                                 <span
                                     className="forgot-password"
                                     onClick={() => setShowForgotModal(true)}
-                                    style={{ cursor: 'pointer' }}
+                                    style={{ cursor: "pointer" }}
                                 >
                                     Forgot password?
                                 </span>
@@ -184,8 +238,8 @@ function UserLoginPage() {
 
                         <div className="login-footer">
                             <p>
-                                Don't have an account?{' '}
-                                <a onClick={() => navigate('/user-register')}>Create one here</a>
+                                Don't have an account?{" "}
+                                <a onClick={() => navigate("/user-register")}>Create one here</a>
                             </p>
                         </div>
                     </div>
@@ -195,13 +249,13 @@ function UserLoginPage() {
                     className="login-image-section"
                     style={{
                         backgroundImage: `url(${backgroundImage})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
                     }}
                 />
             </div>
 
-            {/* 🔹 Forgot Password Modal */}
+            {/* 🔹 Forgot Password Modal (EXISTING) */}
             {showForgotModal && (
                 <div className="forgot-password-modal">
                     <div className="modal-content">
@@ -225,6 +279,45 @@ function UserLoginPage() {
                         <button
                             className="modal-button cancel"
                             onClick={() => setShowForgotModal(false)}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ✅ Reactivation OTP Modal (NEW) */}
+            {showReactivateModal && (
+                <div className="forgot-password-modal">
+                    <div className="modal-content">
+                        <h2>Reactivate Account</h2>
+                        <p>
+                            {reactivateMsg ||
+                                "This account is archived. Enter the OTP sent to your email to reactivate it."}
+                        </p>
+
+                        <div className="form-group">
+                            <label>OTP</label>
+                            <input
+                                type="text"
+                                value={reactivateOtp}
+                                onChange={(e) => setReactivateOtp(e.target.value.replace(/\D/g, ""))}
+                                maxLength={6}
+                                placeholder="Enter 6-digit OTP"
+                            />
+                        </div>
+
+                        <button className="modal-button" onClick={handleVerifyReactivationOtp}>
+                            Verify OTP
+                        </button>
+
+                        <button
+                            className="modal-button cancel"
+                            onClick={() => {
+                                setShowReactivateModal(false);
+                                setReactivateOtp("");
+                                setReactivateMsg("");
+                            }}
                         >
                             Cancel
                         </button>

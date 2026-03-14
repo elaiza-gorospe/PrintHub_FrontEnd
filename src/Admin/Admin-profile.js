@@ -12,7 +12,8 @@ function AdminProfile() {
     email: "",
     role: "",
     birthday: "",
-    gender: "", // ✅ added
+    gender: "",
+    phone: "+63", // ✅ +63 pre-filled
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -40,6 +41,18 @@ function AdminProfile() {
 
   // ✅ ADDED: OTP sending loading
   const [otpLoading, setOtpLoading] = useState(false);
+
+  // ✅ ADDED: Inline name validation message (replaces alert for name only)
+  const [nameError, setNameError] = useState("");
+
+  // ✅ ADDED: name validation (not empty, no special characters)
+  // Allows letters, spaces, dot, dash
+  const nameRegex = /^[A-Za-z.\-\s]+$/;
+  const isValidName = (value) => {
+    const v = String(value || "").trim();
+    if (!v) return false;
+    return nameRegex.test(v);
+  };
 
   // ✅ Load profile from DB
   useEffect(() => {
@@ -72,6 +85,7 @@ function AdminProfile() {
           role: user.role || "",
           birthday: data.birthday || "",
           gender: data.gender || "",
+          phone: (data.phone && String(data.phone).trim() !== "" ? data.phone : "+63"), // ✅ fallback to +63
         });
       })
       .catch((err) => {
@@ -84,7 +98,11 @@ function AdminProfile() {
     setAdmin({ ...admin, [e.target.name]: e.target.value });
   };
 
-  const handleEdit = () => setIsEditing(true);
+  const handleEdit = () => {
+    setIsEditing(true);
+    // ✅ ADDED: clear name error when editing
+    setNameError("");
+  };
 
   const handleSave = async () => {
     const stored = localStorage.getItem('user');
@@ -106,6 +124,26 @@ function AdminProfile() {
       return;
     }
 
+    // ✅ ADDED: First/Last name validation (NO alerts — shows inline message)
+    setNameError("");
+    if (!isValidName(admin.firstName) || !isValidName(admin.lastName)) {
+      setNameError("Name is required and must not contain special character.");
+      return;
+    }
+
+    // ✅ Philippines phone validation
+    // Allowed:
+    // - "+63" only (treated as empty/not provided)
+    // - "+639XXXXXXXXX" (PH mobile)
+    const phoneTrim = (admin.phone || "").trim();
+    if (phoneTrim !== "" && phoneTrim !== "+63") {
+      const phoneRegex = /^\+639\d{9}$/;
+      if (!phoneRegex.test(phoneTrim)) {
+        alert("Phone must be a Philippine mobile number: +639 followed by 9 digits");
+        return;
+      }
+    }
+
     try {
       const res = await fetch(`http://localhost:3000/api/user-profile/${user.id}`, {
         method: "PUT",
@@ -118,7 +156,9 @@ function AdminProfile() {
 
           birthday: admin.birthday,
           gender: admin.gender,
-          phone: "+63" + "0000000000",
+
+          // ✅ if only "+63", send empty so backend treats as not provided
+          phone: phoneTrim === "+63" ? "" : phoneTrim,
           address: ""
         }),
       });
@@ -133,6 +173,9 @@ function AdminProfile() {
       }));
 
       setIsEditing(false);
+      // ✅ ADDED: clear name error on successful save
+      setNameError("");
+
       alert("Profile Updated Successfully!");
     } catch (err) {
       console.error(err);
@@ -365,6 +408,13 @@ function AdminProfile() {
           </button>
         </div>
 
+        {/* ✅ ADDED: inline error box like your screenshot */}
+        {nameError && (
+          <div className="profile-msg profile-msg-error">
+            {nameError}
+          </div>
+        )}
+
         {/* EDITABLE TABLE / FORM */}
         <div className="profile-form">
 
@@ -401,16 +451,46 @@ function AdminProfile() {
             />
           </div>
 
+          {/* ✅ PHONE NUMBER with +63 locked */}
           <div className="form-row">
-            <label>Role</label>
+            <label>Phone Number</label>
             <input
               type="text"
+              name="phone"
+              value={admin.phone}
+              disabled={!isEditing}
+              placeholder="+639XXXXXXXXX"
+              inputMode="numeric"
+              maxLength={13}
+              onChange={(e) => {
+                let value = e.target.value || "";
+
+                // Always keep +63
+                if (!value.startsWith("+63")) value = "+63";
+
+                // Only allow digits after +63
+                const restDigits = value.slice(3).replace(/\D/g, "");
+
+                // Build final value
+                const next = "+63" + restDigits;
+
+                setAdmin({ ...admin, phone: next });
+              }}
+            />
+          </div>
+
+          {/* <div className="form-row">
+            <label>Role</label>
+            <select
               name="role"
               value={admin.role}
               onChange={handleChange}
               disabled={!isEditing}
-            />
-          </div>
+            >
+              <option value="admin">admin</option>
+              <option value="staff">staff</option>
+            </select>
+          </div> */}
 
           {/* ✅ Gender */}
           <div className="form-row">
@@ -448,6 +528,7 @@ function AdminProfile() {
         <div className="cp-modal-overlay" onClick={closeChangePassword}>
           <div className="cp-modal" onClick={(e) => e.stopPropagation()}>
             <h3 className="cp-title">Change Password</h3>
+            <p className="cp-subtext">OTP needed to change the password</p>
 
             {/* ✅ Send OTP button ONLY (form removed) */}
             <button

@@ -1,3 +1,4 @@
+// Admin-dashboard.js (FULL UPDATED FILE — adds Logout confirmation modal ONLY, no other UI/layout changes)
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Admin-dashboard.css";
@@ -35,6 +36,9 @@ function AdminDashboard() {
   const [productsCategory, setProductsCategory] = useState("all");
 
   const [settingsTab, setSettingsTab] = useState("general");
+
+  // ✅ NEW: Logout confirm modal
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // ✅ close mobile sidebar if resized to desktop
   useEffect(() => {
@@ -91,7 +95,8 @@ function AdminDashboard() {
     setIsMobileSidebarOpen(false);
   };
 
-  const handleLogout = () => {
+  // ✅ unchanged logout logic moved here (same behavior)
+  const doLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("adminToken");
@@ -105,8 +110,14 @@ function AdminDashboard() {
     });
 
     setIsMobileSidebarOpen(false);
+    setShowLogoutModal(false);
     setTimeout(() => navigate("/"), 100);
     alert("You have been logged out successfully!");
+  };
+
+  // ✅ NEW: open confirm modal instead of immediate logout
+  const handleLogout = () => {
+    setShowLogoutModal(true);
   };
 
   // If staff somehow lands on customers, kick back to dashboard
@@ -201,6 +212,42 @@ function AdminDashboard() {
           aria-label="Close menu"
           onClick={() => setIsMobileSidebarOpen(false)}
         />
+      )}
+
+      {/* ✅ NEW: Logout confirmation modal */}
+      {showLogoutModal && (
+        <div
+          className="ad-logout-overlay"
+          onMouseDown={() => setShowLogoutModal(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="ad-logout-modal"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <h3 className="ad-logout-title">Log out?</h3>
+            <p className="ad-logout-text">Are you sure you want to logout?</p>
+
+            <div className="ad-logout-actions">
+              <button
+                type="button"
+                className="ad-logout-btn ghost"
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="ad-logout-btn danger"
+                onClick={doLogout}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Sidebar */}
@@ -332,7 +379,7 @@ function AdminDashboard() {
                   <div className="stat-top">
                     <div>
                       <h3>Total Revenue</h3>
-                      <p className="stat-number">$45,678</p>
+                      <p className="stat-number">₱ 45,678</p>
                     </div>
                     <div className="stat-icon">
                       <FaMoneyBillWave />
