@@ -68,13 +68,13 @@ const productsData = [
     category: "Clothing/Apparel",
     title: "T-shirt Printing",
     image:
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1564864310852-e1e98eb07010?q=80&w=1476&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     description:
       "High-quality t-shirt printing for personal use, business uniforms, and event merchandise.",
     gallery: [
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80",
-      "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=900&q=80",
-      "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1704095371948-58d1f95d8064?q=80&w=1474&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "https://images.unsplash.com/photo-1730952773686-feb6da6156af?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "https://images.unsplash.com/photo-1579565577762-78f2d9dd042e?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     ],
     sizes: ["Small", "Medium", "Large", "XL"],
     materials: ["Cotton Shirt", "Dry Fit Shirt"],
@@ -96,13 +96,13 @@ const productsData = [
     category: "Labels & Packaging",
     title: "Sticker Printing",
     image:
-      "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1593747176945-ef77e62547eb?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     description:
       "Custom sticker printing for packaging, branding, labeling, and product decoration.",
     gallery: [
-      "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=900&q=80",
-      "https://images.unsplash.com/photo-1620656798579-1984d7fce7f9?auto=format&fit=crop&w=900&q=80",
-      "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1773504356139-3600da3289ca?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "https://images.unsplash.com/photo-1773904215704-139e9ff8c894?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "https://images.unsplash.com/photo-1616573651508-6fb135fc59f6?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dt&fit=crop&w=900&q=80",
     ],
     sizes: ["2 x 2 in", "3 x 3 in", "Custom size"],
     materials: ["Matte Sticker Paper", "Gloss Sticker Paper", "Vinyl"],
