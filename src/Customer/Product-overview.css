@@ -10,6 +10,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-wrap: wrap;
 }
 
 .po-back{
@@ -69,11 +70,14 @@
   background: white;
   border: 1px solid rgba(0,0,0,0.10);
   border-radius: 12px;
-  padding: 18px;
+  padding: 16px;
   cursor: pointer;
   text-align: center;
   box-shadow: 0 6px 16px rgba(0,0,0,0.05);
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .po-card:hover{
@@ -83,7 +87,8 @@
 }
 
 .po-img{
-  height: 170px;
+  width: 100%;
+  height: 190px;
   border-radius: 10px;
   background: #f3f5f7;
   border: 1px solid rgba(0,0,0,0.06);
@@ -97,27 +102,45 @@
 .po-img img{
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  display: block;
 }
-
 
 .po-name{
   font-size: 14px;
   font-weight: 700;
   color: #152b1a;
+  line-height: 1.4;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 1050px){
-  .po-grid{ grid-template-columns: repeat(3, 1fr); }
+  .po-grid{
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 780px){
-  .po-grid{ grid-template-columns: repeat(2, 1fr); }
+  .po-grid{
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 500px){
-  .po-grid{ grid-template-columns: 1fr; }
-  .po-title{ font-size: 26px; }
+  .po-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .po-title{
+    font-size: 26px;
+  }
+
+  .po-img{
+    height: 210px;
+  }
 }
 
 /* SERVICES OFFERED */
@@ -157,8 +180,13 @@
 
 /* responsive */
 @media (max-width: 900px){
-  .po-services-grid{ grid-template-columns: repeat(2, 1fr); }
+  .po-services-grid{
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
+
 @media (max-width: 520px){
-  .po-services-grid{ grid-template-columns: 1fr; }
+  .po-services-grid{
+    grid-template-columns: 1fr;
+  }
 }

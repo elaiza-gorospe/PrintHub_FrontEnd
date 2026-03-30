@@ -21,7 +21,6 @@ function UserHomePage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // ✅ dynamic user (from localStorage + DB profile)
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -34,28 +33,35 @@ function UserHomePage() {
       title: "Business Cards",
       desc: "Make first impressions last with premium business cards.",
       cta: "SHOP BUSINESS CARDS >>",
+      image:
+        "https://images.unsplash.com/photo-1718670013921-2f144aba173a?q=80&w=1360&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
     {
       id: 2,
       title: "Stickers & Labels",
       desc: "Accentuate your products with unique labels and stickers.",
       cta: "SHOP STICKERS & LABELS >>",
+      image:
+        "https://images.unsplash.com/photo-1773904215704-139e9ff8c894?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
     {
       id: 3,
       title: "Product Hang Tags",
       desc: "Add more information about your products with hang tags.",
       cta: "SHOP HANG TAGS >>",
+      image:
+        "https://images.unsplash.com/photo-1734467241447-44b43f8bc051?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
     {
       id: 4,
       title: "Note Cards",
       desc: "Thank-you cards are always welcome. Gain trust with customers.",
       cta: "SHOP THANK YOU CARDS >>",
+      image:
+        "https://plus.unsplash.com/premium_photo-1726863046363-3b16359b9477?q=80&w=1381&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
   ];
 
-  // ✅ Load logged-in user for dropdown (same idea as User-customize-profile.js)
   useEffect(() => {
     const stored = localStorage.getItem("user");
     if (!stored) return;
@@ -69,14 +75,12 @@ function UserHomePage() {
 
     if (!u?.id) return;
 
-    // show something immediately (fast fallback)
     setUser((prev) => ({
       ...prev,
       name: u.firstName || u.name || "",
       email: u.email || "",
     }));
 
-    // then load full name from profile endpoint
     fetch(`http://localhost:3000/api/user-profile/${u.id}`)
       .then(async (res) => {
         const data = await res.json();
@@ -91,11 +95,9 @@ function UserHomePage() {
       })
       .catch((err) => {
         console.error(err);
-        // keep fallback if fetch fails
       });
   }, []);
 
-  // close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -103,6 +105,7 @@ function UserHomePage() {
         setIsMobileMenuOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -117,14 +120,12 @@ function UserHomePage() {
 
   return (
     <div className="uh-page">
-      {/* NAVBAR */}
       <nav className="uh-nav">
         <div className="uh-logo" onClick={() => navigate("/user-home")}>
           <span className="uh-logo-text">PMG</span>
           <span className="uh-logo-sub">PRINTING HOUSE</span>
         </div>
 
-        {/* SEARCH */}
         <div className="uh-search">
           <input type="text" placeholder="Search products or services" />
           <button className="uh-search-btn" type="button" aria-label="Search">
@@ -133,7 +134,6 @@ function UserHomePage() {
         </div>
 
         <div className="uh-actions">
-          {/* CART */}
           <button
             className="uh-icon-btn"
             type="button"
@@ -143,7 +143,6 @@ function UserHomePage() {
             <FaShoppingCart />
           </button>
 
-          {/* Desktop links */}
           <button className="uh-link uh-desktop-only" type="button">
             About
           </button>
@@ -151,7 +150,6 @@ function UserHomePage() {
             Contact
           </button>
 
-          {/* Mobile menu toggle */}
           <button
             className="uh-icon-btn uh-mobile-only"
             type="button"
@@ -161,7 +159,6 @@ function UserHomePage() {
             {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
           </button>
 
-          {/* PROFILE DROPDOWN */}
           <div className="uh-profile-wrap" ref={dropdownRef}>
             <button
               className="uh-profile"
@@ -249,7 +246,6 @@ function UserHomePage() {
               </div>
             )}
 
-            {/* Mobile menu dropdown (About/Contact) */}
             {isMobileMenuOpen && (
               <div className="uh-mobile-menu">
                 <button className="uh-mobile-item" type="button">
@@ -264,7 +260,6 @@ function UserHomePage() {
         </div>
       </nav>
 
-      {/* HERO SECTION */}
       <section className="uh-hero">
         <div className="uh-hero-overlay" />
         <div className="uh-hero-content">
@@ -284,7 +279,6 @@ function UserHomePage() {
         </div>
       </section>
 
-      {/* POPULAR PRODUCTS */}
       <section className="uh-section">
         <div className="uh-section-title">
           <h2>Popular Print Products</h2>
@@ -294,7 +288,17 @@ function UserHomePage() {
         <div className="uh-cards">
           {products.map((p) => (
             <div key={p.id} className="uh-card">
-              <div className="uh-card-img" />
+              <div className="uh-card-img">
+                <img
+                  src={p.image}
+                  alt={p.title}
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      "https://via.placeholder.com/600x400?text=Product+Image";
+                  }}
+                />
+              </div>
+
               <div className="uh-card-body">
                 <h3>{p.title}</h3>
                 <p>{p.desc}</p>

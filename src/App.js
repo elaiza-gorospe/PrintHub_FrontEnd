@@ -26,6 +26,7 @@ import UserCustomizeProfile from "./Customer/User-customize-profile";
 import UserAccountSettings from "./Customer/User-account-settings";
 import UserCartPage from "./Customer/User-cart";
 import UserPasswordSecurityPage from "./Customer/User-password-security";
+import ProductDetail from "./Customer/Product-detail";
 
 const products = [
   {
@@ -77,6 +78,8 @@ function App() {
         <Route path="/product-overview" element={<ProductOverview />} />
         <Route path="/user-customize-profile" element={<UserCustomizeProfile />} />
         <Route path="/user-account-settings" element={<UserAccountSettings />} />
+       <Route path="/product/:id" element={<ProductDetail />} />
+        
       </Routes>
     </BrowserRouter>
   );
