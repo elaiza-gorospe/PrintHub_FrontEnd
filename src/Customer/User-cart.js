@@ -54,7 +54,7 @@ function UserCartPage() {
     // Order placed successfully
     clearCart();
     setShowCheckout(false);
-    alert(`Order #${orderData.id} placed successfully!`);
+    // Navigate to dashboard (no alert)
     navigate("/user-dashboard");
   };
 

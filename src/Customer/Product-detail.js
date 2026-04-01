@@ -12,11 +12,11 @@ function ProductDetail() {
   const quoteRef = useRef(null);
   const { addToCart } = useCart();
 
-  const allProducts = productsData;
+  const allProducts = useMemo(() => productsData, []);
 
   const product = useMemo(
     () => allProducts.find((item) => item.id === Number(id)),
-    [id],
+    [id, allProducts],
   );
 
   const [selectedImage, setSelectedImage] = useState(
@@ -101,11 +101,18 @@ function ProductDetail() {
       return;
     }
 
+    // Extract numeric price from formatted string (e.g., "₱1,270.50" => 1270.50)
+    const extractPrice = (priceStr) => {
+      if (typeof priceStr === "number") return priceStr;
+      if (!priceStr) return 0;
+      return parseFloat(String(priceStr).replace(/[^\d.]/g, "")) || 0;
+    };
+
     addToCart({
       id: product.id,
       productId: product.id,
       title: product.title,
-      price: parseFloat(selectedQty.price || 0),
+      price: extractPrice(selectedQty.price),
       size: selectedSize,
       material: selectedMaterial,
       sides: selectedSide,

@@ -61,7 +61,7 @@ export function useCart() {
         id: Date.now(), // Simple unique ID
         productId,
         title,
-        price: parseFloat(quantity?.price || price),
+        price: price, // Use the already-extracted numeric price
         qty: 1,
         customizations: {
           size,

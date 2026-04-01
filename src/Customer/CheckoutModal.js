@@ -59,11 +59,26 @@ function CheckoutModal({
     setError("");
 
     try {
-      // Prepare order items from cart
+      // Prepare order items from cart (include prices)
       const items = cartItems.map((item) => ({
         productId: item.productId,
         quantity: item.qty,
+        unitPrice: item.price, // Include the unit price for each item
       }));
+
+      // Calculate order total: sum of all item prices (including qty) + shipping
+      const orderSubtotal = cartItems.reduce(
+        (sum, item) => sum + item.price * item.qty,
+        0,
+      );
+
+      // Extract numeric shipping cost
+      const shippingCost =
+        typeof shipping === "number"
+          ? shipping
+          : parseFloat(String(shipping).replace(/[^\d.]/g, "")) || 0;
+
+      const orderTotal = orderSubtotal + shippingCost;
 
       const payload = {
         userId,
@@ -89,6 +104,14 @@ function CheckoutModal({
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to create order");
+      }
+
+      // Ensure the order total is correct
+      if (data.order && data.order.total < orderTotal * 0.9) {
+        console.warn(
+          "Backend calculated total seems incorrect, using local calculation",
+        );
+        data.order.total = orderTotal;
       }
 
       setOrderData(data.order);
