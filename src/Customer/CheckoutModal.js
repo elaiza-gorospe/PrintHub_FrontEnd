@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaTimes, FaSpinner, FaCheckCircle } from "react-icons/fa";
 import "./CheckoutModal.css";
+import { extractNumericPrice } from "../utils/priceUtils";
 
 function CheckoutModal({
   userId,
@@ -23,11 +24,14 @@ function CheckoutModal({
 
   const [orderData, setOrderData] = useState(null);
 
-  const formatPeso = (n) =>
-    new Intl.NumberFormat("en-PH", {
+  const formatPeso = (n) => {
+    let num = typeof n === "number" ? n : parseFloat(n) || 0;
+    if (isNaN(num)) num = 0;
+    return new Intl.NumberFormat("en-PH", {
       style: "currency",
       currency: "PHP",
-    }).format(n);
+    }).format(num);
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -63,20 +67,20 @@ function CheckoutModal({
       const items = cartItems.map((item) => ({
         productId: item.productId,
         quantity: item.qty,
-        unitPrice: item.price, // Include the unit price for each item
+        unitPrice: extractNumericPrice(item.price),
       }));
 
       // Calculate order total: sum of all item prices (including qty) + shipping
       const orderSubtotal = cartItems.reduce(
-        (sum, item) => sum + item.price * item.qty,
+        (sum, item) => sum + extractNumericPrice(item.price) * item.qty,
         0,
       );
 
-      // Extract numeric shipping cost
-      const shippingCost =
-        typeof shipping === "number"
-          ? shipping
-          : parseFloat(String(shipping).replace(/[^\d.]/g, "")) || 0;
+      // Extract numeric shipping cost and ensure it's valid
+      let shippingCost = extractNumericPrice(shipping);
+      if (isNaN(shippingCost)) {
+        shippingCost = 0;
+      }
 
       const orderTotal = orderSubtotal + shippingCost;
 

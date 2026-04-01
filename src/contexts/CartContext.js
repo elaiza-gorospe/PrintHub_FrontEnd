@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
+import { extractNumericPrice } from "../utils/priceUtils";
 
 const CartContext = createContext();
 
@@ -8,7 +9,18 @@ const CART_STORAGE_KEY = "printHub_cart";
 const initializeCart = () => {
   try {
     const stored = localStorage.getItem(CART_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+
+    const cart = JSON.parse(stored);
+
+    // Migrate old cart items: ensure shippingPrice is numeric
+    return cart.map((item) => ({
+      ...item,
+      customizations: {
+        ...item.customizations,
+        shippingPrice: extractNumericPrice(item.customizations?.shippingPrice),
+      },
+    }));
   } catch (e) {
     console.error("Failed to parse cart from localStorage:", e);
     return [];
@@ -73,7 +85,7 @@ export function CartProvider({ children }) {
           quantity: quantity?.label,
           quantityPrice: quantity?.price,
           shipping: shipping?.label,
-          shippingPrice: shipping?.price,
+          shippingPrice: extractNumericPrice(shipping?.price),
         },
       };
 

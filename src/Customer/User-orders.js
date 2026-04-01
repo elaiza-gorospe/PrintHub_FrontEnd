@@ -32,7 +32,11 @@ function UserOrders() {
 
         if (!res.ok) throw new Error(data?.message || "Failed to load orders");
 
-        setOrders(Array.isArray(data) ? data : []);
+        // Sort orders by date added in descending order (newest first)
+        const sortedOrders = Array.isArray(data)
+          ? data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          : [];
+        setOrders(sortedOrders);
         setError(null);
       } catch (err) {
         console.error(err);
@@ -78,7 +82,7 @@ function UserOrders() {
           <button
             className="uo-back"
             type="button"
-            onClick={() => navigate("/user-dashboard")}
+            onClick={() => navigate("/user-home")}
           >
             <FaArrowLeft /> Back
           </button>

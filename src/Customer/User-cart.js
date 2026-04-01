@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import CheckoutModal from "./CheckoutModal";
 import { useCart } from "../hooks/useCart";
+import { extractNumericPrice } from "../utils/priceUtils";
 import Header from "../components/Header";
 
 function UserCartPage() {
@@ -25,9 +26,15 @@ function UserCartPage() {
     0,
   );
   // Get shipping cost from first item's customizations (all items should have same shipping)
-  const shipping = cartItems.length > 0 
-    ? (cartItems[0].customizations?.shippingPrice || 0)
-    : 0;
+  let shipping = 0;
+  if (cartItems.length > 0) {
+    const shippingPrice = cartItems[0].customizations?.shippingPrice;
+    shipping = extractNumericPrice(shippingPrice);
+    // Ensure shipping is a valid number, not NaN
+    if (isNaN(shipping)) {
+      shipping = 0;
+    }
+  }
   const total = subtotal + shipping;
 
   const formatPeso = (n) =>

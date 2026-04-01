@@ -5,6 +5,7 @@ import "./Product-detail.css";
 import ReCAPTCHA from "react-google-recaptcha";
 import productsData from "./Products-data";
 import { useCart } from "../hooks/useCart";
+import { extractNumericPrice } from "../utils/priceUtils";
 import Header from "../components/Header";
 
 function ProductDetail() {
@@ -102,18 +103,11 @@ function ProductDetail() {
       return;
     }
 
-    // Extract numeric price from formatted string (e.g., "₱1,270.50" => 1270.50)
-    const extractPrice = (priceStr) => {
-      if (typeof priceStr === "number") return priceStr;
-      if (!priceStr) return 0;
-      return parseFloat(String(priceStr).replace(/[^\d.]/g, "")) || 0;
-    };
-
     addToCart({
       id: product.id,
       productId: product.id,
       title: product.title,
-      price: extractPrice(selectedQty.price),
+      price: extractNumericPrice(selectedQty.price),
       size: selectedSize,
       material: selectedMaterial,
       sides: selectedSide,
