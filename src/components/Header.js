@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaSearch,
@@ -11,6 +11,7 @@ import {
   FaBars,
   FaTimes,
 } from "react-icons/fa";
+import { useCart } from "../hooks/useCart";
 import "./Header.css";
 
 function Header() {
@@ -18,6 +19,7 @@ function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const { cartItems } = useCart();
 
   const [user, setUser] = useState({
     name: "",
@@ -29,6 +31,12 @@ function Header() {
   const isLoggedIn = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
     : null;
+
+  // Calculate total cart items count with useMemo to ensure updates
+  const cartCount = useMemo(
+    () => cartItems.reduce((acc, item) => acc + item.qty, 0),
+    [cartItems],
+  );
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
@@ -57,7 +65,7 @@ function Header() {
         setUser((prev) => ({
           ...prev,
           name: data.name || prev.name || u.firstName || "User",
-          email: u.email || prev.email || "",
+          email: data.email || u.email || prev.email || "",
           avatarUrl: prev.avatarUrl || "",
         }));
       })
@@ -102,12 +110,13 @@ function Header() {
 
       <div className="uh-actions">
         <button
-          className="uh-icon-btn"
+          className="uh-icon-btn uh-cart-btn"
           type="button"
           title="Cart"
           onClick={() => navigate("/user-cart")}
         >
           <FaShoppingCart />
+          {cartCount > 0 && <span className="uh-cart-badge">{cartCount}</span>}
         </button>
 
         <button className="uh-link uh-desktop-only" type="button">
@@ -195,7 +204,10 @@ function Header() {
                     <button
                       className="uh-dd-item"
                       type="button"
-                      onClick={() => alert("Orders (demo)")}
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate("/user-orders");
+                      }}
                     >
                       <FaBoxOpen /> <span>Orders</span>
                     </button>

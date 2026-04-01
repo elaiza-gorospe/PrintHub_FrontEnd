@@ -7,6 +7,7 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
+import { CartProvider } from "./contexts/CartContext";
 
 import AdminLoginPage from "./Admin/Admin-login";
 import AdminRegistrationPage from "./Admin/Admin-registration";
@@ -25,6 +26,7 @@ import ProductOverview from "./Customer/Product-overview";
 import UserCustomizeProfile from "./Customer/User-customize-profile";
 import UserAccountSettings from "./Customer/User-account-settings";
 import UserCartPage from "./Customer/User-cart";
+import UserOrders from "./Customer/User-orders";
 import UserPasswordSecurityPage from "./Customer/User-password-security";
 import ProductDetail from "./Customer/Product-detail";
 
@@ -57,31 +59,48 @@ const products = [
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
+    <CartProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
 
-        <Route path="/admin-login" element={<AdminLoginPage />} />
-        <Route path="/admin-register" element={<AdminRegistrationPage />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/admin-profile" element={<AdminProfile />} />
-        <Route path="/admin-manageaccount" element={<AdminManageAccounts />} />
-        <Route path="/user-login" element={<UserLoginPage />} />
-        <Route path="/user-register" element={<UserRegistrationPage />} />
-        <Route path="/user-forgot-otp" element={<UserForgotOtpPage />} />
-        <Route path="/user-reset-password" element={<UserResetPasswordPage />} />
-        <Route path="/user-otp" element={<UserOtpPage />} />
-        <Route path="/user-home" element={<UserHomePage />} />
-        <Route path="/user-password-security" element={<UserPasswordSecurityPage />} />
-        <Route path="/user-cart" element={<UserCartPage />} />
-        <Route path="/user-dashboard" element={<CustomerDashboard />} />
-        <Route path="/product-overview" element={<ProductOverview />} />
-        <Route path="/user-customize-profile" element={<UserCustomizeProfile />} />
-        <Route path="/user-account-settings" element={<UserAccountSettings />} />
-       <Route path="/product/:id" element={<ProductDetail />} />
-        
-      </Routes>
-    </BrowserRouter>
+          <Route path="/admin-login" element={<AdminLoginPage />} />
+          <Route path="/admin-register" element={<AdminRegistrationPage />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/admin-profile" element={<AdminProfile />} />
+          <Route
+            path="/admin-manageaccount"
+            element={<AdminManageAccounts />}
+          />
+          <Route path="/user-login" element={<UserLoginPage />} />
+          <Route path="/user-register" element={<UserRegistrationPage />} />
+          <Route path="/user-forgot-otp" element={<UserForgotOtpPage />} />
+          <Route
+            path="/user-reset-password"
+            element={<UserResetPasswordPage />}
+          />
+          <Route path="/user-otp" element={<UserOtpPage />} />
+          <Route path="/user-home" element={<UserHomePage />} />
+          <Route
+            path="/user-password-security"
+            element={<UserPasswordSecurityPage />}
+          />
+          <Route path="/user-cart" element={<UserCartPage />} />
+          <Route path="/user-orders" element={<UserOrders />} />
+          <Route path="/user-dashboard" element={<CustomerDashboard />} />
+          <Route path="/product-overview" element={<ProductOverview />} />
+          <Route
+            path="/user-customize-profile"
+            element={<UserCustomizeProfile />}
+          />
+          <Route
+            path="/user-account-settings"
+            element={<UserAccountSettings />}
+          />
+          <Route path="/product/:id" element={<ProductDetail />} />
+        </Routes>
+      </BrowserRouter>
+    </CartProvider>
   );
 }
 
@@ -168,60 +187,58 @@ function HomePage() {
       <header className="App-header"></header>
 
       <main className="main-content">
-
         {/* HOW TO ORDER (HTML/CSS) */}
-<section className="content-section howto-wrap">
-  <h2 className="howto-title">
-    Print Your Own Design With <span>PMG</span>!
-  </h2>
+        <section className="content-section howto-wrap">
+          <h2 className="howto-title">
+            Print Your Own Design With <span>PMG</span>!
+          </h2>
 
-  <div className="howto-box">
-    <div className="howto-steps">
-      {[
-        {
-          step: "STEP 1",
-          title: "Choose your product",
-          text: "Pick an item and select size/quantity.",
-        },
-        {
-          step: "STEP 2",
-          title: "Upload or create design",
-          text: "Upload your file or create your design.",
-        },
-        {
-          step: "STEP 3",
-          title: "Check guidelines",
-          text: "We verify quality and printable format.",
-        },
-        {
-          step: "STEP 4",
-          title: "Printing starts",
-          text: "Your order is queued and printed.",
-        },
-        {
-          step: "STEP 5",
-          title: "Pay securely",
-          text: "Pay via your selected payment method.",
-        },
-        {
-          step: "STEP 6",
-          title: "Claim / delivery",
-          text: "Pick up your item or choose delivery.",
-        },
-      ].map((s, idx) => (
-        <div className="howto-step" key={idx}>
-          <div className="howto-step-top">
-            <span className="howto-step-label">{s.step}</span>
-            {idx !== 5 && <span className="howto-arrow">▶</span>}
+          <div className="howto-box">
+            <div className="howto-steps">
+              {[
+                {
+                  step: "STEP 1",
+                  title: "Choose your product",
+                  text: "Pick an item and select size/quantity.",
+                },
+                {
+                  step: "STEP 2",
+                  title: "Upload or create design",
+                  text: "Upload your file or create your design.",
+                },
+                {
+                  step: "STEP 3",
+                  title: "Check guidelines",
+                  text: "We verify quality and printable format.",
+                },
+                {
+                  step: "STEP 4",
+                  title: "Printing starts",
+                  text: "Your order is queued and printed.",
+                },
+                {
+                  step: "STEP 5",
+                  title: "Pay securely",
+                  text: "Pay via your selected payment method.",
+                },
+                {
+                  step: "STEP 6",
+                  title: "Claim / delivery",
+                  text: "Pick up your item or choose delivery.",
+                },
+              ].map((s, idx) => (
+                <div className="howto-step" key={idx}>
+                  <div className="howto-step-top">
+                    <span className="howto-step-label">{s.step}</span>
+                    {idx !== 5 && <span className="howto-arrow">▶</span>}
+                  </div>
+                  <div className="howto-step-title">{s.title}</div>
+                  <div className="howto-step-text">{s.text}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="howto-step-title">{s.title}</div>
-          <div className="howto-step-text">{s.text}</div>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
-
+        </section>
 
         {/* ✅ PRODUCT CATALOG */}
         <section className="content-section">
@@ -272,9 +289,7 @@ function HomePage() {
         {/* ✅ ABOUT */}
         <section className="content-section" id="about">
           <h2>About PMG</h2>
-          <p>
-            PMG is your one stop printhing shop.
-          </p>
+          <p>PMG is your one stop printhing shop.</p>
         </section>
 
         {/* ✅ CONTACT */}
