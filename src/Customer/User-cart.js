@@ -1,15 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./User-cart.css";
-import { FaArrowLeft, FaTrash, FaMinus, FaPlus, FaShoppingCart } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaTrash,
+  FaMinus,
+  FaPlus,
+  FaShoppingCart,
+} from "react-icons/fa";
+import CheckoutModal from "./CheckoutModal";
 
 function UserCartPage() {
   const navigate = useNavigate();
+  const [showCheckout, setShowCheckout] = useState(false);
 
-  // ✅ STATIC DATA (dummy cart items)
-  const cartItems = [
+  // Get user ID from localStorage (set during login)
+  const userId = parseInt(localStorage.getItem("userId")) || null;
+
+  // ✅ CART STATE
+  const [cartItems, setCartItems] = useState([
     {
       id: 1,
+      productId: 1,
       title: "Business Cards",
       desc: "Premium matte finish, 100pcs",
       price: 250,
@@ -17,25 +29,106 @@ function UserCartPage() {
     },
     {
       id: 2,
+      productId: 2,
       title: "Stickers & Labels",
       desc: "Waterproof vinyl, 50pcs",
       price: 180,
       qty: 1,
     },
-  ];
+  ]);
 
-  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const shipping = 50; // static
+  const subtotal = cartItems.reduce(
+    (acc, item) => acc + item.price * item.qty,
+    0,
+  );
+  const shipping = 50;
   const total = subtotal + shipping;
 
   const formatPeso = (n) =>
-    new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(n);
+    new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
+    }).format(n);
+
+  // CART FUNCTIONS
+  const updateQty = (id, newQty) => {
+    if (newQty < 1) return;
+    setCartItems(
+      cartItems.map((item) =>
+        item.id === id ? { ...item, qty: newQty } : item,
+      ),
+    );
+  };
+
+  const removeItem = (id) => {
+    setCartItems(cartItems.filter((item) => item.id !== id));
+  };
+
+  const handleCheckoutClick = () => {
+    if (!userId) {
+      alert("Please login first");
+      navigate("/user-login");
+      return;
+    }
+    setShowCheckout(true);
+  };
+
+  const handleCheckoutComplete = (orderData) => {
+    // Order placed successfully
+    setCartItems([]);
+    setShowCheckout(false);
+    alert(`Order #${orderData.id} placed successfully!`);
+    navigate("/user-dashboard");
+  };
+
+  if (cartItems.length === 0 && !showCheckout) {
+    return (
+      <div className="ucart-page">
+        <div className="ucart-topbar">
+          <button
+            className="ucart-back"
+            type="button"
+            onClick={() => navigate(-1)}
+          >
+            <FaArrowLeft /> Back
+          </button>
+          <div className="ucart-title">
+            <FaShoppingCart className="ucart-title-icon" />
+            <h1>Your Cart</h1>
+          </div>
+        </div>
+        <div className="ucart-wrap">
+          <div
+            className="ucart-card"
+            style={{ textAlign: "center", padding: "60px 20px" }}
+          >
+            <p
+              style={{ fontSize: "18px", color: "#666", marginBottom: "20px" }}
+            >
+              Your cart is empty
+            </p>
+            <button
+              className="ucart-continue"
+              type="button"
+              onClick={() => navigate("/product-overview")}
+            >
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="ucart-page">
       {/* TOP BAR */}
       <div className="ucart-topbar">
-        <button className="ucart-back" type="button" onClick={() => navigate(-1)}>
+        <button
+          className="ucart-back"
+          type="button"
+          onClick={() => navigate(-1)}
+        >
           <FaArrowLeft /> Back
         </button>
 
@@ -48,7 +141,7 @@ function UserCartPage() {
       <div className="ucart-wrap">
         {/* LEFT: CART ITEMS */}
         <div className="ucart-card">
-          <h2 className="ucart-section-title">Items</h2>
+          <h2 className="ucart-section-title">Items ({cartItems.length})</h2>
 
           {cartItems.map((item) => (
             <div key={item.id} className="ucart-item">
@@ -61,18 +154,32 @@ function UserCartPage() {
               </div>
 
               <div className="ucart-controls">
-                {/* STATIC buttons (no logic yet) */}
                 <div className="ucart-qty">
-                  <button className="ucart-qty-btn" type="button" title="Decrease">
+                  <button
+                    className="ucart-qty-btn"
+                    type="button"
+                    title="Decrease"
+                    onClick={() => updateQty(item.id, item.qty - 1)}
+                  >
                     <FaMinus />
                   </button>
                   <span className="ucart-qty-num">{item.qty}</span>
-                  <button className="ucart-qty-btn" type="button" title="Increase">
+                  <button
+                    className="ucart-qty-btn"
+                    type="button"
+                    title="Increase"
+                    onClick={() => updateQty(item.id, item.qty + 1)}
+                  >
                     <FaPlus />
                   </button>
                 </div>
 
-                <button className="ucart-remove" type="button" title="Remove item">
+                <button
+                  className="ucart-remove"
+                  type="button"
+                  title="Remove item"
+                  onClick={() => removeItem(item.id)}
+                >
                   <FaTrash />
                 </button>
               </div>
@@ -104,16 +211,33 @@ function UserCartPage() {
           <button
             className="ucart-checkout"
             type="button"
-            onClick={() => alert("Checkout page later (static demo)")}
+            onClick={handleCheckoutClick}
           >
             Proceed to Checkout
           </button>
 
-          <button className="ucart-continue" type="button" onClick={() => navigate("/Product-overview")}>
+          <button
+            className="ucart-continue"
+            type="button"
+            onClick={() => navigate("/product-overview")}
+          >
             Continue Shopping
           </button>
         </div>
       </div>
+
+      {/* CHECKOUT MODAL */}
+      {showCheckout && (
+        <CheckoutModal
+          userId={userId}
+          cartItems={cartItems}
+          total={total}
+          shipping={shipping}
+          subtotal={subtotal}
+          onClose={() => setShowCheckout(false)}
+          onSuccess={handleCheckoutComplete}
+        />
+      )}
     </div>
   );
 }
