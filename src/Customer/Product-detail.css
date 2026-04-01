@@ -1,4 +1,4 @@
-:root{
+:root {
   --accent: #455073;
   --accent-soft: rgba(88, 188, 196, 0.12);
   --text: #2f3a45;
@@ -10,14 +10,14 @@
   --orange: #455073;
 }
 
-.pd-page{
+.pd-page {
   min-height: 100vh;
   background: var(--bg);
   padding: 30px 40px 60px;
   color: var(--text);
 }
 
-.pd-breadcrumb{
+.pd-breadcrumb {
   max-width: 1400px;
   margin: 0 auto 30px;
   display: flex;
@@ -27,15 +27,15 @@
   color: var(--muted);
 }
 
-.pd-breadcrumb span{
+.pd-breadcrumb span {
   cursor: pointer;
 }
 
-.pd-breadcrumb span:hover{
+.pd-breadcrumb span:hover {
   color: var(--accent);
 }
 
-.pd-top{
+.pd-top {
   max-width: 1400px;
   margin: 0 auto 40px;
   display: grid;
@@ -44,19 +44,19 @@
   align-items: start;
 }
 
-.pd-gallery{
+.pd-gallery {
   display: grid;
   grid-template-columns: 90px 1fr;
   gap: 24px;
 }
 
-.pd-thumbs{
+.pd-thumbs {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.pd-thumb{
+.pd-thumb {
   border: 1px solid var(--border);
   background: #fff;
   padding: 0;
@@ -64,22 +64,24 @@
   height: 90px;
   overflow: hidden;
   border-radius: 10px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.pd-thumb.active{
+.pd-thumb.active {
   border: 2px solid var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-.pd-thumb img{
+.pd-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.pd-main-image{
+.pd-main-image {
   background: #ffffff;
   min-height: 520px;
   display: flex;
@@ -88,30 +90,30 @@
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
 }
 
-.pd-main-image img{
+.pd-main-image img {
   max-width: 100%;
   max-height: 480px;
   object-fit: contain;
 }
 
-.pd-info h1{
+.pd-info h1 {
   font-size: 42px;
   line-height: 1.05;
   margin: 0 0 24px;
   color: var(--text);
 }
 
-.pd-tabs{
+.pd-tabs {
   display: flex;
   gap: 26px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 24px;
 }
 
-.pd-tabs button{
+.pd-tabs button {
   background: none;
   border: none;
   padding: 0 0 12px;
@@ -121,33 +123,33 @@
   color: var(--muted);
 }
 
-.pd-tabs button.active{
+.pd-tabs button.active {
   border-bottom: 3px solid var(--accent);
   color: var(--text);
 }
 
-.pd-tab-content{
+.pd-tab-content {
   font-size: 18px;
   color: var(--text);
 }
 
-.pd-features{
+.pd-features {
   padding-left: 22px;
   margin: 0 0 24px;
 }
 
-.pd-description{
+.pd-description {
   line-height: 1.7;
   color: var(--text);
 }
 
-.pd-extra-link{
+.pd-extra-link {
   margin-top: 24px;
   font-size: 16px;
   color: var(--text);
 }
 
-.pd-inline-link{
+.pd-inline-link {
   border: none;
   background: transparent;
   padding: 0;
@@ -157,29 +159,29 @@
   font-size: 16px;
 }
 
-.pd-sections{
+.pd-sections {
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.pd-section{
+.pd-section {
   border-top: 1px solid var(--border);
   padding: 30px 0;
 }
 
-.pd-section h2{
+.pd-section h2 {
   font-size: 24px;
   margin: 0 0 20px;
   color: var(--text);
 }
 
-.pd-card-options{
+.pd-card-options {
   display: flex;
   flex-wrap: wrap;
   gap: 24px;
 }
 
-.pd-option-card{
+.pd-option-card {
   position: relative;
   width: 220px;
   min-height: 270px;
@@ -193,23 +195,25 @@
   justify-content: center;
   text-align: center;
   color: var(--text);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.pd-option-card.selected{
+.pd-option-card.selected {
   border: 2px solid var(--orange);
   background: #fff;
 }
 
-.pd-option-card-contact:hover{
+.pd-option-card-contact:hover {
   border-color: var(--orange);
 }
 
-.pd-option-card input{
+.pd-option-card input {
   display: none;
 }
 
-.pd-option-inner{
+.pd-option-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -218,7 +222,7 @@
   text-align: center;
 }
 
-.pd-option-logo{
+.pd-option-logo {
   width: 96px;
   height: 96px;
   border: 2px solid var(--orange);
@@ -230,30 +234,30 @@
   font-size: 42px;
 }
 
-.pd-option-logo-contact{
+.pd-option-logo-contact {
   width: 110px;
   height: 110px;
   font-size: 46px;
 }
 
-.pd-option-title{
+.pd-option-title {
   font-size: 18px;
   font-weight: 700;
   color: var(--text);
   line-height: 1.35;
 }
 
-.pd-option-sub{
+.pd-option-sub {
   font-size: 16px;
   color: var(--text);
   line-height: 1.4;
 }
 
-.pd-option-sub-strong{
+.pd-option-sub-strong {
   font-weight: 700;
 }
 
-.pd-check-badge{
+.pd-check-badge {
   position: absolute;
   top: -1px;
   right: -1px;
@@ -269,7 +273,7 @@
   font-size: 16px;
 }
 
-.pd-line-option{
+.pd-line-option {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -281,31 +285,31 @@
   transition: background 0.2s ease;
 }
 
-.pd-line-option.selected{
+.pd-line-option.selected {
   background: var(--accent-soft);
 }
 
-.pd-price-option{
+.pd-price-option {
   justify-content: space-between;
 }
 
-.pd-price-option span{
+.pd-price-option span {
   flex: 1;
   margin-left: 10px;
 }
 
-.pd-quote-section{
+.pd-quote-section {
   padding: 40px 0 10px;
 }
 
-.pd-quote-title{
+.pd-quote-title {
   font-size: 38px;
   font-weight: 700;
   margin: 0 0 14px;
   color: var(--text);
 }
 
-.pd-quote-desc{
+.pd-quote-desc {
   max-width: 1320px;
   font-size: 16px;
   line-height: 1.7;
@@ -313,7 +317,7 @@
   margin: 0 0 28px;
 }
 
-.pd-quote-box{
+.pd-quote-box {
   max-width: 1320px;
   background: #f1f1f1;
   border: 1px solid #ececec;
@@ -321,7 +325,7 @@
   border-radius: 2px;
 }
 
-.pd-quote-row{
+.pd-quote-row {
   display: grid;
   grid-template-columns: 180px minmax(0, 620px);
   gap: 24px;
@@ -329,11 +333,11 @@
   margin-bottom: 16px;
 }
 
-.pd-quote-row-top{
+.pd-quote-row-top {
   align-items: start;
 }
 
-.pd-quote-row label{
+.pd-quote-row label {
   font-size: 16px;
   color: var(--text);
   text-align: right;
@@ -341,7 +345,7 @@
 }
 
 .pd-quote-row input,
-.pd-quote-row textarea{
+.pd-quote-row textarea {
   width: 100%;
   border: 1px solid #cfcfcf;
   background: #fff;
@@ -352,14 +356,14 @@
   font-family: inherit;
 }
 
-.pd-quote-row textarea{
+.pd-quote-row textarea {
   resize: vertical;
   min-height: 280px;
   line-height: 1.6;
   white-space: pre-wrap;
 }
 
-.pd-recaptcha-box{
+.pd-recaptcha-box {
   width: 340px;
   min-height: 80px;
   background: #fff;
@@ -372,7 +376,7 @@
   margin-top: 12px;
 }
 
-.pd-recaptcha-check{
+.pd-recaptcha-check {
   width: 28px;
   height: 28px;
   border: 2px solid #666;
@@ -380,32 +384,32 @@
   flex: 0 0 28px;
 }
 
-.pd-recaptcha-text{
+.pd-recaptcha-text {
   font-size: 15px;
   color: #222;
 }
 
-.pd-recaptcha-brand{
+.pd-recaptcha-brand {
   margin-left: auto;
   text-align: center;
   color: #777;
   line-height: 1.2;
 }
 
-.pd-recaptcha-brand div{
+.pd-recaptcha-brand div {
   font-size: 14px;
 }
 
-.pd-recaptcha-brand small{
+.pd-recaptcha-brand small {
   font-size: 10px;
 }
 
-.pd-quote-actions{
+.pd-quote-actions {
   margin-top: 30px;
   margin-left: 204px;
 }
 
-.pd-quote-btn{
+.pd-quote-btn {
   border: none;
   background: var(--orange);
   color: #fff;
@@ -415,16 +419,16 @@
   cursor: pointer;
 }
 
-.pd-quote-btn:hover{
+.pd-quote-btn:hover {
   opacity: 0.95;
 }
 
-.pd-summary{
+.pd-summary {
   border-top: 1px solid var(--border);
   padding-top: 30px;
 }
 
-.pd-summary-box{
+.pd-summary-box {
   background: #ffffff;
   padding: 28px;
   display: grid;
@@ -432,35 +436,35 @@
   gap: 30px;
   border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
 }
 
-.pd-summary-box h3{
+.pd-summary-box h3 {
   margin-top: 0;
   font-size: 34px;
   color: var(--text);
 }
 
-.pd-total{
+.pd-total {
   background: var(--panel-soft);
   padding: 20px;
   border: 1px solid var(--border);
   border-radius: 12px;
 }
 
-.pd-total p{
+.pd-total p {
   display: flex;
   justify-content: space-between;
   margin: 12px 0;
   color: var(--text);
 }
 
-.pd-total .grand-total{
+.pd-total .grand-total {
   font-size: 26px;
   font-weight: 700;
 }
 
-.pd-cart-btn{
+.pd-cart-btn {
   width: 100%;
   margin-top: 20px;
   padding: 14px;
@@ -470,84 +474,111 @@
   font-weight: 800;
   cursor: pointer;
   border-radius: 8px;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
-.pd-cart-btn:hover{
+.pd-cart-btn:hover {
   opacity: 0.95;
   transform: translateY(-1px);
 }
 
-@media (max-width: 1000px){
-  .pd-top{
+.pd-success-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  font-weight: 600;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1000px) {
+  .pd-top {
     grid-template-columns: 1fr;
   }
 
-  .pd-summary-box{
+  .pd-summary-box {
     grid-template-columns: 1fr;
   }
 
-  .pd-quote-row{
+  .pd-quote-row {
     grid-template-columns: 160px minmax(0, 1fr);
   }
 
   .pd-recaptcha-box,
-  .pd-quote-actions{
+  .pd-quote-actions {
     margin-left: 184px;
   }
 }
 
-@media (max-width: 700px){
-  .pd-page{
+@media (max-width: 700px) {
+  .pd-page {
     padding: 20px;
   }
 
-  .pd-gallery{
+  .pd-gallery {
     grid-template-columns: 1fr;
   }
 
-  .pd-thumbs{
+  .pd-thumbs {
     flex-direction: row;
     overflow-x: auto;
   }
 
-  .pd-info h1{
+  .pd-info h1 {
     font-size: 32px;
   }
 
-  .pd-main-image{
+  .pd-main-image {
     min-height: 320px;
   }
 
-  .pd-option-card{
+  .pd-option-card {
     width: 100%;
     min-height: 230px;
   }
 
-  .pd-quote-title{
+  .pd-quote-title {
     font-size: 30px;
   }
 
-  .pd-quote-row{
+  .pd-quote-row {
     grid-template-columns: 1fr;
     gap: 8px;
   }
 
-  .pd-quote-row label{
+  .pd-quote-row label {
     text-align: left;
   }
 
-  .pd-quote-box{
+  .pd-quote-box {
     padding: 18px;
   }
 
   .pd-recaptcha-box,
-  .pd-quote-actions{
+  .pd-quote-actions {
     margin-left: 0;
     width: 100%;
   }
 }
-#request::placeholder{
+#request::placeholder {
   color: #7e8b92;
   line-height: 1.7;
   white-space: pre-line;

@@ -9,33 +9,15 @@ import {
   FaShoppingCart,
 } from "react-icons/fa";
 import CheckoutModal from "./CheckoutModal";
+import { useCart } from "../hooks/useCart";
 
 function UserCartPage() {
   const navigate = useNavigate();
   const [showCheckout, setShowCheckout] = useState(false);
+  const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
 
   // Get user ID from localStorage (set during login)
   const userId = parseInt(localStorage.getItem("userId")) || null;
-
-  // ✅ CART STATE
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      productId: 1,
-      title: "Business Cards",
-      desc: "Premium matte finish, 100pcs",
-      price: 250,
-      qty: 2,
-    },
-    {
-      id: 2,
-      productId: 2,
-      title: "Stickers & Labels",
-      desc: "Waterproof vinyl, 50pcs",
-      price: 180,
-      qty: 1,
-    },
-  ]);
 
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.price * item.qty,
@@ -52,16 +34,11 @@ function UserCartPage() {
 
   // CART FUNCTIONS
   const updateQty = (id, newQty) => {
-    if (newQty < 1) return;
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id ? { ...item, qty: newQty } : item,
-      ),
-    );
+    updateQuantity(id, newQty);
   };
 
   const removeItem = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
+    removeFromCart(id);
   };
 
   const handleCheckoutClick = () => {
@@ -75,7 +52,7 @@ function UserCartPage() {
 
   const handleCheckoutComplete = (orderData) => {
     // Order placed successfully
-    setCartItems([]);
+    clearCart();
     setShowCheckout(false);
     alert(`Order #${orderData.id} placed successfully!`);
     navigate("/user-dashboard");
@@ -149,7 +126,19 @@ function UserCartPage() {
 
               <div className="ucart-info">
                 <div className="ucart-name">{item.title}</div>
-                <div className="ucart-desc">{item.desc}</div>
+                <div className="ucart-desc">
+                  {item.desc ||
+                    (item.customizations && (
+                      <>
+                        <div style={{ fontSize: "12px", color: "#666" }}>
+                          Size: {item.customizations.size}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#666" }}>
+                          {item.customizations.quantity}
+                        </div>
+                      </>
+                    ))}
+                </div>
                 <div className="ucart-price">{formatPeso(item.price)}</div>
               </div>
 

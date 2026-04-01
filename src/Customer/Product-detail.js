@@ -1,30 +1,43 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaIdCard, FaHeadset, FaCheck } from "react-icons/fa";
+import { FaIdCard, FaHeadset, FaCheck, FaCheckCircle } from "react-icons/fa";
 import "./Product-detail.css";
 import ReCAPTCHA from "react-google-recaptcha";
 import productsData from "./Products-data";
+import { useCart } from "../hooks/useCart";
 
 function ProductDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const quoteRef = useRef(null);
+  const { addToCart } = useCart();
 
   const allProducts = productsData;
 
   const product = useMemo(
     () => allProducts.find((item) => item.id === Number(id)),
-    [id]
+    [id],
   );
 
-  const [selectedImage, setSelectedImage] = useState(product?.gallery?.[0] || "");
+  const [selectedImage, setSelectedImage] = useState(
+    product?.gallery?.[0] || "",
+  );
   const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || "");
-  const [selectedMaterial, setSelectedMaterial] = useState(product?.materials?.[0] || "");
+  const [selectedMaterial, setSelectedMaterial] = useState(
+    product?.materials?.[0] || "",
+  );
   const [selectedSide, setSelectedSide] = useState(product?.sides?.[0] || "");
-  const [selectedFinish, setSelectedFinish] = useState(product?.finishing?.[0] || "");
-  const [selectedQty, setSelectedQty] = useState(product?.quantities?.[0] || null);
-  const [selectedShipping, setSelectedShipping] = useState(product?.shipping?.[0] || null);
+  const [selectedFinish, setSelectedFinish] = useState(
+    product?.finishing?.[0] || "",
+  );
+  const [selectedQty, setSelectedQty] = useState(
+    product?.quantities?.[0] || null,
+  );
+  const [selectedShipping, setSelectedShipping] = useState(
+    product?.shipping?.[0] || null,
+  );
   const [activeTab, setActiveTab] = useState("product");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const [quoteForm, setQuoteForm] = useState({
     subject: "",
@@ -80,6 +93,31 @@ function ProductDetail() {
       behavior: "smooth",
       block: "start",
     });
+  };
+
+  const handleAddToCart = () => {
+    if (!selectedQty || !selectedShipping) {
+      alert("Please select quantity and shipping before adding to cart.");
+      return;
+    }
+
+    addToCart({
+      id: product.id,
+      productId: product.id,
+      title: product.title,
+      price: parseFloat(selectedQty.price || 0),
+      size: selectedSize,
+      material: selectedMaterial,
+      sides: selectedSide,
+      finishing: selectedFinish,
+      quantity: selectedQty,
+      shipping: selectedShipping,
+    });
+
+    setSuccessMessage("✓ Added to cart!");
+    setTimeout(() => {
+      setSuccessMessage("");
+    }, 2000);
   };
 
   if (!product) {
@@ -151,7 +189,9 @@ function ProductDetail() {
           {activeTab === "product" && (
             <div className="pd-tab-content">
               <ul className="pd-features">
-                <li><strong>Free delivery</strong></li>
+                <li>
+                  <strong>Free delivery</strong>
+                </li>
                 <li>Printed locally, fast delivery</li>
                 <li>Choose from premium print options</li>
               </ul>
@@ -239,7 +279,9 @@ function ProductDetail() {
                 <div className="pd-option-logo pd-option-logo-contact">
                   <FaHeadset />
                 </div>
-                <div className="pd-option-title">Looking for something else? ...</div>
+                <div className="pd-option-title">
+                  Looking for something else? ...
+                </div>
                 <div className="pd-option-sub pd-option-sub-strong">
                   Contact Us!
                 </div>
@@ -350,11 +392,11 @@ function ProductDetail() {
         <section className="pd-section pd-quote-section" ref={quoteRef}>
           <h2 className="pd-quote-title">Request a quote.</h2>
           <p className="pd-quote-desc">
-            Are you looking for a product that is not on our website? Or have you
-            found a product on our website, but it doesn't quite fit your needs?
-            Let our team of experts send you a quote that matches your expectations
-            in terms of price, quality and delivery time. Simply fill in the form
-            below and we will quickly send you a quote.
+            Are you looking for a product that is not on our website? Or have
+            you found a product on our website, but it doesn't quite fit your
+            needs? Let our team of experts send you a quote that matches your
+            expectations in terms of price, quality and delivery time. Simply
+            fill in the form below and we will quickly send you a quote.
           </p>
 
           <form className="pd-quote-box" onSubmit={handleQuoteSubmit}>
@@ -432,23 +474,50 @@ Other: (special instructions)`}
           <div className="pd-summary-box">
             <div>
               <h3>{product.title}</h3>
-              <p><strong>Size:</strong> {selectedSize}</p>
-              <p><strong>Material:</strong> {selectedMaterial}</p>
-              <p><strong>Print:</strong> {selectedSide}</p>
-              <p><strong>Finishing:</strong> {selectedFinish}</p>
-              <p><strong>Quantity:</strong> {selectedQty?.label}</p>
-              <p><strong>Shipping:</strong> {selectedShipping?.label}</p>
+              <p>
+                <strong>Size:</strong> {selectedSize}
+              </p>
+              <p>
+                <strong>Material:</strong> {selectedMaterial}
+              </p>
+              <p>
+                <strong>Print:</strong> {selectedSide}
+              </p>
+              <p>
+                <strong>Finishing:</strong> {selectedFinish}
+              </p>
+              <p>
+                <strong>Quantity:</strong> {selectedQty?.label}
+              </p>
+              <p>
+                <strong>Shipping:</strong> {selectedShipping?.label}
+              </p>
             </div>
 
             <div className="pd-total">
-              <p><span>Product</span><strong>{selectedQty?.price}</strong></p>
-              <p><span>Delivery</span><strong>{selectedShipping?.price}</strong></p>
+              <p>
+                <span>Product</span>
+                <strong>{selectedQty?.price}</strong>
+              </p>
+              <p>
+                <span>Delivery</span>
+                <strong>{selectedShipping?.price}</strong>
+              </p>
               <hr />
               <p className="grand-total">
                 <span>Total</span>
                 <strong>{selectedQty?.price}</strong>
               </p>
-              <button type="button" className="pd-cart-btn">
+              {successMessage && (
+                <div className="pd-success-message">
+                  <FaCheckCircle /> {successMessage}
+                </div>
+              )}
+              <button
+                type="button"
+                className="pd-cart-btn"
+                onClick={handleAddToCart}
+              >
                 ADD TO CART
               </button>
             </div>
