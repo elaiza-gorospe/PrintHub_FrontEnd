@@ -1,0 +1,244 @@
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  FaSearch,
+  FaShoppingCart,
+  FaUserCircle,
+  FaKey,
+  FaCog,
+  FaEdit,
+  FaBoxOpen,
+  FaBars,
+  FaTimes,
+} from "react-icons/fa";
+import "./Header.css";
+
+function Header() {
+  const navigate = useNavigate();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const [user, setUser] = useState({
+    name: "",
+    email: "",
+    avatarUrl: "",
+  });
+
+  // Get logged-in user from localStorage
+  const isLoggedIn = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
+
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (!stored) return;
+
+    let u;
+    try {
+      u = JSON.parse(stored);
+    } catch {
+      return;
+    }
+
+    if (!u?.id) return;
+
+    setUser((prev) => ({
+      ...prev,
+      name: u.firstName || u.name || "",
+      email: u.email || "",
+    }));
+
+    fetch(`http://localhost:3000/api/user-profile/${u.id}`)
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.message || "Failed to load profile");
+
+        setUser((prev) => ({
+          ...prev,
+          name: data.name || prev.name || u.firstName || "User",
+          email: u.email || prev.email || "",
+          avatarUrl: prev.avatarUrl || "",
+        }));
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsProfileOpen(false);
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    setIsProfileOpen(false);
+    setIsMobileMenuOpen(false);
+    navigate("/");
+  };
+
+  return (
+    <nav className="uh-nav">
+      <div className="uh-logo" onClick={() => navigate("/user-home")}>
+        <span className="uh-logo-text">PMG</span>
+        <span className="uh-logo-sub">PRINTING HOUSE</span>
+      </div>
+
+      <div className="uh-search">
+        <input type="text" placeholder="Search products or services" />
+        <button className="uh-search-btn" type="button" aria-label="Search">
+          <FaSearch />
+        </button>
+      </div>
+
+      <div className="uh-actions">
+        <button
+          className="uh-icon-btn"
+          type="button"
+          title="Cart"
+          onClick={() => navigate("/user-cart")}
+        >
+          <FaShoppingCart />
+        </button>
+
+        <button className="uh-link uh-desktop-only" type="button">
+          About
+        </button>
+        <button className="uh-link uh-desktop-only" type="button">
+          Contact
+        </button>
+
+        <button
+          className="uh-icon-btn uh-mobile-only"
+          type="button"
+          aria-label="Menu"
+          onClick={() => setIsMobileMenuOpen((v) => !v)}
+        >
+          {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+        </button>
+
+        <div className="uh-profile-wrap" ref={dropdownRef}>
+          {isLoggedIn ? (
+            <>
+              <button
+                className="uh-profile"
+                type="button"
+                title="Account"
+                onClick={() => {
+                  setIsProfileOpen((v) => !v);
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                <FaUserCircle />
+              </button>
+
+              {isProfileOpen && (
+                <div className="uh-dropdown">
+                  <div className="uh-dd-top">
+                    <div className="uh-dd-avatar">
+                      {user.avatarUrl ? (
+                        <img src={user.avatarUrl} alt="Profile" />
+                      ) : (
+                        <span>{user.name?.[0]?.toUpperCase() || "U"}</span>
+                      )}
+                    </div>
+
+                    <div className="uh-dd-info">
+                      <div className="uh-dd-name">{user.name || "User"}</div>
+                      <div className="uh-dd-email">{user.email || ""}</div>
+                    </div>
+                  </div>
+
+                  <div className="uh-dd-menu">
+                    <button
+                      className="uh-dd-item"
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate("/user-password-security");
+                      }}
+                    >
+                      <FaKey /> <span>Passwords and security</span>
+                    </button>
+
+                    <button
+                      className="uh-dd-item"
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate("/user-account-settings");
+                      }}
+                    >
+                      <FaCog /> <span>Account settings</span>
+                    </button>
+
+                    <button
+                      className="uh-dd-item"
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate("/user-customize-profile");
+                      }}
+                    >
+                      <FaEdit /> <span>Customize your profile</span>
+                    </button>
+
+                    <button
+                      className="uh-dd-item"
+                      type="button"
+                      onClick={() => alert("Orders (demo)")}
+                    >
+                      <FaBoxOpen /> <span>Orders</span>
+                    </button>
+                  </div>
+
+                  <div className="uh-dd-divider" />
+
+                  <div className="uh-dd-bottom">
+                    <button
+                      className="uh-dd-logout"
+                      type="button"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {isMobileMenuOpen && (
+                <div className="uh-mobile-menu">
+                  <button className="uh-mobile-item" type="button">
+                    About
+                  </button>
+                  <button className="uh-mobile-item" type="button">
+                    Contact
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <button
+              className="uh-login-btn"
+              type="button"
+              onClick={() => navigate("/user-login")}
+            >
+              Login
+            </button>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+export default Header;
