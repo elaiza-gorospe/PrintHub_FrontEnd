@@ -24,7 +24,10 @@ function UserCartPage() {
     (acc, item) => acc + item.price * item.qty,
     0,
   );
-  const shipping = 50;
+  // Get shipping cost from first item's customizations (all items should have same shipping)
+  const shipping = cartItems.length > 0 
+    ? (cartItems[0].customizations?.shippingPrice || 0)
+    : 0;
   const total = subtotal + shipping;
 
   const formatPeso = (n) =>
@@ -55,8 +58,8 @@ function UserCartPage() {
     // Order placed successfully
     clearCart();
     setShowCheckout(false);
-    // Navigate to dashboard (no alert)
-    navigate("/user-dashboard");
+    // Navigate to orders page to see the new order
+    navigate("/user-orders");
   };
 
   if (cartItems.length === 0 && !showCheckout) {

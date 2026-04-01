@@ -83,6 +83,7 @@ function CheckoutModal({
       const payload = {
         userId,
         items,
+        shippingCost,
         shipping_address: formData.shipping_address,
         billing_address: formData.sameAddress
           ? formData.shipping_address
