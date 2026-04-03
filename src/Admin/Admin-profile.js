@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Admin-profile.css';
-import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "./Admin-profile.css";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 function AdminProfile() {
   const navigate = useNavigate();
@@ -39,9 +39,6 @@ function AdminProfile() {
     length: false,
   });
 
-  // ✅ ADDED: OTP sending loading
-  const [otpLoading, setOtpLoading] = useState(false);
-
   // ✅ ADDED: Inline name validation message (replaces alert for name only)
   const [nameError, setNameError] = useState("");
 
@@ -56,7 +53,7 @@ function AdminProfile() {
 
   // ✅ Load profile from DB
   useEffect(() => {
-    const stored = localStorage.getItem('user');
+    const stored = localStorage.getItem("user");
     if (!stored) return;
 
     let user;
@@ -85,7 +82,8 @@ function AdminProfile() {
           role: user.role || "",
           birthday: data.birthday || "",
           gender: data.gender || "",
-          phone: (data.phone && String(data.phone).trim() !== "" ? data.phone : "+63"), // ✅ fallback to +63
+          phone:
+            data.phone && String(data.phone).trim() !== "" ? data.phone : "+63", // ✅ fallback to +63
         });
       })
       .catch((err) => {
@@ -105,7 +103,7 @@ function AdminProfile() {
   };
 
   const handleSave = async () => {
-    const stored = localStorage.getItem('user');
+    const stored = localStorage.getItem("user");
     if (!stored) {
       alert("No logged-in user found.");
       return;
@@ -139,38 +137,46 @@ function AdminProfile() {
     if (phoneTrim !== "" && phoneTrim !== "+63") {
       const phoneRegex = /^\+639\d{9}$/;
       if (!phoneRegex.test(phoneTrim)) {
-        alert("Phone must be a Philippine mobile number: +639 followed by 9 digits");
+        alert(
+          "Phone must be a Philippine mobile number: +639 followed by 9 digits",
+        );
         return;
       }
     }
 
     try {
-      const res = await fetch(`http://localhost:3000/api/user-profile/${user.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: `${admin.firstName} ${admin.lastName}`.trim(),
+      const res = await fetch(
+        `http://localhost:3000/api/user-profile/${user.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: `${admin.firstName} ${admin.lastName}`.trim(),
 
-          // ✅ ADDED ONLY: send email so server can update it
-          email: admin.email,
+            // ✅ ADDED ONLY: send email so server can update it
+            email: admin.email,
 
-          birthday: admin.birthday,
-          gender: admin.gender,
+            birthday: admin.birthday,
+            gender: admin.gender,
 
-          // ✅ if only "+63", send empty so backend treats as not provided
-          phone: phoneTrim === "+63" ? "" : phoneTrim,
-          address: ""
-        }),
-      });
+            // ✅ if only "+63", send empty so backend treats as not provided
+            phone: phoneTrim === "+63" ? "" : phoneTrim,
+            address: "",
+          }),
+        },
+      );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to update profile");
 
-      localStorage.setItem("user", JSON.stringify({
-        ...user,
-        firstName: admin.firstName,
-        email: admin.email,
-      }));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...user,
+          firstName: admin.firstName,
+          email: admin.email,
+        }),
+      );
 
       setIsEditing(false);
       // ✅ ADDED: clear name error on successful save
@@ -197,7 +203,10 @@ function AdminProfile() {
   };
 
   const cpPasswordValid = () =>
-    cpCriteria.uppercase && cpCriteria.number && cpCriteria.special && cpCriteria.length;
+    cpCriteria.uppercase &&
+    cpCriteria.number &&
+    cpCriteria.special &&
+    cpCriteria.length;
 
   const renderCpCriteria = (text, ok) => (
     <p className={`cp-criteria-item ${ok ? "ok" : ""}`} key={text}>
@@ -230,53 +239,6 @@ function AdminProfile() {
     setChangePassSuccess("");
   };
 
-  // ✅ ADDED: helper to get logged-in email
-  const getLoggedInEmail = () => {
-    const stored = localStorage.getItem("user");
-    if (!stored) return "";
-    try {
-      const u = JSON.parse(stored);
-      return u?.email || "";
-    } catch {
-      return "";
-    }
-  };
-
-  // ✅ ADDED: Send OTP then go to existing OTP page
-  const handleSendOtpForPassword = async () => {
-    setChangePassError("");
-    setChangePassSuccess("");
-
-    const email = getLoggedInEmail();
-    if (!email) {
-      setChangePassError("No email found. Please login again.");
-      return;
-    }
-
-    setOtpLoading(true);
-    try {
-      const res = await fetch("http://localhost:3000/api/password/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setChangePassError(data?.message || "Failed to send OTP");
-        return;
-      }
-
-      setChangePassSuccess("OTP sent! Please enter it on the OTP page.");
-      navigate("/user-forgot-otp", { state: { email } });
-    } catch (err) {
-      setChangePassError("Network error while sending OTP");
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
   // ✅ Submit change password
   const handleChangePassword = async (e) => {
     e.preventDefault();
@@ -299,11 +261,13 @@ function AdminProfile() {
     }
 
     if (newPassword === currentPassword) {
-      setChangePassError("New password must be different from current password.");
+      setChangePassError(
+        "New password must be different from current password.",
+      );
       return;
     }
 
-    const stored = localStorage.getItem('user');
+    const stored = localStorage.getItem("user");
     if (!stored) {
       setChangePassError("No logged-in user found.");
       return;
@@ -323,25 +287,22 @@ function AdminProfile() {
     }
 
     try {
-      const res = await fetch(`http://localhost:3000/api/profile/${user.id}/password`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
+      const res = await fetch(
+        `http://localhost:3000/api/profile/${user.id}/password`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            currentPassword,
+            newPassword,
+          }),
+        },
+      );
 
       const data = await res.json();
 
-      if (!res.ok && (res.status === 403 || String(data?.message || "").toLowerCase().includes("otp"))) {
-        const email = user?.email || getLoggedInEmail();
-        setChangePassError("OTP verification required. Sending you to OTP page...");
-        if (email) navigate("/user-forgot-otp", { state: { email } });
-        return;
-      }
-
-      if (!res.ok) throw new Error(data?.message || "Failed to change password");
+      if (!res.ok)
+        throw new Error(data?.message || "Failed to change password");
 
       setChangePassSuccess("Password changed successfully!");
       setCurrentPassword("");
@@ -360,65 +321,45 @@ function AdminProfile() {
   };
 
   return (
-    <div className="admin-profile">
-
-      <button className="back-button" onClick={() => navigate('/admin-dashboard')}>
-        ← Back to Dashboard
-      </button>
-
-      <div className="profile-card">
-
-        {/* TOP DISPLAY */}
-        <div className="profile-top">
-          <div className="profile-avatar">
-            <span>👤</span>
-          </div>
-
-          <div className="profile-summary">
-            <h2 className="profile-name">
-              {admin.firstName} {admin.lastName}
-            </h2>
-            <p className="profile-role">{admin.role}</p>
-          </div>
+    <div className="page-shell">
+      <div className="section-hero">
+        <div className="section-hero-left">
+          <div className="section-kicker">Account</div>
+          <h2 className="section-title">Admin Profile</h2>
+          <p className="section-desc">
+            Manage your personal information and account settings.
+          </p>
         </div>
-
-        {/* ACTION BUTTONS */}
-        <div className="profile-actions">
+        <div className="section-hero-right">
           <button
-            className="edit-button"
+            className="primary-action"
             onClick={handleEdit}
             disabled={isEditing}
           >
-            Edit
+            ✏ Edit
           </button>
 
           <button
-            className="save-button"
+            className="primary-action"
             onClick={handleSave}
             disabled={!isEditing}
           >
-            Save
+            ✓ Save
           </button>
 
-          <button
-            className="change-password-button"
-            onClick={openChangePassword}
-          >
-            Change Password
+          <button className="secondary-action" onClick={openChangePassword}>
+            🔑 Change Password
           </button>
         </div>
+      </div>
 
-        {/* ✅ ADDED: inline error box like your screenshot */}
-        {nameError && (
-          <div className="profile-msg profile-msg-error">
-            {nameError}
-          </div>
-        )}
+      {nameError && (
+        <div className="profile-msg profile-msg-error">{nameError}</div>
+      )}
 
-        {/* EDITABLE TABLE / FORM */}
-        <div className="profile-form">
-
-          <div className="form-row">
+      <div className="settings-card">
+        <div className="form-grid">
+          <div className="field">
             <label>First Name</label>
             <input
               type="text"
@@ -429,7 +370,7 @@ function AdminProfile() {
             />
           </div>
 
-          <div className="form-row">
+          <div className="field">
             <label>Last Name</label>
             <input
               type="text"
@@ -440,7 +381,7 @@ function AdminProfile() {
             />
           </div>
 
-          <div className="form-row">
+          <div className="field">
             <label>Email</label>
             <input
               type="email"
@@ -451,8 +392,7 @@ function AdminProfile() {
             />
           </div>
 
-          {/* ✅ PHONE NUMBER with +63 locked */}
-          <div className="form-row">
+          <div className="field">
             <label>Phone Number</label>
             <input
               type="text"
@@ -479,21 +419,7 @@ function AdminProfile() {
             />
           </div>
 
-          {/* <div className="form-row">
-            <label>Role</label>
-            <select
-              name="role"
-              value={admin.role}
-              onChange={handleChange}
-              disabled={!isEditing}
-            >
-              <option value="admin">admin</option>
-              <option value="staff">staff</option>
-            </select>
-          </div> */}
-
-          {/* ✅ Gender */}
-          <div className="form-row">
+          <div className="field">
             <label>Gender</label>
             <select
               name="gender"
@@ -508,7 +434,7 @@ function AdminProfile() {
             </select>
           </div>
 
-          <div className="form-row">
+          <div className="field">
             <label>Birthday</label>
             <input
               type="date"
@@ -519,7 +445,6 @@ function AdminProfile() {
               max="2010-12-31"
             />
           </div>
-
         </div>
       </div>
 
@@ -528,27 +453,107 @@ function AdminProfile() {
         <div className="cp-modal-overlay" onClick={closeChangePassword}>
           <div className="cp-modal" onClick={(e) => e.stopPropagation()}>
             <h3 className="cp-title">Change Password</h3>
-            <p className="cp-subtext">OTP needed to change the password</p>
+            <p className="cp-subtext">Enter your current and new password</p>
 
-            {/* ✅ Send OTP button ONLY (form removed) */}
-            <button
-              type="button"
-              className="cp-save"
-              onClick={handleSendOtpForPassword}
-              disabled={otpLoading}
-              style={{ marginBottom: "10px", width: "100%" }}
-            >
-              {otpLoading ? "Sending OTP..." : "Send OTP"}
-            </button>
+            <form onSubmit={handleChangePassword}>
+              <div className="cp-form-row">
+                <label>Current Password</label>
+                <div className="cp-input-wrapper">
+                  <input
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                  />
+                  <button
+                    type="button"
+                    className="cp-eye-btn"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  >
+                    {showCurrentPassword ? (
+                      <MdVisibilityOff />
+                    ) : (
+                      <MdVisibility />
+                    )}
+                  </button>
+                </div>
+              </div>
 
-            {/* ✅ optional: keep your feedback messages */}
+              <div className="cp-form-row">
+                <label>New Password</label>
+                <div className="cp-input-wrapper">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={handleCpNewPasswordChange}
+                    placeholder="Enter new password"
+                  />
+                  <button
+                    type="button"
+                    className="cp-eye-btn"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    {showNewPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                  </button>
+                </div>
+                <div className="cp-criteria">
+                  {renderCpCriteria("Uppercase letter", cpCriteria.uppercase)}
+                  {renderCpCriteria("Number", cpCriteria.number)}
+                  {renderCpCriteria("Special character", cpCriteria.special)}
+                  {renderCpCriteria("8-12 characters", cpCriteria.length)}
+                </div>
+              </div>
+
+              <div className="cp-form-row">
+                <label>Confirm New Password</label>
+                <div className="cp-input-wrapper">
+                  <input
+                    type={showConfirmNewPassword ? "text" : "password"}
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                  />
+                  <button
+                    type="button"
+                    className="cp-eye-btn"
+                    onClick={() =>
+                      setShowConfirmNewPassword(!showConfirmNewPassword)
+                    }
+                  >
+                    {showConfirmNewPassword ? (
+                      <MdVisibilityOff />
+                    ) : (
+                      <MdVisibility />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="cp-actions">
+                <button
+                  type="button"
+                  className="cp-cancel"
+                  onClick={closeChangePassword}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="cp-save"
+                  disabled={!cpPasswordValid()}
+                >
+                  Change Password
+                </button>
+              </div>
+            </form>
+
             {changePassError && <p className="cp-error">{changePassError}</p>}
-            {changePassSuccess && <p className="cp-success">{changePassSuccess}</p>}
-
+            {changePassSuccess && (
+              <p className="cp-success">{changePassSuccess}</p>
+            )}
           </div>
         </div>
       )}
-
     </div>
   );
 }

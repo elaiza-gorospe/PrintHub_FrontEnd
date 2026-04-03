@@ -59,8 +59,6 @@ function AdminDashboard() {
       {
         id: "profile",
         label: "Profile",
-        external: true,
-        path: "/admin-profile",
       },
       { id: "orders", label: "Orders" },
       { id: "products", label: "Products" },
@@ -77,13 +75,6 @@ function AdminDashboard() {
   }, [role]);
 
   const handleMenuItemClick = (item) => {
-    // Profile = separate page
-    if (item.external) {
-      setIsMobileSidebarOpen(false);
-      navigate(item.path);
-      return;
-    }
-
     // Extra safety: staff can't open Manage Accounts even if forced
     if (role === "staff" && item.id === "customers") return;
 
@@ -274,15 +265,6 @@ function AdminDashboard() {
 
           {/* ✅ top button ONLY (this is the one you want to keep) */}
           <div className="header-actions">
-            {activeItem === "orders" && (
-              <button
-                className="header-pill"
-                type="button"
-                onClick={() => alert("Add Order (demo)")}
-              >
-                <FaPlus /> New Order
-              </button>
-            )}
             {activeItem === "products" && (
               <button
                 className="header-pill"
@@ -290,15 +272,6 @@ function AdminDashboard() {
                 onClick={() => alert("Add Product (demo)")}
               >
                 <FaPlus /> New Product
-              </button>
-            )}
-            {activeItem === "settings" && (
-              <button
-                className="header-pill ghost"
-                type="button"
-                onClick={() => alert("Saved (demo)")}
-              >
-                <FaCog /> Save
               </button>
             )}
           </div>

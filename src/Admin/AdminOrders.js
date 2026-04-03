@@ -56,18 +56,20 @@ function AdminOrders() {
   // Filter orders based on search query and status
   const filteredOrders = useMemo(() => {
     const q = ordersQuery.trim().toLowerCase();
-    return orders.filter((o) => {
-      const matchQuery =
-        !q ||
-        o.id.toLowerCase().includes(q) ||
-        o.customer.toLowerCase().includes(q) ||
-        String(o.total).includes(q);
+    return orders
+      .filter((o) => {
+        const matchQuery =
+          !q ||
+          o.id.toLowerCase().includes(q) ||
+          o.customer.toLowerCase().includes(q) ||
+          String(o.total).includes(q);
 
-      const matchStatus =
-        ordersStatus === "all" ? true : o.status === ordersStatus;
+        const matchStatus =
+          ordersStatus === "all" ? true : o.status === ordersStatus;
 
-      return matchQuery && matchStatus;
-    });
+        return matchQuery && matchStatus;
+      })
+      .sort((a, b) => b.dbId - a.dbId); // Sort descending - newest orders first
   }, [orders, ordersQuery, ordersStatus]);
 
   // Calculate stats from orders
