@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import "./Admin-dashboard.css";
 import AdminProfile from "./Admin-profile";
 import AdminManageAccounts from "./Admin-manageacc";
+import AdminOrders from "./AdminOrders";
+import AdminProducts from "./AdminProducts";
 
-// ✅ Icons
+// ✅ Icons (only keep unused, but needed)
 import {
   FaMoneyBillWave,
   FaUserPlus,
@@ -13,11 +15,7 @@ import {
   FaChartLine,
   FaCog,
   FaPlus,
-  FaSearch,
-  FaFilter,
   FaCheckCircle,
-  FaClock,
-  FaExclamationTriangle,
 } from "react-icons/fa";
 
 function AdminDashboard() {
@@ -27,13 +25,6 @@ function AdminDashboard() {
 
   // ✅ Mobile sidebar drawer
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
-  // ✅ demo states for Orders/Products pages
-  const [ordersQuery, setOrdersQuery] = useState("");
-  const [ordersStatus, setOrdersStatus] = useState("all");
-
-  const [productsQuery, setProductsQuery] = useState("");
-  const [productsCategory, setProductsCategory] = useState("all");
 
   const [settingsTab, setSettingsTab] = useState("general");
 
@@ -65,7 +56,12 @@ function AdminDashboard() {
 
   const menuItems = useMemo(() => {
     const base = [
-      { id: "profile", label: "Profile", external: true, path: "/admin-profile" },
+      {
+        id: "profile",
+        label: "Profile",
+        external: true,
+        path: "/admin-profile",
+      },
       { id: "orders", label: "Orders" },
       { id: "products", label: "Products" },
       { id: "customers", label: "Manage Accounts" },
@@ -124,73 +120,6 @@ function AdminDashboard() {
   if (role === "staff" && activeItem === "customers") {
     setActiveItem("dashboard");
   }
-
-  // ✅ Demo data (replace later with DB)
-  const orders = useMemo(
-    () => [
-      { id: "ORD-1001", customer: "Kathleen Buhay", total: 1250, status: "pending", date: "2026-02-08" },
-      { id: "ORD-1002", customer: "Admin User", total: 499, status: "processing", date: "2026-02-08" },
-      { id: "ORD-1003", customer: "Juan Dela Cruz", total: 899, status: "completed", date: "2026-02-07" },
-      { id: "ORD-1004", customer: "Maria Santos", total: 199, status: "cancelled", date: "2026-02-06" },
-    ],
-    []
-  );
-
-  const products = useMemo(
-    () => [
-      { sku: "PRD-BC-001", name: "Business Cards", category: "print", price: 199, stock: 32, status: "active" },
-      { sku: "PRD-ST-002", name: "Stickers", category: "print", price: 149, stock: 0, status: "out" },
-      { sku: "PRD-LB-003", name: "Labels", category: "print", price: 99, stock: 12, status: "active" },
-      { sku: "PRD-DS-004", name: "Logo Design", category: "service", price: 999, stock: 999, status: "active" },
-    ],
-    []
-  );
-
-  const filteredOrders = useMemo(() => {
-    const q = ordersQuery.trim().toLowerCase();
-    return orders.filter((o) => {
-      const matchQuery =
-        !q ||
-        o.id.toLowerCase().includes(q) ||
-        o.customer.toLowerCase().includes(q) ||
-        String(o.total).includes(q);
-
-      const matchStatus = ordersStatus === "all" ? true : o.status === ordersStatus;
-
-      return matchQuery && matchStatus;
-    });
-  }, [orders, ordersQuery, ordersStatus]);
-
-  const filteredProducts = useMemo(() => {
-    const q = productsQuery.trim().toLowerCase();
-    return products.filter((p) => {
-      const matchQuery =
-        !q ||
-        p.sku.toLowerCase().includes(q) ||
-        p.name.toLowerCase().includes(q) ||
-        String(p.price).includes(q);
-
-      const matchCategory = productsCategory === "all" ? true : p.category === productsCategory;
-
-      return matchQuery && matchCategory;
-    });
-  }, [products, productsQuery, productsCategory]);
-
-  const ordersStats = useMemo(() => {
-    const pending = orders.filter((o) => o.status === "pending").length;
-    const processing = orders.filter((o) => o.status === "processing").length;
-    const completed = orders.filter((o) => o.status === "completed").length;
-    const cancelled = orders.filter((o) => o.status === "cancelled").length;
-    return { pending, processing, completed, cancelled, total: orders.length };
-  }, [orders]);
-
-  const productsStats = useMemo(() => {
-    const active = products.filter((p) => p.status === "active").length;
-    const out = products.filter((p) => p.status === "out").length;
-    const services = products.filter((p) => p.category === "service").length;
-    const prints = products.filter((p) => p.category === "print").length;
-    return { active, out, services, prints, total: products.length };
-  }, [products]);
 
   const pageTitle = useMemo(() => {
     if (activeItem === "dashboard") return "Dashboard";
@@ -274,9 +203,15 @@ function AdminDashboard() {
               <div className="avatar-circle">AD</div>
             </div>
             <div className="user-details">
-              <h4 className="user-name">{storedUser?.firstName || "Admin User"}</h4>
+              <h4 className="user-name">
+                {storedUser?.firstName || "Admin User"}
+              </h4>
               <p className="user-role">
-                {role === "admin" ? "Administrator" : role === "staff" ? "Staff" : "Customer"}
+                {role === "admin"
+                  ? "Administrator"
+                  : role === "staff"
+                    ? "Staff"
+                    : "Customer"}
               </p>
             </div>
           </div>
@@ -297,7 +232,11 @@ function AdminDashboard() {
               onClick={() => handleMenuItemClick(item)}
             >
               {!isCollapsed && <span className="menu-label">{item.label}</span>}
-              {isCollapsed && <span className="menu-label-collapsed">{item.label.charAt(0)}</span>}
+              {isCollapsed && (
+                <span className="menu-label-collapsed">
+                  {item.label.charAt(0)}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -326,7 +265,8 @@ function AdminDashboard() {
               <div className="page-title-wrap">
                 <h1 className="page-title">{pageTitle}</h1>
                 <p className="subtitle">
-                  Welcome back{storedUser?.firstName ? `, ${storedUser.firstName}` : ""}!
+                  Welcome back
+                  {storedUser?.firstName ? `, ${storedUser.firstName}` : ""}!
                 </p>
               </div>
             </div>
@@ -335,17 +275,29 @@ function AdminDashboard() {
           {/* ✅ top button ONLY (this is the one you want to keep) */}
           <div className="header-actions">
             {activeItem === "orders" && (
-              <button className="header-pill" type="button" onClick={() => alert("Add Order (demo)")}>
+              <button
+                className="header-pill"
+                type="button"
+                onClick={() => alert("Add Order (demo)")}
+              >
                 <FaPlus /> New Order
               </button>
             )}
             {activeItem === "products" && (
-              <button className="header-pill" type="button" onClick={() => alert("Add Product (demo)")}>
+              <button
+                className="header-pill"
+                type="button"
+                onClick={() => alert("Add Product (demo)")}
+              >
                 <FaPlus /> New Product
               </button>
             )}
             {activeItem === "settings" && (
-              <button className="header-pill ghost" type="button" onClick={() => alert("Saved (demo)")}>
+              <button
+                className="header-pill ghost"
+                type="button"
+                onClick={() => alert("Saved (demo)")}
+              >
                 <FaCog /> Save
               </button>
             )}
@@ -360,15 +312,25 @@ function AdminDashboard() {
                 <div className="dash-hero-left">
                   <div className="dash-kicker">Overview</div>
                   <h2 className="dash-title">Your store at a glance</h2>
-                  <p className="dash-desc">Track performance and manage operations faster.</p>
+                  <p className="dash-desc">
+                    Track performance and manage operations faster.
+                  </p>
                 </div>
 
                 <div className="dash-hero-right">
-                  <button className="dash-quick-btn" type="button" onClick={() => setActiveItem("customers")}>
+                  <button
+                    className="dash-quick-btn"
+                    type="button"
+                    onClick={() => setActiveItem("customers")}
+                  >
                     Manage Accounts
                   </button>
 
-                  <button className="dash-quick-btn ghost" type="button" onClick={() => setActiveItem("orders")}>
+                  <button
+                    className="dash-quick-btn ghost"
+                    type="button"
+                    onClick={() => setActiveItem("orders")}
+                  >
                     View Orders
                   </button>
                 </div>
@@ -431,238 +393,15 @@ function AdminDashboard() {
           )}
 
           {activeItem === "profile" && <AdminProfile />}
-          {activeItem === "customers" && role !== "staff" && <AdminManageAccounts />}
-
-          {/* ✅ ORDERS (NO MORE DUPLICATE TITLE/BUTTON) */}
-          {activeItem === "orders" && (
-            <div className="dashpage dashpage-orders">
-              {/* stat cards */}
-              <div className="dashpage-stats">
-                <div className="dashpage-stat-card">
-                  <div className="dashpage-stat-label">Total</div>
-                  <div className="dashpage-stat-value">{ordersStats.total}</div>
-                </div>
-
-                <div className="dashpage-stat-card">
-                  <div className="dashpage-stat-label">Pending</div>
-                  <div className="dashpage-stat-value orange">{ordersStats.pending}</div>
-                </div>
-
-                <div className="dashpage-stat-card">
-                  <div className="dashpage-stat-label">Processing</div>
-                  <div className="dashpage-stat-value blue">{ordersStats.processing}</div>
-                </div>
-
-                <div className="dashpage-stat-card">
-                  <div className="dashpage-stat-label">Completed</div>
-                  <div className="dashpage-stat-value green">{ordersStats.completed}</div>
-                </div>
-              </div>
-
-              {/* toolbar */}
-              <div className="dashpage-toolbar">
-                <div className="dashpage-search">
-                  <span className="dashpage-search-icon">
-                    <FaSearch size={14} />
-                  </span>
-
-                  <input
-                    type="text"
-                    placeholder="Search order ID, customer, total..."
-                    value={ordersQuery}
-                    onChange={(e) => setOrdersQuery(e.target.value)}
-                  />
-                </div>
-
-                <div className="dashpage-filters">
-                  <select value={ordersStatus} onChange={(e) => setOrdersStatus(e.target.value)}>
-                    <option value="all">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
-
-                  <button
-                    className="dashpage-filterbtn"
-                    type="button"
-                    onClick={() => {
-                      setOrdersQuery("");
-                      setOrdersStatus("all");
-                    }}
-                    title="Clear filters"
-                  >
-                    <FaFilter />
-                  </button>
-                </div>
-              </div>
-
-              {/* table */}
-              <div className="dashpage-table-card">
-                <table className="dashpage-table">
-                  <thead>
-                    <tr>
-                      <th>Order</th>
-                      <th>Customer</th>
-                      <th>Total</th>
-                      <th>Status</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {filteredOrders.map((o) => (
-                      <tr key={o.id}>
-                        <td data-label="Order">
-                          <div className="dashpage-rowmain">
-                            <div className="dashpage-rowtitle">{o.id}</div>
-                          </div>
-                        </td>
-                        <td data-label="Customer">{o.customer}</td>
-                        <td data-label="Total">₱ {o.total.toLocaleString()}</td>
-                        <td data-label="Status">
-                          <span className={`dashpage-pill status-${o.status}`}>
-                            {o.status === "pending" && <FaClock style={{ marginRight: 6 }} />}
-                            {o.status === "processing" && <FaClock style={{ marginRight: 6 }} />}
-                            {o.status === "completed" && <FaCheckCircle style={{ marginRight: 6 }} />}
-                            {o.status === "cancelled" && <FaExclamationTriangle style={{ marginRight: 6 }} />}
-                            {o.status}
-                          </span>
-                        </td>
-                        <td data-label="Date">{o.date}</td>
-                      </tr>
-                    ))}
-
-                    {filteredOrders.length === 0 && (
-                      <tr>
-                        <td colSpan="5" className="dashpage-empty">
-                          No orders found.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          {activeItem === "customers" && role !== "staff" && (
+            <AdminManageAccounts />
           )}
 
-          {/* ✅ PRODUCTS (NO MORE DUPLICATE TITLE/BUTTON) */}
-          {activeItem === "products" && (
-            <div className="dashpage dashpage-products">
-              {/* stat cards */}
-              <div className="dashpage-stats">
-                <div className="dashpage-stat-card">
-                  <div className="dashpage-stat-label">Total</div>
-                  <div className="dashpage-stat-value">{productsStats.total}</div>
-                </div>
+          {/* ✅ ORDERS - Dynamic component */}
+          {activeItem === "orders" && <AdminOrders />}
 
-                <div className="dashpage-stat-card">
-                  <div className="dashpage-stat-label">Active</div>
-                  <div className="dashpage-stat-value green">{productsStats.active}</div>
-                </div>
-
-                <div className="dashpage-stat-card">
-                  <div className="dashpage-stat-label">Out of Stock</div>
-                  <div className="dashpage-stat-value red">{productsStats.out}</div>
-                </div>
-
-                <div className="dashpage-stat-card">
-                  <div className="dashpage-stat-label">Services</div>
-                  <div className="dashpage-stat-value purple">{productsStats.services}</div>
-                </div>
-              </div>
-
-              {/* toolbar */}
-              <div className="dashpage-toolbar">
-                <div className="dashpage-search">
-                  <span className="dashpage-search-icon">
-                    <FaSearch size={14} />
-                  </span>
-
-                  <input
-                    type="text"
-                    placeholder="Search SKU, product name, price..."
-                    value={productsQuery}
-                    onChange={(e) => setProductsQuery(e.target.value)}
-                  />
-                </div>
-
-                <div className="dashpage-filters">
-                  <select value={productsCategory} onChange={(e) => setProductsCategory(e.target.value)}>
-                    <option value="all">All Categories</option>
-                    <option value="print">Print</option>
-                    <option value="service">Service</option>
-                  </select>
-
-                  <button
-                    className="dashpage-filterbtn"
-                    type="button"
-                    onClick={() => {
-                      setProductsQuery("");
-                      setProductsCategory("all");
-                    }}
-                    title="Clear filters"
-                  >
-                    <FaFilter />
-                  </button>
-                </div>
-              </div>
-
-              {/* table */}
-              <div className="dashpage-table-card">
-                <table className="dashpage-table">
-                  <thead>
-                    <tr>
-                      <th>SKU</th>
-                      <th>Product</th>
-                      <th>Category</th>
-                      <th>Price</th>
-                      <th>Stock</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {filteredProducts.map((p) => (
-                      <tr key={p.sku}>
-                        <td data-label="SKU" className="strong">
-                          {p.sku}
-                        </td>
-                        <td data-label="Product">{p.name}</td>
-                        <td data-label="Category">
-                          <span className={`dashpage-pill cat-${p.category}`}>{p.category}</span>
-                        </td>
-                        <td data-label="Price">₱ {p.price.toLocaleString()}</td>
-                        <td data-label="Stock">{p.category === "service" ? "—" : p.stock}</td>
-                        <td data-label="Status">
-                          <span
-                            className={`dashpage-pill status-${
-                              p.status === "active" ? "completed" : "cancelled"
-                            }`}
-                          >
-                            {p.status === "active" ? (
-                              <FaCheckCircle style={{ marginRight: 6 }} />
-                            ) : (
-                              <FaExclamationTriangle style={{ marginRight: 6 }} />
-                            )}
-                            {p.status === "active" ? "active" : "out"}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-
-                    {filteredProducts.length === 0 && (
-                      <tr>
-                        <td colSpan="6" className="dashpage-empty">
-                          No products found.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          {/* ✅ PRODUCTS - Dynamic component */}
+          {activeItem === "products" && <AdminProducts />}
 
           {/* ✅ SETTINGS (unchanged) */}
           {activeItem === "settings" && (
@@ -674,15 +413,24 @@ function AdminDashboard() {
                   </div>
                   <h2 className="section-title">Customize your workspace</h2>
                   <p className="section-desc">
-                    Manage security, store settings, and preferences in one place.
+                    Manage security, store settings, and preferences in one
+                    place.
                   </p>
                 </div>
 
                 <div className="section-hero-right">
-                  <button className="primary-action" type="button" onClick={() => alert("Saved (demo)")}>
+                  <button
+                    className="primary-action"
+                    type="button"
+                    onClick={() => alert("Saved (demo)")}
+                  >
                     <FaCheckCircle /> Save Changes
                   </button>
-                  <button className="secondary-action" type="button" onClick={() => alert("Reset (demo)")}>
+                  <button
+                    className="secondary-action"
+                    type="button"
+                    onClick={() => alert("Reset (demo)")}
+                  >
                     Reset
                   </button>
                 </div>
@@ -725,7 +473,9 @@ function AdminDashboard() {
                     <>
                       <div className="settings-head">
                         <h3>General</h3>
-                        <p className="muted">Basic preferences for the admin panel.</p>
+                        <p className="muted">
+                          Basic preferences for the admin panel.
+                        </p>
                       </div>
 
                       <div className="form-grid">
@@ -760,7 +510,9 @@ function AdminDashboard() {
                         <div className="field full">
                           <label>2FA</label>
                           <div className="toggle-row">
-                            <span className="muted">Require two-factor authentication for admins</span>
+                            <span className="muted">
+                              Require two-factor authentication for admins
+                            </span>
                             <label className="switch">
                               <input type="checkbox" defaultChecked />
                               <span className="slider" />
@@ -793,7 +545,9 @@ function AdminDashboard() {
                     <>
                       <div className="settings-head">
                         <h3>Store</h3>
-                        <p className="muted">Manage store behavior and checkout rules.</p>
+                        <p className="muted">
+                          Manage store behavior and checkout rules.
+                        </p>
                       </div>
 
                       <div className="form-grid">
@@ -827,14 +581,18 @@ function AdminDashboard() {
                     <>
                       <div className="settings-head">
                         <h3>Notifications</h3>
-                        <p className="muted">Control alerts and email notifications.</p>
+                        <p className="muted">
+                          Control alerts and email notifications.
+                        </p>
                       </div>
 
                       <div className="settings-list">
                         <div className="settings-item">
                           <div>
                             <div className="strong">New orders</div>
-                            <div className="muted">Notify when a new order is placed</div>
+                            <div className="muted">
+                              Notify when a new order is placed
+                            </div>
                           </div>
                           <label className="switch">
                             <input type="checkbox" defaultChecked />
@@ -845,7 +603,9 @@ function AdminDashboard() {
                         <div className="settings-item">
                           <div>
                             <div className="strong">Low stock</div>
-                            <div className="muted">Alert when inventory is low</div>
+                            <div className="muted">
+                              Alert when inventory is low
+                            </div>
                           </div>
                           <label className="switch">
                             <input type="checkbox" defaultChecked />
@@ -856,7 +616,9 @@ function AdminDashboard() {
                         <div className="settings-item">
                           <div>
                             <div className="strong">Weekly summary</div>
-                            <div className="muted">Send a weekly performance report</div>
+                            <div className="muted">
+                              Send a weekly performance report
+                            </div>
                           </div>
                           <label className="switch">
                             <input type="checkbox" />
