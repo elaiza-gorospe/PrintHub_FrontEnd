@@ -31,6 +31,19 @@ function AdminDashboard() {
   // ✅ NEW: Logout confirm modal
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+  // ✅ NEW: Add Product modal
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [refreshProductsKey, setRefreshProductsKey] = useState(0);
+  const [productForm, setProductForm] = useState({
+    name: "",
+    sku: "",
+    price: "",
+    stock: "",
+    print_type: "offset",
+    material: "",
+    description: "",
+  });
+
   // ✅ close mobile sidebar if resized to desktop
   useEffect(() => {
     const onResize = () => {
@@ -57,13 +70,17 @@ function AdminDashboard() {
   const menuItems = useMemo(() => {
     const base = [
       {
-        id: "profile",
-        label: "Profile",
+        id: "dashboard",
+        label: "Dashboard",
       },
       { id: "orders", label: "Orders" },
       { id: "products", label: "Products" },
       { id: "customers", label: "Manage Accounts" },
       { id: "settings", label: "Settings" },
+      {
+        id: "profile",
+        label: "Profile",
+      },
     ];
 
     // Staff: remove Manage Accounts
@@ -105,6 +122,60 @@ function AdminDashboard() {
   // ✅ NEW: open confirm modal instead of immediate logout
   const handleLogout = () => {
     setShowLogoutModal(true);
+  };
+
+  // ✅ NEW: Open add product modal
+  const handleAddProduct = () => {
+    setProductForm({
+      name: "",
+      sku: "",
+      price: "",
+      stock: "",
+      print_type: "offset",
+      material: "",
+      description: "",
+    });
+    setShowAddProductModal(true);
+  };
+
+  // ✅ NEW: Submit add product form
+  const submitAddProduct = async (e) => {
+    e.preventDefault();
+
+    if (!productForm.name.trim()) return alert("Product name is required");
+    if (!productForm.sku.trim()) return alert("SKU is required");
+    if (!productForm.price || productForm.price <= 0)
+      return alert("Price must be greater than 0");
+
+    try {
+      const res = await fetch("http://localhost:3000/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: productForm.name,
+          sku: productForm.sku,
+          price: parseFloat(productForm.price),
+          stock: parseInt(productForm.stock) || 0,
+          print_type: productForm.print_type,
+          material: productForm.material,
+          description: productForm.description,
+          active: true,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to add product");
+
+      setShowAddProductModal(false);
+      alert("Product added successfully!");
+      // ✅ Ensure we stay on/go to products view to see the new product
+      setActiveItem("products");
+      // ✅ Trigger refresh of products list
+      setRefreshProductsKey((prev) => prev + 1);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Error adding product");
+    }
   };
 
   // If staff somehow lands on customers, kick back to dashboard
@@ -166,6 +237,293 @@ function AdminDashboard() {
                 Logout
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ NEW: Add Product modal */}
+      {showAddProductModal && (
+        <div
+          className="ad-logout-overlay"
+          onMouseDown={() => setShowAddProductModal(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="ad-logout-modal"
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{ maxHeight: "90vh", overflowY: "auto", maxWidth: "500px" }}
+          >
+            <h3 className="ad-logout-title">Add New Product</h3>
+            <p
+              style={{
+                color: "#7f8c8d",
+                fontSize: "14px",
+                marginBottom: "20px",
+              }}
+            >
+              Fill in the product details below
+            </p>
+
+            <form onSubmit={submitAddProduct}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "12px",
+                  marginBottom: "12px",
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Product Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={productForm.name}
+                    onChange={(e) =>
+                      setProductForm({ ...productForm, name: e.target.value })
+                    }
+                    placeholder="e.g., Business Cards"
+                    style={{
+                      width: "100%",
+                      padding: "8px 10px",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "6px",
+                      fontSize: "14px",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    SKU *
+                  </label>
+                  <input
+                    type="text"
+                    value={productForm.sku}
+                    onChange={(e) =>
+                      setProductForm({ ...productForm, sku: e.target.value })
+                    }
+                    placeholder="e.g., BC-001"
+                    style={{
+                      width: "100%",
+                      padding: "8px 10px",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "6px",
+                      fontSize: "14px",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "12px",
+                  marginBottom: "12px",
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Price (₱) *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={productForm.price}
+                    onChange={(e) =>
+                      setProductForm({ ...productForm, price: e.target.value })
+                    }
+                    placeholder="0.00"
+                    style={{
+                      width: "100%",
+                      padding: "8px 10px",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "6px",
+                      fontSize: "14px",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Stock
+                  </label>
+                  <input
+                    type="number"
+                    value={productForm.stock}
+                    onChange={(e) =>
+                      setProductForm({ ...productForm, stock: e.target.value })
+                    }
+                    placeholder="0"
+                    style={{
+                      width: "100%",
+                      padding: "8px 10px",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "6px",
+                      fontSize: "14px",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "12px",
+                  marginBottom: "12px",
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Print Type
+                  </label>
+                  <select
+                    value={productForm.print_type}
+                    onChange={(e) =>
+                      setProductForm({
+                        ...productForm,
+                        print_type: e.target.value,
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "8px 10px",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "6px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <option value="offset">Offset Print</option>
+                    <option value="digital">Digital Print</option>
+                    <option value="service">Service</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Material
+                  </label>
+                  <input
+                    type="text"
+                    value={productForm.material}
+                    onChange={(e) =>
+                      setProductForm({
+                        ...productForm,
+                        material: e.target.value,
+                      })
+                    }
+                    placeholder="e.g., Matte Paper"
+                    style={{
+                      width: "100%",
+                      padding: "8px 10px",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "6px",
+                      fontSize: "14px",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "16px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "4px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                  }}
+                >
+                  Description
+                </label>
+                <textarea
+                  value={productForm.description}
+                  onChange={(e) =>
+                    setProductForm({
+                      ...productForm,
+                      description: e.target.value,
+                    })
+                  }
+                  placeholder="Product description..."
+                  rows="3"
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                    fontFamily: "Arial, sans-serif",
+                  }}
+                />
+              </div>
+
+              <div className="ad-logout-actions">
+                <button
+                  type="button"
+                  className="ad-logout-btn ghost"
+                  onClick={() => setShowAddProductModal(false)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="ad-logout-btn"
+                  style={{
+                    background: "#1b3f6e",
+                    color: "#fff",
+                    border: "none",
+                  }}
+                >
+                  Add Product
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -264,17 +622,17 @@ function AdminDashboard() {
           </div>
 
           {/* ✅ top button ONLY (this is the one you want to keep) */}
-          <div className="header-actions">
+          {/* <div className="header-actions">
             {activeItem === "products" && (
               <button
                 className="header-pill"
                 type="button"
-                onClick={() => alert("Add Product (demo)")}
+                onClick={handleAddProduct}
               >
                 <FaPlus /> New Product
               </button>
             )}
-          </div>
+          </div> */}
         </header>
 
         <div className="content-wrapper">
@@ -374,7 +732,12 @@ function AdminDashboard() {
           {activeItem === "orders" && <AdminOrders />}
 
           {/* ✅ PRODUCTS - Dynamic component */}
-          {activeItem === "products" && <AdminProducts />}
+          {activeItem === "products" && (
+            <AdminProducts
+              refreshTrigger={refreshProductsKey}
+              onAddProduct={handleAddProduct}
+            />
+          )}
 
           {/* ✅ SETTINGS (unchanged) */}
           {activeItem === "settings" && (
