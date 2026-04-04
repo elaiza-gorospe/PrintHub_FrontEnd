@@ -6,6 +6,7 @@ import {
   Route,
   useNavigate,
   useLocation,
+  Navigate,
 } from "react-router-dom";
 import { CartProvider } from "./contexts/CartContext";
 
@@ -56,6 +57,53 @@ const products = [
   },
 ];
 
+// ✅ PROTECTED ROUTE - Only admins can access
+function ProtectedAdminRoute({ children }) {
+  const storedUser = (() => {
+    try {
+      return (
+        JSON.parse(localStorage.getItem("adminUser")) ||
+        JSON.parse(localStorage.getItem("user")) ||
+        null
+      );
+    } catch {
+      return null;
+    }
+  })();
+
+  const role = storedUser?.role || "user";
+
+  if (!storedUser || role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
+// ✅ PREVENT LOGGED-IN ADMINS FROM ACCESSING LOGIN/REGISTER
+function AdminLoginRegisterGuard({ children }) {
+  const storedUser = (() => {
+    try {
+      return (
+        JSON.parse(localStorage.getItem("adminUser")) ||
+        JSON.parse(localStorage.getItem("user")) ||
+        null
+      );
+    } catch {
+      return null;
+    }
+  })();
+
+  const role = storedUser?.role || "user";
+
+  // If admin is already logged in, redirect to dashboard
+  if (storedUser && role === "admin") {
+    return <Navigate to="/admin-dashboard" replace />;
+  }
+
+  return children;
+}
+
 function App() {
   return (
     <CartProvider>
@@ -63,12 +111,37 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
 
-          <Route path="/admin-login" element={<AdminLoginPage />} />
-          <Route path="/admin-register" element={<AdminRegistrationPage />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route
+            path="/admin-login"
+            element={
+              <AdminLoginRegisterGuard>
+                <AdminLoginPage />
+              </AdminLoginRegisterGuard>
+            }
+          />
+          <Route
+            path="/admin-register"
+            element={
+              <AdminLoginRegisterGuard>
+                <AdminRegistrationPage />
+              </AdminLoginRegisterGuard>
+            }
+          />
+          <Route
+            path="/admin-dashboard"
+            element={
+              <ProtectedAdminRoute>
+                <AdminDashboard />
+              </ProtectedAdminRoute>
+            }
+          />
           <Route
             path="/admin-manageaccount"
-            element={<AdminManageAccounts />}
+            element={
+              <ProtectedAdminRoute>
+                <AdminManageAccounts />
+              </ProtectedAdminRoute>
+            }
           />
           <Route path="/user-login" element={<UserLoginPage />} />
           <Route path="/user-register" element={<UserRegistrationPage />} />

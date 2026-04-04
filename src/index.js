@@ -5,17 +5,6 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import "@heroui/styles";
 
-// Suppress ResizeObserver error (harmless browser limitation)
-const resizeObserverLoopErrDiv = document.getElementById(
-  "webpack-dev-server-client-overlay-div",
-);
-const resizeObserverErr = `ResizeObserver loop completed with undelivered notifications.`;
-const originalError = console.error;
-console.error = (...args) => {
-  if (args[0]?.includes?.(resizeObserverErr)) return;
-  originalError.call(console, ...args);
-};
-
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>

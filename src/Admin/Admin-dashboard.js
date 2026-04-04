@@ -65,7 +65,16 @@ function AdminDashboard() {
     }
   }, []);
 
-  const role = storedUser?.role || "admin";
+  const role = storedUser?.role || "user";
+
+  // ✅ ROLE-BASED ACCESS CONTROL: Only admins can access admin pages
+  useEffect(() => {
+    if (!storedUser || role !== "admin") {
+      // Redirect non-admin users to home page
+      navigate("/");
+      return;
+    }
+  }, [storedUser, role, navigate]);
 
   const menuItems = useMemo(() => {
     const base = [
