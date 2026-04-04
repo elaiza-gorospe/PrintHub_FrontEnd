@@ -5,6 +5,7 @@ import {
   FaCheckCircle,
   FaClock,
   FaExclamationTriangle,
+  FaTrash,
 } from "react-icons/fa";
 import "./Admin-dashboard.css";
 
@@ -84,6 +85,29 @@ function AdminOrders() {
   const handleClearFilters = () => {
     setOrdersQuery("");
     setOrdersStatus("all");
+  };
+
+  // ✅ Delete order
+  const handleDeleteOrder = async (order) => {
+    if (!window.confirm(`Delete order "${order.id}"? This cannot be undone.`))
+      return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/orders/${order.dbId}`,
+        { method: "DELETE" },
+      );
+
+      if (!res.ok) throw new Error("Failed to delete order");
+
+      // ✅ Immediately remove from UI
+      setOrders((prev) => prev.filter((o) => o.dbId !== order.dbId));
+
+      alert("Order deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting order:", err);
+      alert(err.message || "Error deleting order");
+    }
   };
 
   if (loading) {
@@ -181,6 +205,7 @@ function AdminOrders() {
               <th>Total</th>
               <th>Status</th>
               <th>Date</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
@@ -212,12 +237,34 @@ function AdminOrders() {
                   </span>
                 </td>
                 <td data-label="Date">{o.date}</td>
+                <td data-label="Actions">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteOrder(o)}
+                    title="Delete order"
+                    style={{
+                      background: "#e74c3c",
+                      color: "#fff",
+                      border: "none",
+                      padding: "6px 10px",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    <FaTrash size={12} />
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))}
 
             {filteredOrders.length === 0 && (
               <tr>
-                <td colSpan="5" className="dashpage-empty">
+                <td colSpan="6" className="dashpage-empty">
                   No orders found.
                 </td>
               </tr>

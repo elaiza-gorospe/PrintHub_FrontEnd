@@ -217,9 +217,11 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
       );
 
       if (!res.ok) throw new Error("Failed to delete product");
+
+      // ✅ Immediately remove from UI
+      setProducts((prev) => prev.filter((p) => p.dbId !== product.dbId));
+
       alert("Product deleted successfully!");
-      // ✅ Trigger local refresh instead of reloading
-      setLocalRefreshKey((prev) => prev + 1);
     } catch (err) {
       console.error("Error deleting product:", err);
       alert(err.message || "Error deleting product");
