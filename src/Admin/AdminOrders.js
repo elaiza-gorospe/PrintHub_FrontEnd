@@ -6,6 +6,8 @@ import {
   FaClock,
   FaExclamationTriangle,
   FaTrash,
+  FaBox,
+  FaCheck,
 } from "react-icons/fa";
 import "./Admin-dashboard.css";
 
@@ -109,6 +111,44 @@ function AdminOrders() {
       alert(err.message || "Error deleting order");
     }
   };
+
+  // ✅ Update order status
+  const updateOrderStatus = async (order, newStatus) => {
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/orders/${order.dbId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        },
+      );
+
+      if (!res.ok) throw new Error("Failed to update order status");
+
+      // ✅ Update local state
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.dbId === order.dbId ? { ...o, status: newStatus } : o,
+        ),
+      );
+
+      const messages = {
+        processing: "marked as processing",
+        delivered: "marked as delivered",
+        completed: "marked as completed",
+      };
+      alert(`Order ${messages[newStatus] || "updated"}!`);
+    } catch (err) {
+      console.error("Error updating order status:", err);
+      alert(err.message || "Error updating order status");
+    }
+  };
+
+  // Handlers for different status transitions
+  const handleProcessOrder = (order) => updateOrderStatus(order, "processing");
+  const handleDeliverOrder = (order) => updateOrderStatus(order, "delivered");
+  const handleCompleteOrder = (order) => updateOrderStatus(order, "completed");
 
   if (loading) {
     return (
@@ -238,26 +278,110 @@ function AdminOrders() {
                 </td>
                 <td data-label="Date">{o.date}</td>
                 <td data-label="Actions">
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteOrder(o)}
-                    title="Delete order"
+                  <div
                     style={{
-                      background: "#e74c3c",
-                      color: "#fff",
-                      border: "none",
-                      padding: "6px 10px",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      fontSize: "12px",
                       display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
+                      gap: "6px",
+                      flexWrap: "wrap",
+                      justifyContent: "center",
                     }}
                   >
-                    <FaTrash size={12} />
-                    Delete
-                  </button>
+                    {/* Process button - only for pending orders */}
+                    {o.status === "pending" && (
+                      <button
+                        type="button"
+                        onClick={() => handleProcessOrder(o)}
+                        title="Mark as processing"
+                        style={{
+                          background: "#3498db",
+                          color: "#fff",
+                          border: "none",
+                          padding: "6px 8px",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "11px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "3px",
+                        }}
+                      >
+                        <FaClock size={11} />
+                        Process
+                      </button>
+                    )}
+
+                    {/* Deliver button - for processing orders */}
+                    {o.status === "processing" && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeliverOrder(o)}
+                        title="Mark as delivered"
+                        style={{
+                          background: "#2ecc71",
+                          color: "#fff",
+                          border: "none",
+                          padding: "6px 8px",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "11px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "3px",
+                        }}
+                      >
+                        <FaBox size={11} />
+                        Deliver
+                      </button>
+                    )}
+
+                    {/* Complete button - for delivered orders */}
+                    {o.status === "delivered" && (
+                      <button
+                        type="button"
+                        onClick={() => handleCompleteOrder(o)}
+                        title="Mark as completed"
+                        style={{
+                          background: "#27ae60",
+                          color: "#fff",
+                          border: "none",
+                          padding: "6px 8px",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "11px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "3px",
+                        }}
+                      >
+                        <FaCheck size={11} />
+                        Complete
+                      </button>
+                    )}
+
+                    {/* Delete button - not available for completed orders */}
+                    {o.status !== "completed" && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteOrder(o)}
+                        title="Delete order"
+                        style={{
+                          background: "#e74c3c",
+                          color: "#fff",
+                          border: "none",
+                          padding: "6px 8px",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "11px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "3px",
+                        }}
+                      >
+                        <FaTrash size={11} />
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

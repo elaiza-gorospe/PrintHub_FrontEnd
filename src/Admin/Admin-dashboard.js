@@ -44,6 +44,15 @@ function AdminDashboard() {
     description: "",
   });
 
+  // ✅ NEW: Dashboard stats from API
+  const [dashStats, setDashStats] = useState({
+    totalRevenue: 0,
+    totalOrders: 0,
+    pendingOrders: 0,
+    totalUsers: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
   // ✅ close mobile sidebar if resized to desktop
   useEffect(() => {
     const onResize = () => {
@@ -51,6 +60,49 @@ function AdminDashboard() {
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // ✅ NEW: Fetch dashboard stats from API
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        const [ordersRes, usersRes] = await Promise.all([
+          fetch("http://localhost:3000/api/admin/orders"),
+          fetch("http://localhost:3000/api/admin/users"),
+        ]);
+
+        const ordersData = await ordersRes.json();
+        const usersData = await usersRes.json();
+
+        // Calculate stats
+        const totalOrders = ordersData.length;
+        const pendingOrders = ordersData.filter(
+          (o) => o.status === "pending",
+        ).length;
+        const totalRevenue = ordersData.reduce(
+          (sum, o) => sum + parseFloat(o.total || 0),
+          0,
+        );
+        const totalUsers = usersData.length;
+
+        setDashStats({
+          totalRevenue,
+          totalOrders,
+          pendingOrders,
+          totalUsers,
+        });
+      } catch (err) {
+        console.error("Error fetching dashboard stats:", err);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+    // Refresh stats every 30 seconds
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const storedUser = useMemo(() => {
@@ -681,52 +733,63 @@ function AdminDashboard() {
                   <div className="stat-top">
                     <div>
                       <h3>Total Revenue</h3>
-                      <p className="stat-number">₱ 45,678</p>
+                      <p className="stat-number">
+                        ₱{" "}
+                        {dashStats.totalRevenue.toLocaleString(undefined, {
+                          maximumFractionDigits: 0,
+                        })}
+                      </p>
                     </div>
                     <div className="stat-icon">
                       <FaMoneyBillWave />
                     </div>
                   </div>
-                  <div className="stat-foot">Compared to last month: +12%</div>
+                  <div className="stat-foot">From all orders</div>
                 </div>
 
                 <div className="stats-card users">
                   <div className="stat-top">
                     <div>
-                      <h3>New Users</h3>
-                      <p className="stat-number">1,234</p>
+                      <h3>Total Users</h3>
+                      <p className="stat-number">
+                        {dashStats.totalUsers.toLocaleString()}
+                      </p>
                     </div>
                     <div className="stat-icon">
                       <FaUserPlus />
                     </div>
                   </div>
-                  <div className="stat-foot">Today: 26 signups</div>
+                  <div className="stat-foot">Registered customers</div>
                 </div>
 
                 <div className="stats-card orders">
                   <div className="stat-top">
                     <div>
                       <h3>Orders</h3>
-                      <p className="stat-number">567</p>
+                      <p className="stat-number">{dashStats.totalOrders}</p>
                     </div>
                     <div className="stat-icon">
                       <FaShoppingBag />
                     </div>
                   </div>
-                  <div className="stat-foot">Pending: 18</div>
+                  <div className="stat-foot">
+                    Pending: {dashStats.pendingOrders}
+                  </div>
                 </div>
 
                 <div className="stats-card conversion">
                   <div className="stat-top">
                     <div>
-                      <h3>Conversion Rate</h3>
-                      <p className="stat-number">3.4%</p>
+                      <h3>Status</h3>
+                      <p className="stat-number">
+                        {statsLoading ? "Loading..." : "Ready"}
+                      </p>
                     </div>
                     <div className="stat-icon">
-                      <FaChartLine />
+                      <FaCheckCircle />
                     </div>
                   </div>
-                  <div className="stat-foot">Weekly trend: steady</div>
+                  <div className="stat-foot">System operational</div>
                 </div>
               </div>
             </>

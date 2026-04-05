@@ -6,7 +6,7 @@ function getInitials(name = "") {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   const first = parts[0]?.[0] || "";
   const last =
-    parts.length > 1 ? parts[parts.length - 1][0] : (parts[0]?.[1] || "");
+    parts.length > 1 ? parts[parts.length - 1][0] : parts[0]?.[1] || "";
   return (first + last).toUpperCase();
 }
 
@@ -51,7 +51,6 @@ function AdminManageAccounts() {
       return null;
     }
   }, []);
-
 
   // fetch users from db
   useEffect(() => {
@@ -190,7 +189,7 @@ function AdminManageAccounts() {
             role: form.role,
             status: form.status,
           }),
-        }
+        },
       );
 
       const data = await res.json().catch(() => ({}));
@@ -208,9 +207,7 @@ function AdminManageAccounts() {
         });
 
         throw new Error(
-          data?.message ||
-          data?.error?.sqlMessage ||
-          "Database update error"
+          data?.message || data?.error?.sqlMessage || "Database update error",
         );
       }
 
@@ -229,7 +226,7 @@ function AdminManageAccounts() {
     try {
       const res = await fetch(
         `http://localhost:3000/api/admin/users/${selectedUser.id}`,
-        { method: "DELETE" }
+        { method: "DELETE" },
       );
 
       const data = await res.json();
@@ -261,10 +258,16 @@ function AdminManageAccounts() {
       <div className="manageacc-top">
         <div>
           <h2 className="manageacc-title">Manage Accounts</h2>
-          <p className="manageacc-subtitle">Control user access and permissions</p>
+          <p className="manageacc-subtitle">
+            Control user access and permissions
+          </p>
         </div>
 
-        <button className="manageacc-add-btn" type="button" onClick={handleAddUser}>
+        <button
+          className="manageacc-add-btn"
+          type="button"
+          onClick={handleAddUser}
+        >
           <span className="manageacc-plus">
             <FaPlus size={14} />
           </span>
@@ -311,14 +314,20 @@ function AdminManageAccounts() {
         </div>
 
         <div className="manageacc-filters">
-          <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+          >
             <option value="all">All Roles</option>
             <option value="admin">Admin</option>
             <option value="staff">Staff</option>
             <option value="customer">Customer</option>
           </select>
 
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
             <option value="all">All Status</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
@@ -346,7 +355,9 @@ function AdminManageAccounts() {
               <tr key={u.id}>
                 <td>
                   <div className="manageacc-usercell">
-                    <div className="manageacc-avatar">{getInitials(u.name)}</div>
+                    <div className="manageacc-avatar">
+                      {getInitials(u.name)}
+                    </div>
                     <div className="manageacc-usertext">
                       <div className="manageacc-name">{u.name}</div>
                       <div className="manageacc-email">{u.email}</div>
@@ -355,11 +366,15 @@ function AdminManageAccounts() {
                 </td>
 
                 <td>
-                  <span className={`manageacc-pill role-${u.role}`}>{u.role}</span>
+                  <span className={`manageacc-pill role-${u.role}`}>
+                    {u.role}
+                  </span>
                 </td>
 
                 <td>
-                  <span className={`manageacc-pill status-${u.status}`}>{u.status}</span>
+                  <span className={`manageacc-pill status-${u.status}`}>
+                    {u.status}
+                  </span>
                 </td>
 
                 {/* ✅ CHANGED: date only */}
@@ -372,23 +387,50 @@ function AdminManageAccounts() {
                   <div className="manageacc-actions">
                     <button
                       type="button"
-                      className="manageacc-iconbtn"
-                      title="Edit"
                       onClick={() => handleEdit(u)}
+                      title="Edit product"
+                      style={{
+                        background: "#1b3f6e",
+                        color: "#fff",
+                        border: "none",
+                        padding: "6px 10px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
                     >
-                      <FaEdit size={16} />
+                      <FaEdit size={12} />
+                      Edit
                     </button>
-
                     <button
                       type="button"
                       className={`manageacc-iconbtn danger ${isSelf(u) ? "disabled" : ""}`}
-                      title={isSelf(u) ? "You can't delete your own account" : "Delete"}
+                      title={
+                        isSelf(u)
+                          ? "You can't delete your own account"
+                          : "Delete"
+                      }
                       onClick={() => !isSelf(u) && handleDelete(u)}
                       disabled={isSelf(u)}
+                      style={{
+                        background: "#e74c3c",
+                        color: "#fff",
+                        border: "none",
+                        padding: "6px 10px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
                     >
-                      <FaTrash size={16} />
+                      <FaTrash size={12} />
+                      Delete
                     </button>
-
                   </div>
                 </td>
               </tr>
@@ -408,10 +450,17 @@ function AdminManageAccounts() {
       {/* add modal */}
       {showAddModal && (
         <div className="manageacc-modal-overlay" onMouseDown={closeAdd}>
-          <div className="manageacc-modal" onMouseDown={(e) => e.stopPropagation()}>
+          <div
+            className="manageacc-modal"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <div className="manageacc-modal-header">
               <h3>Add User</h3>
-              <button className="manageacc-modal-close" onClick={closeAdd} type="button">
+              <button
+                className="manageacc-modal-close"
+                onClick={closeAdd}
+                type="button"
+              >
                 <FaTimes />
               </button>
             </div>
@@ -432,7 +481,9 @@ function AdminManageAccounts() {
                   <input
                     type="email"
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, email: e.target.value })
+                    }
                     placeholder="Enter email"
                   />
                 </div>
@@ -453,7 +504,9 @@ function AdminManageAccounts() {
                   <label>Status</label>
                   <select
                     value={form.status}
-                    onChange={(e) => setForm({ ...form, status: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, status: e.target.value })
+                    }
                   >
                     <option value="active">active</option>
                     <option value="inactive">inactive</option>
@@ -466,14 +519,20 @@ function AdminManageAccounts() {
                   <input
                     type="password"
                     value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, password: e.target.value })
+                    }
                     placeholder="Enter temporary password"
                   />
                 </div>
               </div>
 
               <div className="manageacc-modal-actions">
-                <button type="button" className="manageacc-btn ghost" onClick={closeAdd}>
+                <button
+                  type="button"
+                  className="manageacc-btn ghost"
+                  onClick={closeAdd}
+                >
                   Cancel
                 </button>
                 <button type="submit" className="manageacc-btn primary">
@@ -488,10 +547,17 @@ function AdminManageAccounts() {
       {/* edit modal */}
       {showEditModal && (
         <div className="manageacc-modal-overlay" onMouseDown={closeEdit}>
-          <div className="manageacc-modal" onMouseDown={(e) => e.stopPropagation()}>
+          <div
+            className="manageacc-modal"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <div className="manageacc-modal-header">
               <h3>Edit User</h3>
-              <button className="manageacc-modal-close" onClick={closeEdit} type="button">
+              <button
+                className="manageacc-modal-close"
+                onClick={closeEdit}
+                type="button"
+              >
                 <FaTimes />
               </button>
             </div>
@@ -512,7 +578,9 @@ function AdminManageAccounts() {
                   <input
                     type="email"
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, email: e.target.value })
+                    }
                     placeholder="Enter email"
                   />
                 </div>
@@ -533,7 +601,9 @@ function AdminManageAccounts() {
                   <label>Status</label>
                   <select
                     value={form.status}
-                    onChange={(e) => setForm({ ...form, status: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, status: e.target.value })
+                    }
                   >
                     <option value="active">active</option>
                     <option value="inactive">inactive</option>
@@ -543,7 +613,11 @@ function AdminManageAccounts() {
               </div>
 
               <div className="manageacc-modal-actions">
-                <button type="button" className="manageacc-btn ghost" onClick={closeEdit}>
+                <button
+                  type="button"
+                  className="manageacc-btn ghost"
+                  onClick={closeEdit}
+                >
                   Cancel
                 </button>
                 <button type="submit" className="manageacc-btn primary">
@@ -558,10 +632,17 @@ function AdminManageAccounts() {
       {/* delete modal */}
       {showDeleteModal && (
         <div className="manageacc-modal-overlay" onMouseDown={closeDelete}>
-          <div className="manageacc-modal small" onMouseDown={(e) => e.stopPropagation()}>
+          <div
+            className="manageacc-modal small"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <div className="manageacc-modal-header">
               <h3>Delete User</h3>
-              <button className="manageacc-modal-close" onClick={closeDelete} type="button">
+              <button
+                className="manageacc-modal-close"
+                onClick={closeDelete}
+                type="button"
+              >
                 <FaTimes />
               </button>
             </div>
@@ -573,10 +654,18 @@ function AdminManageAccounts() {
               </p>
 
               <div className="manageacc-modal-actions">
-                <button type="button" className="manageacc-btn ghost" onClick={closeDelete}>
+                <button
+                  type="button"
+                  className="manageacc-btn ghost"
+                  onClick={closeDelete}
+                >
                   Cancel
                 </button>
-                <button type="button" className="manageacc-btn danger" onClick={confirmDelete}>
+                <button
+                  type="button"
+                  className="manageacc-btn danger"
+                  onClick={confirmDelete}
+                >
                   Delete
                 </button>
               </div>
@@ -584,7 +673,6 @@ function AdminManageAccounts() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
