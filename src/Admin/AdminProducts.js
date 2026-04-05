@@ -11,6 +11,7 @@ import {
   FaPlus,
 } from "react-icons/fa";
 import "./Admin-dashboard.css";
+import { buildApiUrl } from "../config/api";
 
 function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
   const [products, setProducts] = useState([]);
@@ -39,9 +40,7 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          "http://localhost:3000/api/products?limit=100",
-        );
+        const response = await fetch(buildApiUrl("/api/products?limit=100"));
         if (!response.ok) throw new Error("Failed to fetch products");
 
         const data = await response.json();
@@ -141,14 +140,11 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
   const handleToggleStatus = async (product) => {
     try {
       const newStatus = product.status === "active" ? false : true;
-      const res = await fetch(
-        `http://localhost:3000/api/products/${product.dbId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ active: newStatus }),
-        },
-      );
+      const res = await fetch(buildApiUrl(`/api/products/${product.dbId}`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: newStatus }),
+      });
 
       if (!res.ok) throw new Error("Failed to update status");
       alert("Product status updated!");
@@ -171,7 +167,7 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/products/${selectedProduct.dbId}`,
+        buildApiUrl(`/api/products/${selectedProduct.dbId}`),
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -211,10 +207,9 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
       return;
 
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/products/${product.dbId}`,
-        { method: "DELETE" },
-      );
+      const res = await fetch(buildApiUrl(`/api/products/${product.dbId}`), {
+        method: "DELETE",
+      });
 
       if (!res.ok) throw new Error("Failed to delete product");
 

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import './User-otp.css';
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import "./User-otp.css";
+import { buildApiUrl } from "../config/api";
 
 function UserOtpPage() {
-  const [otp, setOtp] = useState('');
-  const [error, setError] = useState('');
+  const [otp, setOtp] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -13,15 +14,15 @@ function UserOtpPage() {
   const email = location.state?.email;
 
   if (!email) {
-    navigate('/user-register');
+    navigate("/user-register");
   }
 
   const handleVerify = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!otp) {
-      setError('Please enter the OTP');
+      setError("Please enter the OTP");
       return;
     }
 
@@ -29,25 +30,25 @@ function UserOtpPage() {
 
     try {
       // 1) verify OTP
-      const response = await fetch('http://localhost:3000/api/register/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(buildApiUrl("/api/register/verify-otp"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || 'OTP verification failed');
+        setError(data.message || "OTP verification failed");
         setLoading(false);
         return;
       }
 
       // 2) get pending registration data (saved by User-regis.js)
-      const saved = localStorage.getItem('pending_registration');
+      const saved = localStorage.getItem("pending_registration");
 
       if (!saved) {
-        setError('Registration data missing. Please register again.');
+        setError("Registration data missing. Please register again.");
         setLoading(false);
         return;
       }
@@ -56,41 +57,40 @@ function UserOtpPage() {
       try {
         regData = JSON.parse(saved);
       } catch {
-        setError('Registration data invalid. Please register again.');
+        setError("Registration data invalid. Please register again.");
         setLoading(false);
         return;
       }
 
       // safety: must match the email we verified
       if (!regData?.email || regData.email !== email) {
-        setError('Email mismatch. Please register again.');
+        setError("Email mismatch. Please register again.");
         setLoading(false);
         return;
       }
 
       // 3) complete registration (insert into DB)
-      const completeRes = await fetch('http://localhost:3000/api/register/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const completeRes = await fetch(buildApiUrl("/api/register/complete"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(regData),
       });
 
       const completeData = await completeRes.json();
 
       if (!completeRes.ok) {
-        setError(completeData.message || 'Registration failed');
+        setError(completeData.message || "Registration failed");
         setLoading(false);
         return;
       }
 
       // clear saved registration
-      localStorage.removeItem('pending_registration');
+      localStorage.removeItem("pending_registration");
 
-      alert('Account verified successfully!');
-      navigate('/user-login');
-
+      alert("Account verified successfully!");
+      navigate("/user-login");
     } catch (err) {
-      setError('Network error');
+      setError("Network error");
     } finally {
       setLoading(false);
     }
@@ -101,7 +101,9 @@ function UserOtpPage() {
       <div className="otp-card">
         <div className="otp-header">
           <h2>Email Verification</h2>
-          <p>Enter the OTP sent to <strong>{email}</strong></p>
+          <p>
+            Enter the OTP sent to <strong>{email}</strong>
+          </p>
         </div>
 
         {error && <div className="otp-error">{error}</div>}
@@ -118,7 +120,7 @@ function UserOtpPage() {
           />
 
           <button type="submit" className="otp-button" disabled={loading}>
-            {loading ? 'Verifying...' : 'Verify OTP'}
+            {loading ? "Verifying..." : "Verify OTP"}
           </button>
         </form>
 

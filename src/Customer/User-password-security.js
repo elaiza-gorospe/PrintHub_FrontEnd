@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./User-password-security.css";
 import { FaArrowLeft, FaLock, FaShieldAlt } from "react-icons/fa";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { buildApiUrl } from "../config/api";
 
 function UserPasswordSecurityPage() {
   const navigate = useNavigate();
@@ -71,7 +72,7 @@ function UserPasswordSecurityPage() {
     setOtpMsg("Sending OTP...");
 
     try {
-      const res = await fetch("http://localhost:3000/api/password/request-otp", {
+      const res = await fetch(buildApiUrl("/api/password/request-otp"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -103,7 +104,7 @@ function UserPasswordSecurityPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/password/verify-otp", {
+      const res = await fetch(buildApiUrl("/api/password/verify-otp"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),
@@ -148,7 +149,10 @@ function UserPasswordSecurityPage() {
     }
 
     const passOk =
-      criteria.uppercase && criteria.number && criteria.special && criteria.length;
+      criteria.uppercase &&
+      criteria.number &&
+      criteria.special &&
+      criteria.length;
 
     if (!passOk) {
       setError("Password must meet the requirements.");
@@ -156,14 +160,11 @@ function UserPasswordSecurityPage() {
     }
 
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/profile/${userId}/password`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ currentPassword, newPassword }),
-        }
-      );
+      const res = await fetch(buildApiUrl(`/api/profile/${userId}/password`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
 
       const data = await res.json();
 
@@ -204,14 +205,16 @@ function UserPasswordSecurityPage() {
             <div>
               <h2>Change Password</h2>
               <p>
-                For your security, you need to verify an OTP before updating your
-                password.
+                For your security, you need to verify an OTP before updating
+                your password.
               </p>
             </div>
           </div>
 
           {error && <div className="ups-alert ups-alert-error">{error}</div>}
-          {success && <div className="ups-alert ups-alert-success">{success}</div>}
+          {success && (
+            <div className="ups-alert ups-alert-success">{success}</div>
+          )}
 
           <div className="ups-row">
             <div className="ups-email">
@@ -316,11 +319,15 @@ function UserPasswordSecurityPage() {
               <div className={criteria.uppercase ? "ok" : ""}>
                 • At least 1 uppercase letter
               </div>
-              <div className={criteria.number ? "ok" : ""}>• At least 1 number</div>
+              <div className={criteria.number ? "ok" : ""}>
+                • At least 1 number
+              </div>
               <div className={criteria.special ? "ok" : ""}>
                 • At least 1 special character
               </div>
-              <div className={criteria.length ? "ok" : ""}>• 8–12 characters</div>
+              <div className={criteria.length ? "ok" : ""}>
+                • 8–12 characters
+              </div>
             </div>
 
             <button className="ups-save" type="submit">
@@ -338,8 +345,14 @@ function UserPasswordSecurityPage() {
 
       {/* ✅ OTP POPUP MODAL */}
       {otpModalOpen && (
-        <div className="otp-modal-overlay" onMouseDown={() => setOtpModalOpen(false)}>
-          <div className="otp-modal-card" onMouseDown={(e) => e.stopPropagation()}>
+        <div
+          className="otp-modal-overlay"
+          onMouseDown={() => setOtpModalOpen(false)}
+        >
+          <div
+            className="otp-modal-card"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <div className="otp-modal-header">
               <h2>Email Verification</h2>
               <p>
@@ -385,7 +398,9 @@ function UserPasswordSecurityPage() {
               </button>
             </div>
 
-            <div className="otp-footer">Didn’t receive the code? Check spam.</div>
+            <div className="otp-footer">
+              Didn’t receive the code? Check spam.
+            </div>
           </div>
         </div>
       )}

@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import { useCart } from "../hooks/useCart";
 import "./Header.css";
+import { buildApiUrl } from "../config/api";
 
 function Header() {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ function Header() {
       email: u.email || "",
     }));
 
-    fetch(`http://localhost:3000/api/user-profile/${u.id}`)
+    fetch(buildApiUrl(`/api/user-profile/${u.id}`))
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data?.message || "Failed to load profile");

@@ -10,6 +10,7 @@ import {
   FaCheck,
 } from "react-icons/fa";
 import "./Admin-dashboard.css";
+import { buildApiUrl } from "../config/api";
 
 function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -23,7 +24,7 @@ function AdminOrders() {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:3000/api/admin/orders");
+        const response = await fetch(buildApiUrl("/api/admin/orders"));
         if (!response.ok) throw new Error("Failed to fetch orders");
 
         const data = await response.json();
@@ -95,10 +96,9 @@ function AdminOrders() {
       return;
 
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/orders/${order.dbId}`,
-        { method: "DELETE" },
-      );
+      const res = await fetch(buildApiUrl(`/api/orders/${order.dbId}`), {
+        method: "DELETE",
+      });
 
       if (!res.ok) throw new Error("Failed to delete order");
 
@@ -115,14 +115,11 @@ function AdminOrders() {
   // ✅ Update order status
   const updateOrderStatus = async (order, newStatus) => {
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/orders/${order.dbId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStatus }),
-        },
-      );
+      const res = await fetch(buildApiUrl(`/api/orders/${order.dbId}`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
 
       if (!res.ok) throw new Error("Failed to update order status");
 

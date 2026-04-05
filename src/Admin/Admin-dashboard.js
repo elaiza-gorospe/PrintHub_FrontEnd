@@ -6,6 +6,7 @@ import AdminProfile from "./Admin-profile";
 import AdminManageAccounts from "./Admin-manageacc";
 import AdminOrders from "./AdminOrders";
 import AdminProducts from "./AdminProducts";
+import { buildApiUrl } from "../config/api";
 
 // ✅ Icons (only keep unused, but needed)
 import {
@@ -68,8 +69,8 @@ function AdminDashboard() {
       try {
         setStatsLoading(true);
         const [ordersRes, usersRes] = await Promise.all([
-          fetch("http://localhost:3000/api/admin/orders"),
-          fetch("http://localhost:3000/api/admin/users"),
+          fetch(buildApiUrl("/api/admin/orders")),
+          fetch(buildApiUrl("/api/admin/users")),
         ]);
 
         const ordersData = await ordersRes.json();
@@ -209,7 +210,7 @@ function AdminDashboard() {
       return alert("Price must be greater than 0");
 
     try {
-      const res = await fetch("http://localhost:3000/api/products", {
+      const res = await fetch(buildApiUrl("/api/products"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

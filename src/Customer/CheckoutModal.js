@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaTimes, FaSpinner, FaCheckCircle } from "react-icons/fa";
 import "./CheckoutModal.css";
 import { extractNumericPrice } from "../utils/priceUtils";
+import { buildApiUrl } from "../config/api";
 
 function CheckoutModal({
   userId,
@@ -94,16 +95,13 @@ function CheckoutModal({
           : formData.billing_address,
       };
 
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL || "http://localhost:3000"}/api/orders`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
+      const response = await fetch(buildApiUrl("/api/orders"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(payload),
+      });
 
       const data = await response.json();
 

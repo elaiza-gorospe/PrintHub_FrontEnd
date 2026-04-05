@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Admin-profile.css";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { buildApiUrl } from "../config/api";
 
 function AdminProfile() {
   const navigate = useNavigate();
@@ -65,7 +66,7 @@ function AdminProfile() {
 
     if (!user?.id) return;
 
-    fetch(`http://localhost:3000/api/user-profile/${user.id}`)
+    fetch(buildApiUrl(`/api/user-profile/${user.id}`))
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data?.message || "Failed to load profile");
@@ -145,26 +146,23 @@ function AdminProfile() {
     }
 
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/user-profile/${user.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: `${admin.firstName} ${admin.lastName}`.trim(),
+      const res = await fetch(buildApiUrl(`/api/user-profile/${user.id}`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: `${admin.firstName} ${admin.lastName}`.trim(),
 
-            // ✅ ADDED ONLY: send email so server can update it
-            email: admin.email,
+          // ✅ ADDED ONLY: send email so server can update it
+          email: admin.email,
 
-            birthday: admin.birthday,
-            gender: admin.gender,
+          birthday: admin.birthday,
+          gender: admin.gender,
 
-            // ✅ if only "+63", send empty so backend treats as not provided
-            phone: phoneTrim === "+63" ? "" : phoneTrim,
-            address: "",
-          }),
-        },
-      );
+          // ✅ if only "+63", send empty so backend treats as not provided
+          phone: phoneTrim === "+63" ? "" : phoneTrim,
+          address: "",
+        }),
+      });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to update profile");
@@ -287,17 +285,14 @@ function AdminProfile() {
     }
 
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/profile/${user.id}/password`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            currentPassword,
-            newPassword,
-          }),
-        },
-      );
+      const res = await fetch(buildApiUrl(`/api/profile/${user.id}/password`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
 
       const data = await res.json();
 

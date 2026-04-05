@@ -1,46 +1,46 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import './User-otp.css';
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import "./User-otp.css";
+import { buildApiUrl } from "../config/api";
 
 function UserForgotOtpPage() {
-  const [otp, setOtp] = useState('');
-  const [error, setError] = useState('');
+  const [otp, setOtp] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
   const email = location.state?.email;
 
   if (!email) {
-    navigate('/user-login');
+    navigate("/user-login");
   }
 
   const handleVerify = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!otp) {
-      setError('Please enter the OTP');
+      setError("Please enter the OTP");
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/password/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(buildApiUrl("/api/password/verify-otp"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || 'OTP verification failed');
+        setError(data.message || "OTP verification failed");
         return;
       }
 
-      navigate('/user-reset-password', { state: { email } });
-
+      navigate("/user-reset-password", { state: { email } });
     } catch (err) {
-      setError('Network error');
+      setError("Network error");
     }
   };
 
@@ -49,7 +49,9 @@ function UserForgotOtpPage() {
       <div className="otp-card">
         <div className="otp-header">
           <h2>Password Reset</h2>
-          <p>Enter the OTP sent to <strong>{email}</strong></p>
+          <p>
+            Enter the OTP sent to <strong>{email}</strong>
+          </p>
         </div>
 
         {error && <div className="otp-error">{error}</div>}

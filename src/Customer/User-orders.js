@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./User-orders.css";
 import Header from "../components/Header";
 import { FaArrowLeft } from "react-icons/fa";
+import { buildApiUrl } from "../config/api";
 
 function UserOrders() {
   const navigate = useNavigate();
@@ -25,9 +26,7 @@ function UserOrders() {
           return;
         }
 
-        const res = await fetch(
-          `http://localhost:3000/api/user/${user.id}/orders`,
-        );
+        const res = await fetch(buildApiUrl(`/api/user/${user.id}/orders`));
         const data = await res.json();
 
         if (!res.ok) throw new Error(data?.message || "Failed to load orders");

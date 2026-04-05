@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import "./Admin-manageacc.css";
 import { FaEdit, FaTrash, FaSearch, FaPlus, FaTimes } from "react-icons/fa";
+import { buildApiUrl } from "../config/api";
 
 function getInitials(name = "") {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -59,7 +60,7 @@ function AdminManageAccounts() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/admin/users");
+      const res = await fetch(buildApiUrl("/api/admin/users"));
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to fetch users");
       setUsers(data);
@@ -147,7 +148,7 @@ function AdminManageAccounts() {
     if (!form.password.trim()) return alert("Temporary password is required");
 
     try {
-      const res = await fetch("http://localhost:3000/api/admin/users", {
+      const res = await fetch(buildApiUrl("/api/admin/users"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -179,7 +180,7 @@ function AdminManageAccounts() {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/admin/users/${selectedUser.id}`,
+        buildApiUrl(`/api/admin/users/${selectedUser.id}`),
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -225,7 +226,7 @@ function AdminManageAccounts() {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/admin/users/${selectedUser.id}`,
+        buildApiUrl(`/api/admin/users/${selectedUser.id}`),
         { method: "DELETE" },
       );
 

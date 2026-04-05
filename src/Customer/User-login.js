@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/images/pmg-image.jpg";
 import "./User-login.css";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md"; // ✅ ADD
+import { buildApiUrl } from "../config/api";
 
 function UserLoginPage() {
   const [email, setEmail] = useState("");
@@ -46,7 +47,7 @@ function UserLoginPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/login", {
+      const response = await fetch(buildApiUrl("/api/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -109,14 +110,11 @@ function UserLoginPage() {
     }
 
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/password/send-otp",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        },
-      );
+      const response = await fetch(buildApiUrl("/api/password/send-otp"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
       const data = await response.json();
 
@@ -147,14 +145,11 @@ function UserLoginPage() {
     }
 
     try {
-      const res = await fetch(
-        "http://localhost:3000/api/reactivate/verify-otp",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, otp: reactivateOtp }),
-        },
-      );
+      const res = await fetch(buildApiUrl("/api/reactivate/verify-otp"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp: reactivateOtp }),
+      });
 
       const data = await res.json();
 

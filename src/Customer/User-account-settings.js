@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./User-account-settings.css";
+import { buildApiUrl } from "../config/api";
 
 function UserAccountSettings() {
   const navigate = useNavigate();
@@ -40,11 +41,10 @@ function UserAccountSettings() {
       role:
         String(u.role || prev.role || "Customer")
           .charAt(0)
-          .toUpperCase() +
-        String(u.role || prev.role || "Customer").slice(1),
+          .toUpperCase() + String(u.role || prev.role || "Customer").slice(1),
     }));
 
-    fetch(`http://localhost:3000/api/user-profile/${u.id}`)
+    fetch(buildApiUrl(`/api/user-profile/${u.id}`))
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data?.message || "Failed to load profile");
@@ -122,7 +122,9 @@ function UserAccountSettings() {
               }`}
               onClick={() => setActiveItem(item.id)}
             >
-              {!isCollapsed && <span className="us-menu-label">{item.label}</span>}
+              {!isCollapsed && (
+                <span className="us-menu-label">{item.label}</span>
+              )}
               {isCollapsed && (
                 <span className="us-menu-label-collapsed">
                   {item.label.charAt(0)}
@@ -133,11 +135,19 @@ function UserAccountSettings() {
         </nav>
 
         <div className="us-sidebar-bottom">
-          <button type="button" className="us-back-btn" onClick={() => navigate("/user-home")}>
+          <button
+            type="button"
+            className="us-back-btn"
+            onClick={() => navigate("/user-home")}
+          >
             {!isCollapsed && "Back to Home"}
           </button>
 
-          <button type="button" className="us-logout-btn" onClick={handleLogout}>
+          <button
+            type="button"
+            className="us-logout-btn"
+            onClick={handleLogout}
+          >
             {!isCollapsed && "Logout"}
           </button>
         </div>
@@ -169,7 +179,9 @@ function UserAccountSettings() {
               <div className="us-setting-row">
                 <div>
                   <h4>Order updates</h4>
-                  <p className="us-muted">Get notified about order status changes.</p>
+                  <p className="us-muted">
+                    Get notified about order status changes.
+                  </p>
                 </div>
                 <input type="checkbox" defaultChecked />
               </div>
@@ -177,7 +189,9 @@ function UserAccountSettings() {
               <div className="us-setting-row">
                 <div>
                   <h4>Promotions</h4>
-                  <p className="us-muted">Receive discounts and announcements.</p>
+                  <p className="us-muted">
+                    Receive discounts and announcements.
+                  </p>
                 </div>
                 <input type="checkbox" />
               </div>
@@ -185,7 +199,9 @@ function UserAccountSettings() {
               <div className="us-setting-row">
                 <div>
                   <h4>Reminders</h4>
-                  <p className="us-muted">Cart reminders and unfinished requests.</p>
+                  <p className="us-muted">
+                    Cart reminders and unfinished requests.
+                  </p>
                 </div>
                 <input type="checkbox" defaultChecked />
               </div>
@@ -209,7 +225,8 @@ function UserAccountSettings() {
               </div>
 
               <div className="us-note">
-                Tip: Later we can connect this to your database table for uploads.
+                Tip: Later we can connect this to your database table for
+                uploads.
               </div>
             </div>
           )}
@@ -261,9 +278,7 @@ function UserAccountSettings() {
           {activeItem === "preference" && (
             <div className="us-card">
               <h2>Preferences</h2>
-              <p className="us-muted">
-                Set your experience preferences.
-              </p>
+              <p className="us-muted">Set your experience preferences.</p>
 
               <div className="us-setting-row">
                 <div>

@@ -1,19 +1,20 @@
 // User-registration.js (FULL UPDATED FILE — only adds modal logic + markup, no UI/layout changes)
-import React, { useState } from 'react';
-import './User-registration.css';
-import { useNavigate } from 'react-router-dom';
-import backgroundImage from '../assets/images/pmg-image.jpg';
-import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
+import React, { useState } from "react";
+import "./User-registration.css";
+import { useNavigate } from "react-router-dom";
+import backgroundImage from "../assets/images/pmg-image.jpg";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { buildApiUrl } from "../config/api";
 
 function UserRegistrationPage() {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '+63',
-    address: '',
-    password: '',
-    confirmPassword: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "+63",
+    address: "",
+    password: "",
+    confirmPassword: "",
     agreeTerms: false,
   });
 
@@ -27,10 +28,10 @@ function UserRegistrationPage() {
     length: false,
   });
 
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  const [phoneError, setPhoneError] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const navigate = useNavigate();
 
   const [isTermsOpen, setIsTermsOpen] = useState(false);
@@ -39,7 +40,7 @@ function UserRegistrationPage() {
   const handleNameChange = (e) => {
     const { name, value } = e.target;
     if (/^[A-Za-z\s]*$/.test(value)) {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -49,7 +50,7 @@ function UserRegistrationPage() {
 
     // allow user to type 09xxxxxxxxx or 9xxxxxxxxx -> normalize to 63...
     if (digits.startsWith("09")) digits = "63" + digits.slice(1); // 09... -> 639...
-    if (digits.startsWith("9")) digits = "63" + digits;          // 9...  -> 639...
+    if (digits.startsWith("9")) digits = "63" + digits; // 9...  -> 639...
 
     // always start with 63
     if (!digits.startsWith("63")) digits = "63";
@@ -71,15 +72,15 @@ function UserRegistrationPage() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handlePasswordChange = (e) => {
     const { value } = e.target;
-    setFormData(prev => ({ ...prev, password: value }));
+    setFormData((prev) => ({ ...prev, password: value }));
 
     setCriteria({
       uppercase: /[A-Z]/.test(value),
@@ -89,95 +90,116 @@ function UserRegistrationPage() {
     });
 
     if (formData.confirmPassword && value !== formData.confirmPassword) {
-      setConfirmPasswordError('Passwords do not match');
+      setConfirmPasswordError("Passwords do not match");
     } else {
-      setConfirmPasswordError('');
+      setConfirmPasswordError("");
     }
   };
 
   const handleConfirmPasswordChange = (e) => {
     const { value } = e.target;
-    setFormData(prev => ({ ...prev, confirmPassword: value }));
+    setFormData((prev) => ({ ...prev, confirmPassword: value }));
 
     if (formData.password && value !== formData.password) {
-      setConfirmPasswordError('Passwords do not match');
+      setConfirmPasswordError("Passwords do not match");
     } else {
-      setConfirmPasswordError('');
+      setConfirmPasswordError("");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-    setConfirmPasswordError('');
-    setPhoneError('');
+    setError("");
+    setSuccess("");
+    setConfirmPasswordError("");
+    setPhoneError("");
 
-    const { firstName, lastName, email, password, confirmPassword, agreeTerms, phone } = formData;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+      agreeTerms,
+      phone,
+    } = formData;
 
     if (!firstName || !lastName || !email || !password) {
-      setError('Please fill in all required fields');
+      setError("Please fill in all required fields");
       return;
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setError('Please enter a valid email address');
+      setError("Please enter a valid email address");
       return;
     }
 
-    if (!criteria.uppercase || !criteria.number || !criteria.special || !criteria.length) {
-      setError('Password does not meet all criteria');
+    if (
+      !criteria.uppercase ||
+      !criteria.number ||
+      !criteria.special ||
+      !criteria.length
+    ) {
+      setError("Password does not meet all criteria");
       return;
     }
 
     if (password !== confirmPassword) {
-      setConfirmPasswordError('Passwords do not match');
+      setConfirmPasswordError("Passwords do not match");
       return;
     }
 
-    const phoneDigits = phone.replace(/[^0-9]/g, '');
+    const phoneDigits = phone.replace(/[^0-9]/g, "");
     if (!/^639\d{9}$/.test(phoneDigits)) {
-      setPhoneError('Phone number must be +639 followed by 9 digits');
+      setPhoneError("Phone number must be +639 followed by 9 digits");
       return;
     }
-
 
     if (!agreeTerms) {
-      setError('Please agree to the terms and conditions');
+      setError("Please agree to the terms and conditions");
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/register/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(buildApiUrl("/api/register/send-otp"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
-      if (!response.ok || data.message?.includes('already registered')) {
-        setError(data.message || 'Failed to send OTP');
+      if (!response.ok || data.message?.includes("already registered")) {
+        setError(data.message || "Failed to send OTP");
         return;
       }
 
-      navigate('/user-otp', { state: { email: formData.email } });
-      localStorage.setItem('pending_registration', JSON.stringify(formData));
-
+      navigate("/user-otp", { state: { email: formData.email } });
+      localStorage.setItem("pending_registration", JSON.stringify(formData));
     } catch (err) {
-      setError('Network error, please try again later');
+      setError("Network error, please try again later");
     }
   };
 
   const renderCriteria = (label, met) => (
-    <p style={{ color: met ? 'green' : 'red', margin: '2px 0', fontSize: '13px' }}>
-      {met ? '✔' : '✖'} {label}
+    <p
+      style={{
+        color: met ? "green" : "red",
+        margin: "2px 0",
+        fontSize: "13px",
+      }}
+    >
+      {met ? "✔" : "✖"} {label}
     </p>
   );
 
   return (
     <div className="user-registration-container">
-      <button className="back-button" onClick={() => navigate("/User-login")} title="Go back">
+      <button
+        className="back-button"
+        onClick={() => navigate("/User-login")}
+        title="Go back"
+      >
         ← Back
       </button>
 
@@ -227,7 +249,7 @@ function UserRegistrationPage() {
                   onChange={handlePhoneChange}
                 />
                 {phoneError && (
-                  <div className="error-message" style={{ marginTop: '5px' }}>
+                  <div className="error-message" style={{ marginTop: "5px" }}>
                     {phoneError}
                   </div>
                 )}
@@ -255,10 +277,10 @@ function UserRegistrationPage() {
                 />
               </div>
 
-              <div className="form-group" style={{ position: 'relative' }}>
+              <div className="form-group" style={{ position: "relative" }}>
                 <label htmlFor="password">Password *</label>
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   value={formData.password}
@@ -272,23 +294,30 @@ function UserRegistrationPage() {
                   className="show-password-button"
                   style={{ paddingTop: "35px" }}
                 >
-                  {showPassword ? <MdVisibilityOff size={22} color="#555" /> : <MdVisibility size={22} color="#555" />}
+                  {showPassword ? (
+                    <MdVisibilityOff size={22} color="#555" />
+                  ) : (
+                    <MdVisibility size={22} color="#555" />
+                  )}
                 </button>
               </div>
 
               {formData.password.length > 0 && (
                 <div className="password-criteria">
-                  {renderCriteria('At least 1 Uppercase', criteria.uppercase)}
-                  {renderCriteria('At least 1 Number', criteria.number)}
-                  {renderCriteria('At least 1 Special Character', criteria.special)}
-                  {renderCriteria('8-12 Characters', criteria.length)}
+                  {renderCriteria("At least 1 Uppercase", criteria.uppercase)}
+                  {renderCriteria("At least 1 Number", criteria.number)}
+                  {renderCriteria(
+                    "At least 1 Special Character",
+                    criteria.special,
+                  )}
+                  {renderCriteria("8-12 Characters", criteria.length)}
                 </div>
               )}
 
-              <div className="form-group" style={{ position: 'relative' }}>
+              <div className="form-group" style={{ position: "relative" }}>
                 <label htmlFor="confirmPassword">Confirm Password *</label>
                 <input
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={showConfirmPassword ? "text" : "password"}
                   id="confirmPassword"
                   name="confirmPassword"
                   value={formData.confirmPassword}
@@ -302,12 +331,16 @@ function UserRegistrationPage() {
                   className="show-password-button"
                   style={{ paddingTop: "35px" }}
                 >
-                  {showConfirmPassword ? <MdVisibilityOff size={22} color="#555" /> : <MdVisibility size={22} color="#555" />}
+                  {showConfirmPassword ? (
+                    <MdVisibilityOff size={22} color="#555" />
+                  ) : (
+                    <MdVisibility size={22} color="#555" />
+                  )}
                 </button>
               </div>
 
               {confirmPasswordError && (
-                <div className="error-message" style={{ marginTop: '5px' }}>
+                <div className="error-message" style={{ marginTop: "5px" }}>
                   {confirmPasswordError}
                 </div>
               )}
@@ -321,7 +354,7 @@ function UserRegistrationPage() {
                     onChange={handleChange}
                   />
                   <span>
-                    I agree to the{' '}
+                    I agree to the{" "}
                     <a
                       href="#terms"
                       onClick={(e) => {
@@ -330,8 +363,8 @@ function UserRegistrationPage() {
                       }}
                     >
                       Terms and Conditions
-                    </a>{' '}
-                    and{' '}
+                    </a>{" "}
+                    and{" "}
                     <a
                       href="#privacy"
                       onClick={(e) => {
@@ -345,11 +378,18 @@ function UserRegistrationPage() {
                 </label>
               </div>
 
-              <button type="submit" className="register-button">Create Account</button>
+              <button type="submit" className="register-button">
+                Create Account
+              </button>
             </form>
 
             <div className="registration-footer">
-              <p>Already have an account? <a href="#" onClick={() => navigate('/user-login')}>Sign in here</a></p>
+              <p>
+                Already have an account?{" "}
+                <a href="#" onClick={() => navigate("/user-login")}>
+                  Sign in here
+                </a>
+              </p>
             </div>
 
             {/* ===== TERMS MODAL (ADDED) ===== */}
@@ -379,54 +419,85 @@ function UserRegistrationPage() {
                   </div>
 
                   <div className="legal-modal-body">
-                    <p><strong>Last updated:</strong> February 1, 2026</p>
+                    <p>
+                      <strong>Last updated:</strong> February 1, 2026
+                    </p>
 
                     <h3>1. Acceptance of Terms</h3>
                     <p>
-                      By creating an account and using PMG Printing House services, you agree to follow these Terms & Conditions.
-                      If you do not agree, please do not proceed with registration.
+                      By creating an account and using PMG Printing House
+                      services, you agree to follow these Terms & Conditions. If
+                      you do not agree, please do not proceed with registration.
                     </p>
 
                     <h3>2. Account Responsibilities</h3>
                     <ul>
-                      <li>You are responsible for the accuracy of your information (name, email, phone, address).</li>
-                      <li>Keep your password confidential and do not share your account.</li>
-                      <li>You are responsible for activities done under your account.</li>
+                      <li>
+                        You are responsible for the accuracy of your information
+                        (name, email, phone, address).
+                      </li>
+                      <li>
+                        Keep your password confidential and do not share your
+                        account.
+                      </li>
+                      <li>
+                        You are responsible for activities done under your
+                        account.
+                      </li>
                     </ul>
 
                     <h3>3. Orders & Services</h3>
                     <ul>
-                      <li>Service availability, pricing, and processing times may change without notice.</li>
-                      <li>Final output may vary slightly depending on materials and printing conditions.</li>
-                      <li>Custom orders may require confirmation/approval before production.</li>
+                      <li>
+                        Service availability, pricing, and processing times may
+                        change without notice.
+                      </li>
+                      <li>
+                        Final output may vary slightly depending on materials
+                        and printing conditions.
+                      </li>
+                      <li>
+                        Custom orders may require confirmation/approval before
+                        production.
+                      </li>
                     </ul>
 
                     <h3>4. Payments</h3>
                     <p>
-                      Payments (if applicable) must be completed based on the payment options provided. Unpaid orders may be
-                      cancelled or placed on hold.
+                      Payments (if applicable) must be completed based on the
+                      payment options provided. Unpaid orders may be cancelled
+                      or placed on hold.
                     </p>
 
                     <h3>5. Prohibited Use</h3>
                     <ul>
-                      <li>Do not use the platform for fraudulent, abusive, or illegal activities.</li>
-                      <li>Do not attempt to access or disrupt the system or other users’ data.</li>
+                      <li>
+                        Do not use the platform for fraudulent, abusive, or
+                        illegal activities.
+                      </li>
+                      <li>
+                        Do not attempt to access or disrupt the system or other
+                        users’ data.
+                      </li>
                     </ul>
 
                     <h3>6. Termination</h3>
                     <p>
-                      We may suspend or terminate accounts that violate these terms or misuse the platform.
+                      We may suspend or terminate accounts that violate these
+                      terms or misuse the platform.
                     </p>
 
                     <h3>7. Limitation of Liability</h3>
                     <p>
-                      To the extent allowed by law, PMG Printing House is not liable for indirect damages, loss of data,
-                      or issues caused by third-party services.
+                      To the extent allowed by law, PMG Printing House is not
+                      liable for indirect damages, loss of data, or issues
+                      caused by third-party services.
                     </p>
 
                     <h3>8. Changes to Terms</h3>
                     <p>
-                      We may update these Terms from time to time. Continued use means you accept the updated Terms.
+                      We may update these Terms from time to time. Continued use
+                      means you accept the updated Terms.
                     </p>
                   </div>
 
@@ -470,50 +541,71 @@ function UserRegistrationPage() {
                   </div>
 
                   <div className="legal-modal-body">
-                    <p><strong>Last updated:</strong> February 1, 2026</p>
+                    <p>
+                      <strong>Last updated:</strong> February 1, 2026
+                    </p>
 
                     <h3>1. Information We Collect</h3>
                     <ul>
                       <li>Account data: name, email, phone number, address</li>
-                      <li>Security data: password (stored securely using hashing on the server)</li>
-                      <li>Order-related data: order history and transaction details (if you place orders)</li>
+                      <li>
+                        Security data: password (stored securely using hashing
+                        on the server)
+                      </li>
+                      <li>
+                        Order-related data: order history and transaction
+                        details (if you place orders)
+                      </li>
                     </ul>
 
                     <h3>2. How We Use Your Information</h3>
                     <ul>
                       <li>To create and manage your account</li>
-                      <li>To send OTP/verification messages and service-related notices</li>
+                      <li>
+                        To send OTP/verification messages and service-related
+                        notices
+                      </li>
                       <li>To process orders and provide customer support</li>
                       <li>To improve system security and prevent fraud</li>
                     </ul>
 
                     <h3>3. Sharing of Information</h3>
                     <p>
-                      We do not sell your personal data. We may share limited data with service providers
-                      (e.g., email/OTP services) only when necessary to deliver the service.
+                      We do not sell your personal data. We may share limited
+                      data with service providers (e.g., email/OTP services)
+                      only when necessary to deliver the service.
                     </p>
 
                     <h3>4. Data Retention</h3>
                     <p>
-                      We keep your information only as long as needed for account operation, order records,
-                      and legal/security purposes.
+                      We keep your information only as long as needed for
+                      account operation, order records, and legal/security
+                      purposes.
                     </p>
 
                     <h3>5. Security</h3>
                     <p>
-                      We use reasonable safeguards to protect your data. However, no system is 100% secure.
-                      Please use a strong password and keep it private.
+                      We use reasonable safeguards to protect your data.
+                      However, no system is 100% secure. Please use a strong
+                      password and keep it private.
                     </p>
 
                     <h3>6. Your Choices</h3>
                     <ul>
-                      <li>You may request account updates/corrections where applicable.</li>
-                      <li>You may request account deletion subject to retention requirements.</li>
+                      <li>
+                        You may request account updates/corrections where
+                        applicable.
+                      </li>
+                      <li>
+                        You may request account deletion subject to retention
+                        requirements.
+                      </li>
                     </ul>
 
                     <h3>7. Updates to this Policy</h3>
                     <p>
-                      We may update this Privacy Policy. Continued use means you accept the updated policy.
+                      We may update this Privacy Policy. Continued use means you
+                      accept the updated policy.
                     </p>
                   </div>
 
@@ -529,7 +621,6 @@ function UserRegistrationPage() {
                 </div>
               </div>
             )}
-
           </div>
         </div>
 
@@ -537,8 +628,8 @@ function UserRegistrationPage() {
           className="registration-image-section"
           style={{
             backgroundImage: `url(${backgroundImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
+            backgroundSize: "cover",
+            backgroundPosition: "center",
           }}
         />
       </div>

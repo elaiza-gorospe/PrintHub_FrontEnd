@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./User-customize-profile.css";
+import { buildApiUrl } from "../config/api";
 
 function UserCustomizeProfile() {
   const navigate = useNavigate();
@@ -25,15 +26,24 @@ function UserCustomizeProfile() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [toast, setToast] = useState({ show: false, type: "success", message: "" });
+  const [toast, setToast] = useState({
+    show: false,
+    type: "success",
+    message: "",
+  });
 
   const [showDiscardModal, setShowDiscardModal] = useState(false);
 
   const showToast = (type, message) => {
     setToast({ show: true, type, message });
     setTimeout(
-      () => setToast({ show: false, type: message ? type : "success", message: "" }),
-      2200
+      () =>
+        setToast({
+          show: false,
+          type: message ? type : "success",
+          message: "",
+        }),
+      2200,
     );
   };
 
@@ -51,7 +61,7 @@ function UserCustomizeProfile() {
     if (!user?.id) return;
     setUserId(user.id);
 
-    fetch(`http://localhost:3000/api/user-profile/${user.id}`)
+    fetch(buildApiUrl(`/api/user-profile/${user.id}`))
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data?.message || "Failed to load profile");
@@ -74,7 +84,7 @@ function UserCustomizeProfile() {
         setError(err.message || "Error loading profile");
       });
   }, []);
-  
+
   const isDirty = useMemo(() => {
     const normalize = (v) => String(v ?? "").trim();
     return (
@@ -132,7 +142,7 @@ function UserCustomizeProfile() {
     }
 
     try {
-      const res = await fetch(`http://localhost:3000/api/user-profile/${userId}`, {
+      const res = await fetch(buildApiUrl(`/api/user-profile/${userId}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -201,7 +211,9 @@ function UserCustomizeProfile() {
         </div>
 
         {error && <div className="ucp-message ucp-message-error">{error}</div>}
-        {success && <div className="ucp-message ucp-message-success">{success}</div>}
+        {success && (
+          <div className="ucp-message ucp-message-success">{success}</div>
+        )}
 
         <div className="ucp-profile-form">
           <div className="ucp-form-row">
@@ -274,10 +286,18 @@ function UserCustomizeProfile() {
       )}
 
       {showDiscardModal && (
-        <div className="ucp-discard-overlay" onClick={() => setShowDiscardModal(false)}>
-          <div className="ucp-discard-modal" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="ucp-discard-overlay"
+          onClick={() => setShowDiscardModal(false)}
+        >
+          <div
+            className="ucp-discard-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="ucp-discard-title">Discard changes?</h3>
-            <p className="ucp-discard-text">Your unsaved changes will be lost.</p>
+            <p className="ucp-discard-text">
+              Your unsaved changes will be lost.
+            </p>
 
             <div className="ucp-discard-actions">
               <button
