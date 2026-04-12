@@ -345,7 +345,8 @@
 }
 
 .pd-quote-row input,
-.pd-quote-row textarea {
+.pd-quote-row textarea,
+.pd-quote-row select {
   width: 100%;
   border: 1px solid #cfcfcf;
   background: #fff;
@@ -356,9 +357,23 @@
   font-family: inherit;
 }
 
+.pd-quote-row select {
+  cursor: pointer;
+  appearance: auto;
+}
+
+.pd-quote-readonly {
+  padding: 12px 14px;
+  font-size: 15px;
+  color: var(--text);
+  font-weight: 600;
+  border: 1px solid #e8e8e8;
+  background: #f9f9f9;
+}
+
 .pd-quote-row textarea {
   resize: vertical;
-  min-height: 280px;
+  min-height: 100px;
   line-height: 1.6;
   white-space: pre-wrap;
 }

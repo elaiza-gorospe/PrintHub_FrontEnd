@@ -45,7 +45,15 @@ function ProductDetail() {
     subject: "",
     name: "",
     email: "",
-    request: "",
+    quantity: "",
+    size: "",
+    color: "",
+    material: "",
+    finishing: "",
+    printing: "",
+    processing: "",
+    delivery: "",
+    other: "",
   });
 
   const [isVerified, setIsVerified] = useState(false);
@@ -65,7 +73,15 @@ function ProductDetail() {
       subject: `Request a quote for ${product.title}`,
       name: "",
       email: "",
-      request: "",
+      quantity: product.quantities?.[0]?.label || "",
+      size: product.sizes?.[0] || "",
+      color: product.colors?.[0] || "",
+      material: product.materials?.[0] || "",
+      finishing: product.finishing?.[0] || "",
+      printing: product.sides?.[0] || "",
+      processing: product.processing?.[0] || "",
+      delivery: product.shipping?.[0]?.label || "",
+      other: "",
     });
 
     setIsVerified(false);
@@ -440,24 +456,148 @@ function ProductDetail() {
                 />
               </div>
 
-              <div className="pd-quote-row pd-quote-row-top">
-                <label htmlFor="request">Request:</label>
-                <textarea
-                  id="request"
-                  name="request"
-                  rows="12"
-                  value={quoteForm.request}
+              <div className="pd-quote-row">
+                <label>Product:</label>
+                <div className="pd-quote-readonly">{product.title}</div>
+              </div>
+
+              <div className="pd-quote-row">
+                <label htmlFor="quantity">Quantity:</label>
+                <select
+                  id="quantity"
+                  name="quantity"
+                  value={quoteForm.quantity}
                   onChange={handleQuoteChange}
-                  placeholder={`Product: ${product.title}
-Quantity: (e.g. 100 pieces)
-Size: (e.g. 3.5 x 2 inches)
-Color: (e.g. Full color / Black and white)
-Material: (e.g. Paper type / Card type / GSM)
-Finishing: (e.g. Matte laminate / Gloss / None)
-Printing: (e.g. One-sided / Two-sided)
-Processing: (e.g. Cutting / Binding / Packaging)
-Delivery: (e.g. Standard / Urgent / Requested date)
-Other: (special instructions)`}
+                >
+                  {product.quantities.map((q) => (
+                    <option key={q.label} value={q.label}>
+                      {q.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pd-quote-row">
+                <label htmlFor="size">Size:</label>
+                <select
+                  id="size"
+                  name="size"
+                  value={quoteForm.size}
+                  onChange={handleQuoteChange}
+                >
+                  {product.sizes.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pd-quote-row">
+                <label htmlFor="color">Color:</label>
+                <select
+                  id="color"
+                  name="color"
+                  value={quoteForm.color}
+                  onChange={handleQuoteChange}
+                >
+                  {(product.colors || []).map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pd-quote-row">
+                <label htmlFor="material">Material:</label>
+                <select
+                  id="material"
+                  name="material"
+                  value={quoteForm.material}
+                  onChange={handleQuoteChange}
+                >
+                  {product.materials.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pd-quote-row">
+                <label htmlFor="finishing">Finishing:</label>
+                <select
+                  id="finishing"
+                  name="finishing"
+                  value={quoteForm.finishing}
+                  onChange={handleQuoteChange}
+                >
+                  {product.finishing.map((f) => (
+                    <option key={f} value={f}>
+                      {f}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pd-quote-row">
+                <label htmlFor="printing">Printing:</label>
+                <select
+                  id="printing"
+                  name="printing"
+                  value={quoteForm.printing}
+                  onChange={handleQuoteChange}
+                >
+                  {product.sides.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pd-quote-row">
+                <label htmlFor="processing">Processing:</label>
+                <select
+                  id="processing"
+                  name="processing"
+                  value={quoteForm.processing}
+                  onChange={handleQuoteChange}
+                >
+                  {(product.processing || []).map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pd-quote-row">
+                <label htmlFor="delivery">Delivery:</label>
+                <select
+                  id="delivery"
+                  name="delivery"
+                  value={quoteForm.delivery}
+                  onChange={handleQuoteChange}
+                >
+                  {product.shipping.map((s) => (
+                    <option key={s.label} value={s.label}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pd-quote-row pd-quote-row-top">
+                <label htmlFor="other">Other:</label>
+                <textarea
+                  id="other"
+                  name="other"
+                  rows="4"
+                  value={quoteForm.other}
+                  onChange={handleQuoteChange}
+                  placeholder="Special instructions or additional requests..."
                 />
               </div>
 

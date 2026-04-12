@@ -24,6 +24,8 @@ const productsData = [
       "1-sided matt laminate",
       "2-sided gloss laminate",
     ],
+    colors: ["Full color", "Black and white"],
+    processing: ["None", "Cutting"],
     quantities: [
       { label: "100 pieces (1 box)", price: "₱1,270.50" },
       { label: "200 pieces (2 boxes)", price: "₱1,732.50" },
@@ -52,6 +54,8 @@ const productsData = [
     materials: ["Ceramic Mug", "Premium Ceramic Mug"],
     sides: ["Single-sided print", "Wrap-around print"],
     finishing: ["Gloss finish"],
+    colors: ["Full color"],
+    processing: ["None"],
     quantities: [
       { label: "1 piece", price: "₱180.00" },
       { label: "10 pieces", price: "₱1,600.00" },
@@ -80,6 +84,8 @@ const productsData = [
     materials: ["Cotton Shirt", "Dry Fit Shirt"],
     sides: ["Front print only", "Front and back print"],
     finishing: ["Standard print finish"],
+    colors: ["Full color", "Black and white", "Single color"],
+    processing: ["None", "Embroidery"],
     quantities: [
       { label: "1 piece", price: "₱250.00" },
       { label: "10 pieces", price: "₱2,200.00" },
@@ -108,6 +114,8 @@ const productsData = [
     materials: ["Matte Sticker Paper", "Gloss Sticker Paper", "Vinyl"],
     sides: ["Full-colour print"],
     finishing: ["Kiss cut", "Die cut"],
+    colors: ["Full color", "Black and white"],
+    processing: ["None", "Kiss cut", "Die cut"],
     quantities: [
       { label: "50 pieces", price: "₱250.00" },
       { label: "100 pieces", price: "₱450.00" },
@@ -136,6 +144,8 @@ const productsData = [
     materials: ["Gloss Photo Paper", "Matte Photo Paper"],
     sides: ["Single-sided print"],
     finishing: ["Standard"],
+    colors: ["Full color", "Black and white"],
+    processing: ["None"],
     quantities: [
       { label: "10 prints", price: "₱120.00" },
       { label: "25 prints", price: "₱250.00" },
@@ -164,6 +174,8 @@ const productsData = [
     materials: ["DTF Film"],
     sides: ["Single-sided transfer"],
     finishing: ["Heat press application"],
+    colors: ["Full color", "Black and white"],
+    processing: ["None", "Heat press application"],
     quantities: [
       { label: "10 sheets", price: "₱500.00" },
       { label: "25 sheets", price: "₱1,150.00" },
@@ -192,6 +204,8 @@ const productsData = [
     materials: ["PVC Card", "Fabric Lanyard"],
     sides: ["Single-sided print", "Double-sided print"],
     finishing: ["With holder", "With clip"],
+    colors: ["Full color", "Single color"],
+    processing: ["None", "Cutting", "Packaging"],
     quantities: [
       { label: "10 sets", price: "₱900.00" },
       { label: "25 sets", price: "₱2,000.00" },
@@ -220,6 +234,8 @@ const productsData = [
     materials: ["Matte Card", "Gloss Card", "Textured Premium Card"],
     sides: ["4/0 - Single-sided full-colour", "4/4 - Double-sided full-colour"],
     finishing: ["No luxury finishing (standard)", "Gloss laminate"],
+    colors: ["Full color", "Black and white"],
+    processing: ["None", "Folding", "Cutting"],
     quantities: [
       { label: "50 pieces", price: "₱850.00" },
       { label: "100 pieces", price: "₱1,450.00" },
@@ -247,6 +263,8 @@ const productsData = [
     materials: ["Cotton", "Dry Fit"],
     sides: ["Front only", "Front and back"],
     finishing: ["Standard print"],
+    colors: ["Full color", "Black and white", "Single color"],
+    processing: ["None"],
     quantities: [
       { label: "1 piece", price: "₱250.00" },
       { label: "10 pieces", price: "₱2,200.00" },
@@ -275,6 +293,8 @@ const productsData = [
     materials: ["Fleece", "Cotton Blend"],
     sides: ["Front only", "Front and back"],
     finishing: ["Standard print"],
+    colors: ["Full color", "Black and white", "Single color"],
+    processing: ["None"],
     quantities: [
       { label: "1 piece", price: "₱650.00" },
       { label: "10 pieces", price: "₱6,000.00" },
@@ -303,6 +323,8 @@ const productsData = [
     materials: ["Matte Card", "Gloss Card"],
     sides: ["4/0 - Single-sided full-colour", "4/4 - Double-sided full-colour"],
     finishing: ["Pocket folder", "No pocket"],
+    colors: ["Full color", "Black and white"],
+    processing: ["None", "Cutting", "Binding"],
     quantities: [
       { label: "50 pieces", price: "₱1,250.00" },
       { label: "100 pieces", price: "₱2,300.00" },
@@ -331,6 +353,8 @@ const productsData = [
     materials: ["Gloss Paper", "Matte Paper", "Premium Card"],
     sides: ["4/4 - Double-sided full-colour"],
     finishing: ["Folded", "Flat"],
+    colors: ["Full color", "Black and white"],
+    processing: ["None", "Folding", "Cutting", "Binding", "Packaging"],
     quantities: [
       { label: "100 copies", price: "₱1,500.00" },
       { label: "250 copies", price: "₱2,900.00" },

@@ -33,6 +33,22 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
     material: "",
     description: "",
     status: "active",
+    color_options: [],
+    size_options: [],
+    material_options: [],
+    side_options: [],
+    finishing_options: [],
+    processing_options: [],
+    delivery_options: [],
+  });
+  const [tagInputs, setTagInputs] = useState({
+    color_options: "",
+    size_options: "",
+    material_options: "",
+    side_options: "",
+    finishing_options: "",
+    processing_options: "",
+    delivery_options: "",
   });
 
   // Fetch products from API
@@ -116,8 +132,16 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
   };
 
   // ✅ NEW: Open edit modal with selected product
-  const handleEditProduct = (product) => {
+  const handleEditProduct = async (product) => {
     setSelectedProduct(product);
+    // Fetch full product to get option arrays
+    let fullProduct = {};
+    try {
+      const res = await fetch(buildApiUrl(`/api/products/${product.dbId}`));
+      if (res.ok) fullProduct = await res.json();
+    } catch (err) {
+      console.error("Failed to fetch full product:", err);
+    }
     setEditForm({
       name: product.name,
       sku: product.sku,
@@ -132,6 +156,22 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
       material: product.material || "",
       description: product.description || "",
       status: product.status,
+      color_options: fullProduct.color_options || [],
+      size_options: fullProduct.size_options || [],
+      material_options: fullProduct.material_options || [],
+      side_options: fullProduct.side_options || [],
+      finishing_options: fullProduct.finishing_options || [],
+      processing_options: fullProduct.processing_options || [],
+      delivery_options: fullProduct.delivery_options || [],
+    });
+    setTagInputs({
+      color_options: "",
+      size_options: "",
+      material_options: "",
+      side_options: "",
+      finishing_options: "",
+      processing_options: "",
+      delivery_options: "",
     });
     setShowEditModal(true);
   };
@@ -180,6 +220,13 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
             material: editForm.material,
             description: editForm.description,
             active: editForm.status === "active",
+            color_options: editForm.color_options,
+            size_options: editForm.size_options,
+            material_options: editForm.material_options,
+            side_options: editForm.side_options,
+            finishing_options: editForm.finishing_options,
+            processing_options: editForm.processing_options,
+            delivery_options: editForm.delivery_options,
           }),
         },
       );
@@ -196,6 +243,116 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
       alert(err.message || "Error updating product");
     }
   };
+
+  // Tag-editor helpers
+  const addTag = (field) => {
+    const val = tagInputs[field].trim();
+    if (!val || editForm[field].includes(val)) return;
+    setEditForm((prev) => ({ ...prev, [field]: [...prev[field], val] }));
+    setTagInputs((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  const removeTag = (field, index) => {
+    setEditForm((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index),
+    }));
+  };
+
+  const TagEditor = ({ field, label }) => (
+    <div style={{ marginBottom: "12px" }}>
+      <label
+        style={{
+          display: "block",
+          marginBottom: "4px",
+          fontSize: "13px",
+          fontWeight: "600",
+        }}
+      >
+        {label}
+      </label>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "6px",
+          marginBottom: "6px",
+          minHeight: "28px",
+        }}
+      >
+        {editForm[field].map((tag, i) => (
+          <span
+            key={i}
+            style={{
+              background: "#e8f0fe",
+              border: "1px solid #b3c6f7",
+              borderRadius: "4px",
+              padding: "2px 8px",
+              fontSize: "13px",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
+            {tag}
+            <button
+              type="button"
+              onClick={() => removeTag(field, i)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#666",
+                fontSize: "14px",
+                lineHeight: 1,
+                padding: "0 2px",
+              }}
+            >
+              &times;
+            </button>
+          </span>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: "6px" }}>
+        <input
+          type="text"
+          value={tagInputs[field]}
+          onChange={(e) =>
+            setTagInputs((prev) => ({ ...prev, [field]: e.target.value }))
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addTag(field);
+            }
+          }}
+          placeholder={`Add ${label.toLowerCase()} option...`}
+          style={{
+            flex: 1,
+            padding: "6px 10px",
+            border: "1px solid #d1d5db",
+            borderRadius: "6px",
+            fontSize: "13px",
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => addTag(field)}
+          style={{
+            padding: "6px 12px",
+            background: "#1b3f6e",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            fontSize: "13px",
+            cursor: "pointer",
+          }}
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  );
 
   // ✅ NEW: Delete product
   const handleDeleteProduct = async (product) => {
@@ -740,6 +897,37 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
                   }}
                 />
               </div>
+
+              <hr
+                style={{
+                  margin: "4px 0 12px",
+                  border: "none",
+                  borderTop: "1px solid #e5e7eb",
+                }}
+              />
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "#6b7280",
+                  marginBottom: "12px",
+                }}
+              >
+                Quote form options — define selectable choices for each field
+              </p>
+
+              <TagEditor field="color_options" label="Color Options" />
+              <TagEditor field="size_options" label="Size Options" />
+              <TagEditor field="material_options" label="Material Options" />
+              <TagEditor
+                field="side_options"
+                label="Printing (Sides) Options"
+              />
+              <TagEditor field="finishing_options" label="Finishing Options" />
+              <TagEditor
+                field="processing_options"
+                label="Processing Options"
+              />
+              <TagEditor field="delivery_options" label="Delivery Options" />
 
               <div className="ad-logout-actions">
                 <button
