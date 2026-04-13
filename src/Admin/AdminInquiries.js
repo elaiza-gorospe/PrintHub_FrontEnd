@@ -222,8 +222,7 @@ function AdminInquiries() {
           >
             <option value="all">All Statuses</option>
             <option value="new">New</option>
-            <option value="quoted">Quoted</option>
-            <option value="accepted">Accepted</option>
+            <option value="converted">Converted</option>
             <option value="closed">Closed</option>
           </select>
           <button
@@ -441,8 +440,8 @@ function AdminInquiries() {
                   }}
                 >
                   <option value="new">New</option>
-                  <option value="closed">Closed</option>
                   <option value="converted">Converted</option>
+                  <option value="closed">Closed</option>
                 </select>
               </div>
 
@@ -466,6 +465,11 @@ function AdminInquiries() {
                     setEditFields({
                       ...editFields,
                       quoted_price: e.target.value,
+                      // Auto-set status to Converted only when current status is "new"
+                      status:
+                        e.target.value && editFields.status === "new"
+                          ? "converted"
+                          : editFields.status,
                     })
                   }
                   placeholder="e.g. 1500.00"
