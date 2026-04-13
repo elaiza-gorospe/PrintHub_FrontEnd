@@ -8,6 +8,7 @@ import {
   FaCog,
   FaEdit,
   FaBoxOpen,
+  FaFileInvoiceDollar,
   FaBars,
   FaTimes,
 } from "react-icons/fa";
@@ -211,6 +212,17 @@ function Header() {
                       }}
                     >
                       <FaBoxOpen /> <span>Orders</span>
+                    </button>
+
+                    <button
+                      className="uh-dd-item"
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate("/user-inquiries");
+                      }}
+                    >
+                      <FaFileInvoiceDollar /> <span>My Inquiries</span>
                     </button>
                   </div>
 

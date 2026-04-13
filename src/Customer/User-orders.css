@@ -259,6 +259,34 @@
   font-weight: 600;
 }
 
+/* PAY NOW */
+.uo-pay-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.uo-pay-label {
+  font-size: 12px;
+  color: #e67e22;
+  font-weight: 600;
+}
+
+.uo-pay-btn {
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.uo-pay-btn:hover {
+  background: #219a52;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .uo-page {

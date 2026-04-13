@@ -434,8 +434,34 @@
   cursor: pointer;
 }
 
-.pd-quote-btn:hover {
+.pd-quote-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pd-quote-btn:hover:not(:disabled) {
   opacity: 0.95;
+}
+
+.pd-quote-success {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #eafaf1;
+  border: 1px solid #a9dfbf;
+  color: #1e8449;
+  padding: 14px 18px;
+  font-size: 15px;
+  margin-bottom: 14px;
+}
+
+.pd-quote-error {
+  background: #fdf2f2;
+  border: 1px solid #f5c6cb;
+  color: #c0392b;
+  padding: 12px 18px;
+  font-size: 14px;
+  margin-bottom: 14px;
 }
 
 .pd-summary {

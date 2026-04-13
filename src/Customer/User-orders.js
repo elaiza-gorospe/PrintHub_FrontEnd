@@ -175,6 +175,22 @@ function UserOrders() {
                     <strong>Total:</strong>
                     <strong>{formatCurrency(order.total)}</strong>
                   </div>
+                  {order.payment_status === "awaiting_payment" && (
+                    <div className="uo-pay-row">
+                      <span className="uo-pay-label">Awaiting payment</span>
+                      <button
+                        type="button"
+                        className="uo-pay-btn"
+                        onClick={() =>
+                          alert(
+                            `Payment link for Order #${order.id} will be provided by our team. Please check your email or contact us.`,
+                          )
+                        }
+                      >
+                        Pay Now
+                      </button>
+                    </div>
+                  )}
                   {order.delivered_at && (
                     <p className="uo-delivered">
                       Delivered on{" "}

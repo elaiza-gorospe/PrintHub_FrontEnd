@@ -5,6 +5,7 @@ import "./Admin-dashboard.css";
 import AdminProfile from "./Admin-profile";
 import AdminManageAccounts from "./Admin-manageacc";
 import AdminOrders from "./AdminOrders";
+import AdminInquiries from "./AdminInquiries";
 import AdminProducts from "./AdminProducts";
 import { buildApiUrl } from "../config/api";
 
@@ -136,6 +137,7 @@ function AdminDashboard() {
         label: "Dashboard",
       },
       { id: "orders", label: "Orders" },
+      { id: "inquiries", label: "Inquiries" },
       { id: "products", label: "Products" },
       { id: "customers", label: "Manage Accounts" },
       { id: "settings", label: "Settings" },
@@ -250,6 +252,7 @@ function AdminDashboard() {
     if (activeItem === "profile") return "Profile";
     if (activeItem === "customers") return "Manage Accounts";
     if (activeItem === "orders") return "Orders";
+    if (activeItem === "inquiries") return "Inquiries";
     if (activeItem === "products") return "Products";
     if (activeItem === "settings") return "Settings";
     return "Dashboard";
@@ -803,6 +806,9 @@ function AdminDashboard() {
 
           {/* ✅ ORDERS - Dynamic component */}
           {activeItem === "orders" && <AdminOrders />}
+
+          {/* ✅ INQUIRIES - Dynamic component */}
+          {activeItem === "inquiries" && <AdminInquiries />}
 
           {/* ✅ PRODUCTS - Dynamic component */}
           {activeItem === "products" && (
