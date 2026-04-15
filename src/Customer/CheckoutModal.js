@@ -64,11 +64,12 @@ function CheckoutModal({
     setError("");
 
     try {
-      // Prepare order items from cart (include prices)
+      // Prepare order items from cart (include prices and full customizations)
       const items = cartItems.map((item) => ({
         productId: item.productId,
         quantity: item.qty,
         unitPrice: extractNumericPrice(item.price),
+        customizations: item.customizations || {},
       }));
 
       // Calculate order total: sum of all item prices (including qty) + shipping

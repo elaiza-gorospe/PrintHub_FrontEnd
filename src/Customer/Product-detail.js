@@ -8,6 +8,7 @@ import { useCart } from "../hooks/useCart";
 import { extractNumericPrice } from "../utils/priceUtils";
 import Header from "../components/Header";
 import { buildApiUrl } from "../config/api";
+import AIBuilderPanel from "../components/AIBuilder/AIBuilderPanel";
 
 function ProductDetail() {
   const navigate = useNavigate();
@@ -45,6 +46,13 @@ function ProductDetail() {
   const [quoteSuccess, setQuoteSuccess] = useState(false);
   const [quoteError, setQuoteError] = useState("");
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
+
+  // AI Builder
+  const [activeDesign, setActiveDesign] = useState(null); // designMeta | null
+  const storedUser = useMemo(() => {
+    try { return JSON.parse(localStorage.getItem("user")); } catch { return null; }
+  }, []);
+  const isLoggedIn = Boolean(storedUser?.id);
 
   const [quoteForm, setQuoteForm] = useState({
     subject: "",
@@ -173,6 +181,7 @@ function ProductDetail() {
       finishing: selectedFinish,
       quantity: selectedQty,
       shipping: selectedShipping,
+      design: activeDesign || null,
     });
 
     setSuccessMessage("✓ Added to cart!");
@@ -250,6 +259,15 @@ function ProductDetail() {
               >
                 SPECIFICATIONS
               </button>
+              {isLoggedIn && (
+                <button
+                  type="button"
+                  className={activeTab === "aibuilder" ? "active" : ""}
+                  onClick={() => setActiveTab("aibuilder")}
+                >
+                  AI BUILDER
+                </button>
+              )}
             </div>
 
             {activeTab === "product" && (
@@ -293,6 +311,21 @@ function ProductDetail() {
                   <li>Submit files in correct size</li>
                   <li>Use bleed for print-safe layout</li>
                 </ul>
+              </div>
+            )}
+
+            {activeTab === "aibuilder" && isLoggedIn && (
+              <div className="pd-tab-content pd-tab-builder-inline">
+                <AIBuilderPanel
+                  product={product}
+                  productImage={selectedImage}
+                  activeDesign={activeDesign}
+                  onDesignReady={(meta) => {
+                    setActiveDesign(meta);
+                    setActiveTab("product");
+                  }}
+                  onClear={() => setActiveDesign(null)}
+                />
               </div>
             )}
           </div>
@@ -726,6 +759,19 @@ function ProductDetail() {
                   {successMessage && (
                     <div className="pd-success-message">
                       <FaCheckCircle /> {successMessage}
+                    </div>
+                  )}
+                  {activeDesign && (
+                    <div className="pd-design-attached">
+                      <img src={activeDesign.generatedImageUrl} alt="design preview" className="pd-design-thumb" />
+                      <span>AI design attached</span>
+                      <button
+                        type="button"
+                        className="pd-design-remove"
+                        onClick={() => setActiveDesign(null)}
+                      >
+                        ✕
+                      </button>
                     </div>
                   )}
                   <button

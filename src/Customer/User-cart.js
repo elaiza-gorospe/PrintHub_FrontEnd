@@ -136,10 +136,37 @@ function UserCartPage() {
 
             {cartItems.map((item) => (
               <div key={item.id} className="ucart-item">
-                <div className="ucart-thumb" />
+                <div className="ucart-thumb">
+                  {item.customizations?.design?.generatedImageUrl ? (
+                    <img
+                      src={item.customizations.design.generatedImageUrl}
+                      alt="AI design"
+                      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 4 }}
+                    />
+                  ) : null}
+                </div>
 
                 <div className="ucart-info">
-                  <div className="ucart-name">{item.title}</div>
+                  <div className="ucart-name">
+                    {item.title}
+                    {item.customizations?.design && (
+                      <span
+                        style={{
+                          marginLeft: 8,
+                          fontSize: 11,
+                          background: "#455073",
+                          color: "#fff",
+                          borderRadius: 20,
+                          padding: "2px 8px",
+                          fontWeight: 700,
+                          letterSpacing: "0.4px",
+                          verticalAlign: "middle",
+                        }}
+                      >
+                        AI Design
+                      </span>
+                    )}
+                  </div>
                   <div className="ucart-desc">
                     {item.desc ||
                       (item.customizations && (
@@ -150,6 +177,12 @@ function UserCartPage() {
                           <div style={{ fontSize: "12px", color: "#666" }}>
                             {item.customizations.quantity}
                           </div>
+                          {item.customizations.design?.prompt && (
+                            <div style={{ fontSize: "11px", color: "#888", marginTop: 2 }}>
+                              Prompt: "{item.customizations.design.prompt.slice(0, 60)}
+                              {item.customizations.design.prompt.length > 60 ? "…" : ""}"
+                            </div>
+                          )}
                         </>
                       ))}
                   </div>

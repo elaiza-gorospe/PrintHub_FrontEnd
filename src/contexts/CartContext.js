@@ -48,26 +48,30 @@ export function CartProvider({ children }) {
       finishing,
       quantity,
       shipping,
+      design,
     } = product;
 
     setCartItems((prevItems) => {
-      // Check if item with same customizations already exists
-      const existingItem = prevItems.find(
-        (item) =>
-          item.productId === productId &&
-          item.customizations?.size === size &&
-          item.customizations?.material === material &&
-          item.customizations?.sides === sides &&
-          item.customizations?.finishing === finishing &&
-          item.customizations?.quantity === quantity?.label &&
-          item.customizations?.shipping === shipping?.label,
-      );
-
-      if (existingItem) {
-        // Update quantity if item exists
-        return prevItems.map((item) =>
-          item.id === existingItem.id ? { ...item, qty: item.qty + 1 } : item,
+      // Items with a design are always distinct — never merge them
+      if (!design) {
+        // Check if item with same customizations already exists (no design)
+        const existingItem = prevItems.find(
+          (item) =>
+            item.productId === productId &&
+            !item.customizations?.design &&
+            item.customizations?.size === size &&
+            item.customizations?.material === material &&
+            item.customizations?.sides === sides &&
+            item.customizations?.finishing === finishing &&
+            item.customizations?.quantity === quantity?.label &&
+            item.customizations?.shipping === shipping?.label,
         );
+
+        if (existingItem) {
+          return prevItems.map((item) =>
+            item.id === existingItem.id ? { ...item, qty: item.qty + 1 } : item,
+          );
+        }
       }
 
       // Add new item
@@ -86,6 +90,7 @@ export function CartProvider({ children }) {
           quantityPrice: quantity?.price,
           shipping: shipping?.label,
           shippingPrice: extractNumericPrice(shipping?.price),
+          ...(design ? { design } : {}),
         },
       };
 
