@@ -202,9 +202,11 @@ function UserOrders() {
                     <strong>Total:</strong>
                     <strong>{formatCurrency(order.total)}</strong>
                   </div>
-                  {order.payment_status === "awaiting_payment" && (
+                  {order.total > 0 && order.status !== "cancelled" && order.payment_status !== "paid" && (
                     <div className="uo-pay-row">
-                      <span className="uo-pay-label">Awaiting payment</span>
+                      <span className="uo-pay-label">
+                        {order.payment_status === "awaiting_payment" ? "Awaiting payment" : "Payment pending"}
+                      </span>
                       <button
                         type="button"
                         className="uo-pay-btn"
