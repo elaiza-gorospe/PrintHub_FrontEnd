@@ -18,6 +18,7 @@ function AdminOrders() {
   const [error, setError] = useState(null);
   const [ordersQuery, setOrdersQuery] = useState("");
   const [ordersStatus, setOrdersStatus] = useState("all");
+  const [expandedOrderId, setExpandedOrderId] = useState(null);
 
   // Fetch orders from API
   useEffect(() => {
@@ -39,6 +40,7 @@ function AdminOrders() {
           status: order.status || "pending",
           date: new Date(order.createdAt).toISOString().slice(0, 10),
           dbId: order.id,
+          items: order.items || [],
         }));
 
         setOrders(transformedOrders);
@@ -248,7 +250,8 @@ function AdminOrders() {
 
           <tbody>
             {filteredOrders.map((o) => (
-              <tr key={o.dbId}>
+              <React.Fragment key={o.dbId}>
+              <tr>
                 <td data-label="Order">
                   <div className="dashpage-rowmain">
                     <div className="dashpage-rowtitle">{o.id}</div>
@@ -283,6 +286,23 @@ function AdminOrders() {
                       justifyContent: "center",
                     }}
                   >
+                    {/* Items expand button */}
+                    <button
+                      type="button"
+                      onClick={() => setExpandedOrderId(expandedOrderId === o.dbId ? null : o.dbId)}
+                      title="View items"
+                      style={{
+                        background: expandedOrderId === o.dbId ? "#455073" : "#f0f2f5",
+                        color: expandedOrderId === o.dbId ? "#fff" : "#455073",
+                        border: "1px solid #455073",
+                        padding: "6px 8px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "11px",
+                      }}
+                    >
+                      {expandedOrderId === o.dbId ? "Hide Items" : `Items (${o.items.length})`}
+                    </button>
                     {/* Process button - only for pending orders */}
                     {o.status === "pending" && (
                       <button
@@ -381,6 +401,52 @@ function AdminOrders() {
                   </div>
                 </td>
               </tr>
+
+              {/* Expandable items row */}
+              {expandedOrderId === o.dbId && (
+                <tr key={`${o.dbId}-items`}>
+                  <td colSpan="6" style={{ padding: "0 12px 12px", background: "#f8f9fc" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 10 }}>
+                      {o.items.length === 0 && (
+                        <p style={{ margin: 0, fontSize: 13, color: "#999" }}>No items.</p>
+                      )}
+                      {o.items.map((item) => {
+                        const design = item.customizations?.design;
+                        const productImg = item.product?.images?.[0];
+                        const productName = item.product?.name || `Product #${item.productId}`;
+                        return (
+                          <div key={item.id} style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "#fff", borderRadius: 8, padding: "10px 12px", border: "1px solid #e4e9e7" }}>
+                            {/* Product thumbnail */}
+                            {productImg && (
+                              <img src={productImg} alt={productName} style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 6, border: "1px solid #e0e5e3", flexShrink: 0 }} />
+                            )}
+                            {/* AI design thumbnail */}
+                            {design?.generatedImageUrl && (
+                              <div style={{ position: "relative", flexShrink: 0 }}>
+                                <img src={design.generatedImageUrl} alt="AI Design" title="AI Design" style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 6, border: "2px solid #455073" }} />
+                                <span style={{ position: "absolute", bottom: 0, left: 0, right: 0, textAlign: "center", background: "#455073", color: "#fff", fontSize: 8, fontWeight: 700, padding: "2px 0", borderRadius: "0 0 4px 4px" }}>AI</span>
+                              </div>
+                            )}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: "#2f3a45" }}>{productName}</p>
+                              {design?.prompt && (
+                                <p style={{ margin: "3px 0 0", fontSize: 11, color: "#667085", fontStyle: "italic" }}>
+                                  "{design.prompt.length > 100 ? design.prompt.slice(0, 100) + "…" : design.prompt}"
+                                </p>
+                              )}
+                              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#667085" }}>Qty: {item.quantity}</p>
+                            </div>
+                            <div style={{ whiteSpace: "nowrap", fontWeight: 700, fontSize: 13, color: "#0f352a", paddingTop: 2 }}>
+                              ₱{parseFloat(item.unit_price).toLocaleString()} × {item.quantity}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </td>
+                </tr>
+              )}
+              </React.Fragment>
             ))}
 
             {filteredOrders.length === 0 && (

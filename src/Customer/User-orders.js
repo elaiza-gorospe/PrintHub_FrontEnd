@@ -141,22 +141,49 @@ function UserOrders() {
                   <h4>Items</h4>
                   {order.items && order.items.length > 0 ? (
                     <div className="uo-items-list">
-                      {order.items.map((item) => (
-                        <div key={item.id} className="uo-item-row">
-                          <div className="uo-item-details">
-                            <p className="uo-item-name">
-                              Product ID: {item.productId}
-                            </p>
-                            <p className="uo-item-qty">
-                              Quantity: {item.quantity}
-                            </p>
-                          </div>
-                          <div className="uo-item-price">
-                            {formatCurrency(item.unit_price)} x {item.quantity}{" "}
-                            = {formatCurrency(item.total_price)}
-                          </div>
-                        </div>
-                      ))}
+                      {order.items.map((item) => {
+                          const design = item.customizations?.design;
+                          const productImg = item.product?.images?.[0];
+                          const productName = item.product?.name || `Product #${item.productId}`;
+                          return (
+                            <div key={item.id} className="uo-item-row">
+                              <div className="uo-item-thumbs">
+                                {productImg && (
+                                  <img
+                                    src={productImg}
+                                    alt={productName}
+                                    className="uo-item-thumb"
+                                    title="Product"
+                                  />
+                                )}
+                                {design?.generatedImageUrl && (
+                                  <div className="uo-item-design-wrap">
+                                    <img
+                                      src={design.generatedImageUrl}
+                                      alt="AI Design"
+                                      className="uo-item-thumb uo-item-thumb-design"
+                                      title="AI Design"
+                                    />
+                                    <span className="uo-design-badge">AI Design</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="uo-item-details">
+                                <p className="uo-item-name">{productName}</p>
+                                {design?.prompt && (
+                                  <p className="uo-item-design-prompt">
+                                    "{design.prompt.length > 80 ? design.prompt.slice(0, 80) + "…" : design.prompt}"
+                                  </p>
+                                )}
+                                <p className="uo-item-qty">Qty: {item.quantity}</p>
+                              </div>
+                              <div className="uo-item-price">
+                                {formatCurrency(item.unit_price)} × {item.quantity}{" "}
+                                = {formatCurrency(item.total_price)}
+                              </div>
+                            </div>
+                          );
+                        })}
                     </div>
                   ) : (
                     <p className="uo-no-items">No items in this order</p>
