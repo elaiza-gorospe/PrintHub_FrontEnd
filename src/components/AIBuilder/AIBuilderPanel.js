@@ -14,22 +14,12 @@ import { buildApiUrl } from "../../config/api";
 import AIBuilderEditor from "./AIBuilderEditor";
 import "./AIBuilder.css";
 
-const IMAGE_SIZES = [
-  { value: "square_hd", label: "Square (HD)" },
-  { value: "square", label: "Square" },
-  { value: "portrait_4_3", label: "Portrait 4:3" },
-  { value: "portrait_16_9", label: "Portrait 16:9" },
-  { value: "landscape_4_3", label: "Landscape 4:3" },
-  { value: "landscape_16_9", label: "Landscape 16:9" },
-];
-
 export default function AIBuilderPanel({ product, productImage, onDesignReady, onClear, activeDesign }) {
   // ── mode: "generate" | "upload" ────────────────────────────────
   const [mode, setMode] = useState("generate");
 
   // ── generate state ──────────────────────────────────────────────
   const [prompt, setPrompt] = useState("");
-  const [imageSize, setImageSize] = useState("square_hd");
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState("");
   const [cooldownMsg, setCooldownMsg] = useState("");
@@ -44,6 +34,7 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
   const [resultMeta, setResultMeta] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
   const [builderState, setBuilderState] = useState(null); // from AIBuilderEditor
+  const [imgLoading, setImgLoading] = useState(false); // true while Pollinations image loads
 
   // ── helper to get current user id ──────────────────────────────
   const getUserId = () => {
@@ -73,13 +64,18 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
     setShowEditor(false);
 
     try {
+      const productName = product?.title || "";
+      const fullPrompt = productName
+        ? `A professional print design for ${productName}. ${prompt.trim()}. The design must be clearly suitable for ${productName}, high quality, print-ready.`
+        : prompt.trim();
+
       const res = await fetch(buildApiUrl("/api/builder/generate"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-User-Id": String(userId),
         },
-        body: JSON.stringify({ prompt: prompt.trim(), imageSize }),
+        body: JSON.stringify({ prompt: fullPrompt }),
       });
 
       const data = await res.json();
@@ -90,7 +86,8 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
       }
       if (!res.ok) throw new Error(data.message || "Generation failed");
 
-      setResultMeta({ ...data, prompt: prompt.trim(), source: "generated" });
+      setImgLoading(true);
+      setResultMeta({ ...data, prompt: fullPrompt, source: "generated" });
       setShowEditor(true);
     } catch (e) {
       setGenError(e.message || "Something went wrong. Please try again.");
@@ -138,6 +135,7 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Upload failed");
 
+      setImgLoading(true);
       setResultMeta({ ...data, source: "upload", prompt: null });
       setShowEditor(true);
     } catch (e) {
@@ -156,7 +154,6 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
       generatedImageUrl: resultMeta.url,
       sourceAssetUrls: resultMeta.source === "upload" ? [resultMeta.url] : [],
       prompt: resultMeta.prompt || null,
-      imageSizeSetting: imageSize,
       seed: resultMeta.seed || null,
       source: resultMeta.source,
       storagePath: resultMeta.path || null,
@@ -224,27 +221,13 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
               className="aib-textarea"
               rows={3}
               maxLength={1000}
-              placeholder={`e.g. "A minimalist business card design with navy blue and gold accents, featuring the ${product?.title || "product"} logo"`}
+              placeholder={`e.g. "minimalist navy blue and gold design with logo" — ${product?.title ? `will be generated as a ${product.title}` : "product name added automatically"}`}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
             />
           </div>
 
           <div className="aib-row">
-            <div className="aib-field">
-              <label htmlFor="aib-size">Image size</label>
-              <select
-                id="aib-size"
-                className="aib-select"
-                value={imageSize}
-                onChange={(e) => setImageSize(e.target.value)}
-              >
-                {IMAGE_SIZES.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
-            </div>
-
             <button
               type="button"
               className="aib-btn-generate"
@@ -301,28 +284,18 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
       {/* ── Result + Editor ── */}
       {showEditor && resultMeta && (
         <>
-          <div className="aib-result">
-            <div className="aib-result-img-wrap">
-              <img
-                src={resultMeta.url}
-                alt="generated design"
-                className="aib-result-img"
-              />
-              <span className="aib-result-label">
-                {resultMeta.source === "generated" ? "AI Generated" : "Uploaded"}
-              </span>
-            </div>
-          </div>
-
           <AIBuilderEditor
             productImage={productImage}
             designImage={resultMeta.url}
+            designSource={resultMeta.source}
             initialState={builderState}
             onChange={setBuilderState}
+            imgLoading={imgLoading}
+            onImgLoad={() => setImgLoading(false)}
           />
 
           <div className="aib-result-actions">
-            <button type="button" className="aib-btn-use" onClick={handleUseDesign}>
+            <button type="button" className="aib-btn-use" onClick={handleUseDesign} disabled={imgLoading}>
               <FaCheckCircle style={{ marginRight: 6 }} />
               Use this design
             </button>
