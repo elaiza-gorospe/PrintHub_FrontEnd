@@ -218,6 +218,7 @@ export default function AIBuilderEditor({
               top: `${textLayer.y}%`,
               color: textLayer.color,
               fontSize: `${textLayer.size}px`,
+              whiteSpace: "pre-wrap",
             }}
             onPointerDown={onTxtPointerDown}
             onPointerMove={onTxtPointerMove}
@@ -238,10 +239,10 @@ export default function AIBuilderEditor({
         {/* Text controls */}
         <div className="aib-ctrl-row">
           <span className="aib-ctrl-label">Text</span>
-          <input
+          <textarea
             className="aib-ctrl-input"
-            type="text"
-            placeholder="Add text overlay…"
+            rows={3}
+            placeholder="Add text overlay… (Enter for new line)"
             value={textLayer.text}
             onChange={(e) =>
               setTextLayer((p) => ({
@@ -250,6 +251,7 @@ export default function AIBuilderEditor({
                 visible: e.target.value.length > 0,
               }))
             }
+            style={{ resize: "vertical", fontFamily: "inherit" }}
           />
         </div>
 
