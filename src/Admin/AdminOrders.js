@@ -8,6 +8,8 @@ import {
   FaTrash,
   FaBox,
   FaCheck,
+  FaEye,
+  FaTimes,
 } from "react-icons/fa";
 import "./Admin-dashboard.css";
 import { buildApiUrl } from "../config/api";
@@ -19,6 +21,7 @@ function AdminOrders() {
   const [ordersQuery, setOrdersQuery] = useState("");
   const [ordersStatus, setOrdersStatus] = useState("all");
   const [expandedOrderId, setExpandedOrderId] = useState(null);
+  const [detailOrder, setDetailOrder] = useState(null);
 
   // Fetch orders from API
   useEffect(() => {
@@ -251,66 +254,48 @@ function AdminOrders() {
           <tbody>
             {filteredOrders.map((o) => (
               <React.Fragment key={o.dbId}>
-              <tr>
-                <td data-label="Order">
-                  <div className="dashpage-rowmain">
-                    <div className="dashpage-rowtitle">{o.id}</div>
-                  </div>
-                </td>
-                <td data-label="Customer">{o.customer}</td>
-                <td data-label="Total">₱ {o.total.toLocaleString()}</td>
-                <td data-label="Status">
-                  <span className={`dashpage-pill status-${o.status}`}>
-                    {o.status === "pending" && (
-                      <FaClock style={{ marginRight: 6 }} />
-                    )}
-                    {o.status === "processing" && (
-                      <FaClock style={{ marginRight: 6 }} />
-                    )}
-                    {o.status === "completed" && (
-                      <FaCheckCircle style={{ marginRight: 6 }} />
-                    )}
-                    {o.status === "cancelled" && (
-                      <FaExclamationTriangle style={{ marginRight: 6 }} />
-                    )}
-                    {o.status}
-                  </span>
-                </td>
-                <td data-label="Date">{o.date}</td>
-                <td data-label="Actions">
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "6px",
-                      flexWrap: "wrap",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {/* Items expand button */}
-                    <button
-                      type="button"
-                      onClick={() => setExpandedOrderId(expandedOrderId === o.dbId ? null : o.dbId)}
-                      title="View items"
+                <tr>
+                  <td data-label="Order">
+                    <div className="dashpage-rowmain">
+                      <div className="dashpage-rowtitle">{o.id}</div>
+                    </div>
+                  </td>
+                  <td data-label="Customer">{o.customer}</td>
+                  <td data-label="Total">₱ {o.total.toLocaleString()}</td>
+                  <td data-label="Status">
+                    <span className={`dashpage-pill status-${o.status}`}>
+                      {o.status === "pending" && (
+                        <FaClock style={{ marginRight: 6 }} />
+                      )}
+                      {o.status === "processing" && (
+                        <FaClock style={{ marginRight: 6 }} />
+                      )}
+                      {o.status === "completed" && (
+                        <FaCheckCircle style={{ marginRight: 6 }} />
+                      )}
+                      {o.status === "cancelled" && (
+                        <FaExclamationTriangle style={{ marginRight: 6 }} />
+                      )}
+                      {o.status}
+                    </span>
+                  </td>
+                  <td data-label="Date">{o.date}</td>
+                  <td data-label="Actions">
+                    <div
                       style={{
-                        background: expandedOrderId === o.dbId ? "#455073" : "#f0f2f5",
-                        color: expandedOrderId === o.dbId ? "#fff" : "#455073",
-                        border: "1px solid #455073",
-                        padding: "6px 8px",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        fontSize: "11px",
+                        display: "flex",
+                        gap: "6px",
+                        flexWrap: "wrap",
+                        justifyContent: "center",
                       }}
                     >
-                      {expandedOrderId === o.dbId ? "Hide Items" : `Items (${o.items.length})`}
-                    </button>
-                    {/* Process button - only for pending orders */}
-                    {o.status === "pending" && (
+                      {/* View Details button */}
                       <button
                         type="button"
-                        onClick={() => handleProcessOrder(o)}
-                        title="Mark as processing"
+                        onClick={() => setDetailOrder(o)}
+                        title="View order details"
                         style={{
-                          background: "#3498db",
+                          background: "#455073",
                           color: "#fff",
                           border: "none",
                           padding: "6px 8px",
@@ -322,130 +307,281 @@ function AdminOrders() {
                           gap: "3px",
                         }}
                       >
-                        <FaClock size={11} />
-                        Process
+                        <FaEye size={11} />
+                        Details
                       </button>
-                    )}
-
-                    {/* Deliver button - for processing orders */}
-                    {o.status === "processing" && (
+                      {/* Items expand button */}
                       <button
                         type="button"
-                        onClick={() => handleDeliverOrder(o)}
-                        title="Mark as delivered"
+                        onClick={() =>
+                          setExpandedOrderId(
+                            expandedOrderId === o.dbId ? null : o.dbId,
+                          )
+                        }
+                        title="View items"
                         style={{
-                          background: "#2ecc71",
-                          color: "#fff",
-                          border: "none",
+                          background:
+                            expandedOrderId === o.dbId ? "#455073" : "#f0f2f5",
+                          color:
+                            expandedOrderId === o.dbId ? "#fff" : "#455073",
+                          border: "1px solid #455073",
                           padding: "6px 8px",
                           borderRadius: "4px",
                           cursor: "pointer",
                           fontSize: "11px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "3px",
                         }}
                       >
-                        <FaBox size={11} />
-                        Deliver
+                        {expandedOrderId === o.dbId
+                          ? "Hide Items"
+                          : `Items (${o.items.length})`}
                       </button>
-                    )}
-
-                    {/* Complete button - for delivered orders */}
-                    {o.status === "delivered" && (
-                      <button
-                        type="button"
-                        onClick={() => handleCompleteOrder(o)}
-                        title="Mark as completed"
-                        style={{
-                          background: "#27ae60",
-                          color: "#fff",
-                          border: "none",
-                          padding: "6px 8px",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "11px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "3px",
-                        }}
-                      >
-                        <FaCheck size={11} />
-                        Complete
-                      </button>
-                    )}
-
-                    {/* Delete button - not available for completed orders */}
-                    {o.status !== "completed" && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteOrder(o)}
-                        title="Delete order"
-                        style={{
-                          background: "#e74c3c",
-                          color: "#fff",
-                          border: "none",
-                          padding: "6px 8px",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "11px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "3px",
-                        }}
-                      >
-                        <FaTrash size={11} />
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-
-              {/* Expandable items row */}
-              {expandedOrderId === o.dbId && (
-                <tr key={`${o.dbId}-items`}>
-                  <td colSpan="6" style={{ padding: "0 12px 12px", background: "#f8f9fc" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 10 }}>
-                      {o.items.length === 0 && (
-                        <p style={{ margin: 0, fontSize: 13, color: "#999" }}>No items.</p>
+                      {/* Process button - only for pending orders */}
+                      {o.status === "pending" && (
+                        <button
+                          type="button"
+                          onClick={() => handleProcessOrder(o)}
+                          title="Mark as processing"
+                          style={{
+                            background: "#3498db",
+                            color: "#fff",
+                            border: "none",
+                            padding: "6px 8px",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "11px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "3px",
+                          }}
+                        >
+                          <FaClock size={11} />
+                          Process
+                        </button>
                       )}
-                      {o.items.map((item) => {
-                        const design = item.customizations?.design;
-                        const productImg = item.product?.images?.[0];
-                        const productName = item.product?.name || `Product #${item.productId}`;
-                        return (
-                          <div key={item.id} style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "#fff", borderRadius: 8, padding: "10px 12px", border: "1px solid #e4e9e7" }}>
-                            {/* Product thumbnail */}
-                            {productImg && (
-                              <img src={productImg} alt={productName} style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 6, border: "1px solid #e0e5e3", flexShrink: 0 }} />
-                            )}
-                            {/* AI design thumbnail */}
-                            {design?.generatedImageUrl && (
-                              <div style={{ position: "relative", flexShrink: 0 }}>
-                                <img src={design.generatedImageUrl} alt="AI Design" title="AI Design" style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 6, border: "2px solid #455073" }} />
-                                <span style={{ position: "absolute", bottom: 0, left: 0, right: 0, textAlign: "center", background: "#455073", color: "#fff", fontSize: 8, fontWeight: 700, padding: "2px 0", borderRadius: "0 0 4px 4px" }}>AI</span>
-                              </div>
-                            )}
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: "#2f3a45" }}>{productName}</p>
-                              {design?.prompt && (
-                                <p style={{ margin: "3px 0 0", fontSize: 11, color: "#667085", fontStyle: "italic" }}>
-                                  "{design.prompt.length > 100 ? design.prompt.slice(0, 100) + "…" : design.prompt}"
-                                </p>
-                              )}
-                              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#667085" }}>Qty: {item.quantity}</p>
-                            </div>
-                            <div style={{ whiteSpace: "nowrap", fontWeight: 700, fontSize: 13, color: "#0f352a", paddingTop: 2 }}>
-                              ₱{parseFloat(item.unit_price).toLocaleString()} × {item.quantity}
-                            </div>
-                          </div>
-                        );
-                      })}
+
+                      {/* Deliver button - for processing orders */}
+                      {o.status === "processing" && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeliverOrder(o)}
+                          title="Mark as delivered"
+                          style={{
+                            background: "#2ecc71",
+                            color: "#fff",
+                            border: "none",
+                            padding: "6px 8px",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "11px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "3px",
+                          }}
+                        >
+                          <FaBox size={11} />
+                          Deliver
+                        </button>
+                      )}
+
+                      {/* Complete button - for delivered orders */}
+                      {o.status === "delivered" && (
+                        <button
+                          type="button"
+                          onClick={() => handleCompleteOrder(o)}
+                          title="Mark as completed"
+                          style={{
+                            background: "#27ae60",
+                            color: "#fff",
+                            border: "none",
+                            padding: "6px 8px",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "11px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "3px",
+                          }}
+                        >
+                          <FaCheck size={11} />
+                          Complete
+                        </button>
+                      )}
+
+                      {/* Delete button - not available for completed orders */}
+                      {o.status !== "completed" && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteOrder(o)}
+                          title="Delete order"
+                          style={{
+                            background: "#e74c3c",
+                            color: "#fff",
+                            border: "none",
+                            padding: "6px 8px",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "11px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "3px",
+                          }}
+                        >
+                          <FaTrash size={11} />
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
-              )}
+
+                {/* Expandable items row */}
+                {expandedOrderId === o.dbId && (
+                  <tr key={`${o.dbId}-items`}>
+                    <td
+                      colSpan="6"
+                      style={{ padding: "0 12px 12px", background: "#f8f9fc" }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 8,
+                          paddingTop: 10,
+                        }}
+                      >
+                        {o.items.length === 0 && (
+                          <p style={{ margin: 0, fontSize: 13, color: "#999" }}>
+                            No items.
+                          </p>
+                        )}
+                        {o.items.map((item) => {
+                          const design = item.customizations?.design;
+                          const productImg = item.product?.images?.[0];
+                          const productName =
+                            item.product?.name || `Product #${item.productId}`;
+                          return (
+                            <div
+                              key={item.id}
+                              style={{
+                                display: "flex",
+                                alignItems: "flex-start",
+                                gap: 10,
+                                background: "#fff",
+                                borderRadius: 8,
+                                padding: "10px 12px",
+                                border: "1px solid #e4e9e7",
+                              }}
+                            >
+                              {/* Product thumbnail */}
+                              {productImg && (
+                                <img
+                                  src={productImg}
+                                  alt={productName}
+                                  style={{
+                                    width: 52,
+                                    height: 52,
+                                    objectFit: "cover",
+                                    borderRadius: 6,
+                                    border: "1px solid #e0e5e3",
+                                    flexShrink: 0,
+                                  }}
+                                />
+                              )}
+                              {/* AI design thumbnail */}
+                              {design?.generatedImageUrl && (
+                                <div
+                                  style={{
+                                    position: "relative",
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  <img
+                                    src={design.generatedImageUrl}
+                                    alt="AI Design"
+                                    title="AI Design"
+                                    style={{
+                                      width: 52,
+                                      height: 52,
+                                      objectFit: "cover",
+                                      borderRadius: 6,
+                                      border: "2px solid #455073",
+                                    }}
+                                  />
+                                  <span
+                                    style={{
+                                      position: "absolute",
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      textAlign: "center",
+                                      background: "#455073",
+                                      color: "#fff",
+                                      fontSize: 8,
+                                      fontWeight: 700,
+                                      padding: "2px 0",
+                                      borderRadius: "0 0 4px 4px",
+                                    }}
+                                  >
+                                    AI
+                                  </span>
+                                </div>
+                              )}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p
+                                  style={{
+                                    margin: 0,
+                                    fontWeight: 600,
+                                    fontSize: 13,
+                                    color: "#2f3a45",
+                                  }}
+                                >
+                                  {productName}
+                                </p>
+                                {design?.prompt && (
+                                  <p
+                                    style={{
+                                      margin: "3px 0 0",
+                                      fontSize: 11,
+                                      color: "#667085",
+                                      fontStyle: "italic",
+                                    }}
+                                  >
+                                    "
+                                    {design.prompt.length > 100
+                                      ? design.prompt.slice(0, 100) + "…"
+                                      : design.prompt}
+                                    "
+                                  </p>
+                                )}
+                                <p
+                                  style={{
+                                    margin: "3px 0 0",
+                                    fontSize: 12,
+                                    color: "#667085",
+                                  }}
+                                >
+                                  Qty: {item.quantity}
+                                </p>
+                              </div>
+                              <div
+                                style={{
+                                  whiteSpace: "nowrap",
+                                  fontWeight: 700,
+                                  fontSize: 13,
+                                  color: "#0f352a",
+                                  paddingTop: 2,
+                                }}
+                              >
+                                ₱{parseFloat(item.unit_price).toLocaleString()}{" "}
+                                × {item.quantity}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </td>
+                  </tr>
+                )}
               </React.Fragment>
             ))}
 
@@ -459,6 +595,299 @@ function AdminOrders() {
           </tbody>
         </table>
       </div>
+      {/* Order Details Modal */}
+      {detailOrder && (
+        <div
+          onClick={() => setDetailOrder(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              borderRadius: 12,
+              width: "100%",
+              maxWidth: 560,
+              maxHeight: "90vh",
+              overflowY: "auto",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+            }}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "18px 20px",
+                borderBottom: "1px solid #e4e9f0",
+              }}
+            >
+              <div>
+                <h3 style={{ margin: 0, fontSize: 17, color: "#2f3a45" }}>
+                  {detailOrder.id}
+                </h3>
+                <span style={{ fontSize: 12, color: "#667085" }}>
+                  {detailOrder.date}
+                </span>
+              </div>
+              <button
+                onClick={() => setDetailOrder(null)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#667085",
+                  padding: 4,
+                }}
+              >
+                <FaTimes size={18} />
+              </button>
+            </div>
+
+            {/* Order Info */}
+            <div
+              style={{
+                padding: "16px 20px",
+                borderBottom: "1px solid #e4e9f0",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 16,
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 140 }}>
+                <div
+                  style={{ fontSize: 11, color: "#667085", marginBottom: 2 }}
+                >
+                  CUSTOMER
+                </div>
+                <div
+                  style={{ fontSize: 14, fontWeight: 600, color: "#2f3a45" }}
+                >
+                  {detailOrder.customer}
+                </div>
+              </div>
+              <div style={{ flex: 1, minWidth: 120 }}>
+                <div
+                  style={{ fontSize: 11, color: "#667085", marginBottom: 2 }}
+                >
+                  STATUS
+                </div>
+                <span
+                  className={`dashpage-pill status-${detailOrder.status}`}
+                  style={{ fontSize: 12 }}
+                >
+                  {detailOrder.status === "pending" && (
+                    <FaClock style={{ marginRight: 5 }} />
+                  )}
+                  {detailOrder.status === "processing" && (
+                    <FaClock style={{ marginRight: 5 }} />
+                  )}
+                  {detailOrder.status === "completed" && (
+                    <FaCheckCircle style={{ marginRight: 5 }} />
+                  )}
+                  {detailOrder.status === "cancelled" && (
+                    <FaExclamationTriangle style={{ marginRight: 5 }} />
+                  )}
+                  {detailOrder.status}
+                </span>
+              </div>
+              <div style={{ flex: 1, minWidth: 120 }}>
+                <div
+                  style={{ fontSize: 11, color: "#667085", marginBottom: 2 }}
+                >
+                  ORDER TOTAL
+                </div>
+                <div
+                  style={{ fontSize: 16, fontWeight: 700, color: "#0f352a" }}
+                >
+                  ₱ {detailOrder.total.toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            {/* Items */}
+            <div style={{ padding: "16px 20px" }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "#667085",
+                  marginBottom: 10,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                }}
+              >
+                Items ({detailOrder.items.length})
+              </div>
+              {detailOrder.items.length === 0 && (
+                <p style={{ margin: 0, fontSize: 13, color: "#999" }}>
+                  No items.
+                </p>
+              )}
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 10 }}
+              >
+                {detailOrder.items.map((item) => {
+                  const design = item.customizations?.design;
+                  const productImg = item.product?.images?.[0];
+                  const productName =
+                    item.product?.name || `Product #${item.productId}`;
+                  return (
+                    <div
+                      key={item.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        background: "#f8f9fc",
+                        borderRadius: 8,
+                        padding: "10px 12px",
+                        border: "1px solid #e4e9f0",
+                      }}
+                    >
+                      {productImg && (
+                        <img
+                          src={productImg}
+                          alt={productName}
+                          style={{
+                            width: 56,
+                            height: 56,
+                            objectFit: "cover",
+                            borderRadius: 6,
+                            border: "1px solid #e0e5e3",
+                            flexShrink: 0,
+                          }}
+                        />
+                      )}
+                      {design?.generatedImageUrl && (
+                        <div style={{ position: "relative", flexShrink: 0 }}>
+                          <img
+                            src={design.generatedImageUrl}
+                            alt="AI Design"
+                            title="AI Design"
+                            style={{
+                              width: 56,
+                              height: 56,
+                              objectFit: "cover",
+                              borderRadius: 6,
+                              border: "2px solid #455073",
+                            }}
+                          />
+                          <span
+                            style={{
+                              position: "absolute",
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              textAlign: "center",
+                              background: "#455073",
+                              color: "#fff",
+                              fontSize: 8,
+                              fontWeight: 700,
+                              padding: "2px 0",
+                              borderRadius: "0 0 4px 4px",
+                            }}
+                          >
+                            AI
+                          </span>
+                        </div>
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontWeight: 600,
+                            fontSize: 13,
+                            color: "#2f3a45",
+                          }}
+                        >
+                          {productName}
+                        </p>
+                        {design?.prompt && (
+                          <p
+                            style={{
+                              margin: "3px 0 0",
+                              fontSize: 11,
+                              color: "#667085",
+                              fontStyle: "italic",
+                            }}
+                          >
+                            "
+                            {design.prompt.length > 120
+                              ? design.prompt.slice(0, 120) + "…"
+                              : design.prompt}
+                            "
+                          </p>
+                        )}
+                        {item.customizations &&
+                          Object.entries(item.customizations)
+                            .filter(([k]) => k !== "design")
+                            .map(([k, v]) => (
+                              <p
+                                key={k}
+                                style={{
+                                  margin: "2px 0 0",
+                                  fontSize: 11,
+                                  color: "#667085",
+                                }}
+                              >
+                                <strong>{k}:</strong>{" "}
+                                {typeof v === "object"
+                                  ? JSON.stringify(v)
+                                  : String(v)}
+                              </p>
+                            ))}
+                        <p
+                          style={{
+                            margin: "4px 0 0",
+                            fontSize: 12,
+                            color: "#667085",
+                          }}
+                        >
+                          Qty: {item.quantity}
+                        </p>
+                      </div>
+                      <div
+                        style={{
+                          whiteSpace: "nowrap",
+                          fontWeight: 700,
+                          fontSize: 13,
+                          color: "#0f352a",
+                          paddingTop: 2,
+                        }}
+                      >
+                        ₱{parseFloat(item.unit_price).toLocaleString()}
+                        <div
+                          style={{
+                            fontWeight: 400,
+                            fontSize: 11,
+                            color: "#667085",
+                          }}
+                        >
+                          × {item.quantity} = ₱
+                          {(
+                            parseFloat(item.unit_price) * item.quantity
+                          ).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
