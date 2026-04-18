@@ -86,7 +86,9 @@ function AdminDashboard() {
           (sum, o) => sum + parseFloat(o.total || 0),
           0,
         );
-        const totalUsers = usersData.length;
+        const totalUsers = Array.isArray(usersData)
+          ? usersData.length
+          : (usersData?.users?.length ?? 0);
 
         setDashStats({
           totalRevenue,
@@ -756,7 +758,7 @@ function AdminDashboard() {
                     <div>
                       <h3>Total Users</h3>
                       <p className="stat-number">
-                        {dashStats.totalUsers.toLocaleString()}
+                        {(dashStats.totalUsers ?? 0).toLocaleString()}
                       </p>
                     </div>
                     <div className="stat-icon">
