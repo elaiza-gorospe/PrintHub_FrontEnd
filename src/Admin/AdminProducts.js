@@ -33,6 +33,7 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
     material: "",
     description: "",
     status: "active",
+    images: [],
     color_options: [],
     size_options: [],
     material_options: [],
@@ -40,6 +41,8 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
     finishing_options: [],
     processing_options: [],
     delivery_options: [],
+    quantity_options: [],
+    shipping_options: [],
   });
   const [tagInputs, setTagInputs] = useState({
     color_options: "",
@@ -49,7 +52,11 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
     finishing_options: "",
     processing_options: "",
     delivery_options: "",
+    quantity_options: "",
+    shipping_options: "",
   });
+  const [editImageUploading, setEditImageUploading] = useState(false);
+  const [editImageError, setEditImageError] = useState("");
 
   // Fetch products from API
   useEffect(() => {
@@ -156,6 +163,7 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
       material: product.material || "",
       description: product.description || "",
       status: product.status,
+      images: fullProduct.images || [],
       color_options: fullProduct.color_options || [],
       size_options: fullProduct.size_options || [],
       material_options: fullProduct.material_options || [],
@@ -163,6 +171,8 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
       finishing_options: fullProduct.finishing_options || [],
       processing_options: fullProduct.processing_options || [],
       delivery_options: fullProduct.delivery_options || [],
+      quantity_options: fullProduct.quantity_options || [],
+      shipping_options: fullProduct.shipping_options || [],
     });
     setTagInputs({
       color_options: "",
@@ -172,7 +182,10 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
       finishing_options: "",
       processing_options: "",
       delivery_options: "",
+      quantity_options: "",
+      shipping_options: "",
     });
+    setEditImageError("");
     setShowEditModal(true);
   };
 
@@ -220,6 +233,7 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
             material: editForm.material,
             description: editForm.description,
             active: editForm.status === "active",
+            images: editForm.images,
             color_options: editForm.color_options,
             size_options: editForm.size_options,
             material_options: editForm.material_options,
@@ -227,6 +241,8 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
             finishing_options: editForm.finishing_options,
             processing_options: editForm.processing_options,
             delivery_options: editForm.delivery_options,
+            quantity_options: editForm.quantity_options,
+            shipping_options: editForm.shipping_options,
           }),
         },
       );
@@ -353,6 +369,35 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
       </div>
     </div>
   );
+
+  // Upload image for Edit Product modal
+  const handleEditImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      setEditImageError("Image must be 3MB or smaller.");
+      e.target.value = "";
+      return;
+    }
+    setEditImageError("");
+    setEditImageUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch(buildApiUrl("/api/products/upload"), {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Upload failed");
+      setEditForm((prev) => ({ ...prev, images: [...prev.images, data.url] }));
+    } catch (err) {
+      setEditImageError(err.message || "Upload failed");
+    } finally {
+      setEditImageUploading(false);
+      e.target.value = "";
+    }
+  };
 
   // ✅ NEW: Delete product
   const handleDeleteProduct = async (product) => {
@@ -905,6 +950,104 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
                   borderTop: "1px solid #e5e7eb",
                 }}
               />
+
+              {/* Image Upload */}
+              <div style={{ marginBottom: "16px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "4px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                  }}
+                >
+                  Product Images{" "}
+                  <span style={{ color: "#9ca3af", fontWeight: "400" }}>
+                    (max 3MB each)
+                  </span>
+                </label>
+                {editForm.images.length > 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "8px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    {editForm.images.map((url, i) => (
+                      <div key={i} style={{ position: "relative" }}>
+                        <img
+                          src={url}
+                          alt={`img-${i}`}
+                          style={{
+                            width: "60px",
+                            height: "60px",
+                            objectFit: "cover",
+                            borderRadius: "4px",
+                            border: "1px solid #d1d5db",
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEditForm((prev) => ({
+                              ...prev,
+                              images: prev.images.filter((_, idx) => idx !== i),
+                            }))
+                          }
+                          style={{
+                            position: "absolute",
+                            top: "-6px",
+                            right: "-6px",
+                            background: "#e74c3c",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: "16px",
+                            height: "16px",
+                            fontSize: "10px",
+                            cursor: "pointer",
+                            lineHeight: 1,
+                          }}
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handleEditImageUpload}
+                  disabled={editImageUploading}
+                  style={{ fontSize: "13px" }}
+                />
+                {editImageUploading && (
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#6b7280",
+                      marginTop: "4px",
+                    }}
+                  >
+                    Uploading...
+                  </p>
+                )}
+                {editImageError && (
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#e74c3c",
+                      marginTop: "4px",
+                    }}
+                  >
+                    {editImageError}
+                  </p>
+                )}
+              </div>
+
               <p
                 style={{
                   fontSize: "12px",
@@ -928,6 +1071,28 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
                 label="Processing Options"
               />
               <TagEditor field="delivery_options" label="Delivery Options" />
+              <TagEditor field="quantity_options" label="Quantity Options" />
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: "#9ca3af",
+                  marginTop: "-8px",
+                  marginBottom: "12px",
+                }}
+              >
+                format: label|price — e.g. 100 pcs (1 box)|₱1,270.50
+              </p>
+              <TagEditor field="shipping_options" label="Shipping Options" />
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: "#9ca3af",
+                  marginTop: "-8px",
+                  marginBottom: "12px",
+                }}
+              >
+                format: label|price — e.g. Standard|Free
+              </p>
 
               <div className="ad-logout-actions">
                 <button

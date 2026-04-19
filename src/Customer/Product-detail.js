@@ -3,12 +3,38 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FaIdCard, FaHeadset, FaCheck, FaCheckCircle } from "react-icons/fa";
 import "./Product-detail.css";
 import ReCAPTCHA from "react-google-recaptcha";
-import productsData from "./Products-data";
 import { useCart } from "../hooks/useCart";
 import { extractNumericPrice } from "../utils/priceUtils";
 import Header from "../components/Header";
 import { buildApiUrl } from "../config/api";
 import AIBuilderPanel from "../components/AIBuilder/AIBuilderPanel";
+
+/** Map a raw API product to the shape the component expects */
+function mapApiProduct(data) {
+  const parseOptions = (arr) =>
+    (arr || []).map((opt) => {
+      const idx = opt.indexOf("|");
+      if (idx === -1) return { label: opt, price: "" };
+      return { label: opt.slice(0, idx), price: opt.slice(idx + 1) };
+    });
+
+  return {
+    id: data.id,
+    category: data.print_type || "print",
+    title: data.name,
+    image: data.images?.[0] || "",
+    description: data.description || "",
+    gallery: data.images?.length > 0 ? data.images : [],
+    sizes: data.size_options || [],
+    materials: data.material_options || [],
+    sides: data.side_options || [],
+    finishing: data.finishing_options || [],
+    colors: data.color_options || [],
+    processing: data.processing_options || [],
+    quantities: parseOptions(data.quantity_options),
+    shipping: parseOptions(data.shipping_options),
+  };
+}
 
 function ProductDetail() {
   const navigate = useNavigate();
@@ -16,12 +42,23 @@ function ProductDetail() {
   const quoteRef = useRef(null);
   const { addToCart } = useCart();
 
-  const allProducts = useMemo(() => productsData, []);
+  const [product, setProduct] = useState(null);
+  const [productLoading, setProductLoading] = useState(true);
+  const [productError, setProductError] = useState(null);
 
-  const product = useMemo(
-    () => allProducts.find((item) => item.id === Number(id)),
-    [id, allProducts],
-  );
+  useEffect(() => {
+    if (!id) return;
+    setProductLoading(true);
+    setProductError(null);
+    fetch(buildApiUrl(`/api/products/${id}`))
+      .then((r) => {
+        if (!r.ok) throw new Error("Product not found");
+        return r.json();
+      })
+      .then((data) => setProduct(mapApiProduct(data)))
+      .catch((err) => setProductError(err.message))
+      .finally(() => setProductLoading(false));
+  }, [id]);
 
   const [selectedImage, setSelectedImage] = useState(
     product?.gallery?.[0] || "",
@@ -50,7 +87,11 @@ function ProductDetail() {
   // AI Builder
   const [activeDesign, setActiveDesign] = useState(null); // designMeta | null
   const storedUser = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("user")); } catch { return null; }
+    try {
+      return JSON.parse(localStorage.getItem("user"));
+    } catch {
+      return null;
+    }
   }, []);
   const isLoggedIn = Boolean(storedUser?.id);
 
@@ -190,13 +231,24 @@ function ProductDetail() {
     }, 2000);
   };
 
-  if (!product) {
+  if (productLoading) {
+    return (
+      <div>
+        <Header />
+        <div style={{ padding: "30px", maxWidth: "1400px", margin: "0 auto" }}>
+          <p>Loading product...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (productError || !product) {
     return (
       <div>
         <Header />
         <div style={{ padding: "30px", maxWidth: "1400px", margin: "0 auto" }}>
           <button onClick={() => navigate(-1)}>← Back</button>
-          <h2>Product not found</h2>
+          <h2>{productError || "Product not found"}</h2>
         </div>
       </div>
     );
@@ -763,7 +815,11 @@ function ProductDetail() {
                   )}
                   {activeDesign && (
                     <div className="pd-design-attached">
-                      <img src={activeDesign.generatedImageUrl} alt="design preview" className="pd-design-thumb" />
+                      <img
+                        src={activeDesign.generatedImageUrl}
+                        alt="design preview"
+                        className="pd-design-thumb"
+                      />
                       <span>AI design attached</span>
                       <button
                         type="button"

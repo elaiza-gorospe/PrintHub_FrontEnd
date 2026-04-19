@@ -44,7 +44,30 @@ function AdminDashboard() {
     print_type: "offset",
     material: "",
     description: "",
+    images: [],
+    color_options: [],
+    size_options: [],
+    material_options: [],
+    side_options: [],
+    finishing_options: [],
+    processing_options: [],
+    delivery_options: [],
+    quantity_options: [],
+    shipping_options: [],
   });
+  const [addTagInputs, setAddTagInputs] = useState({
+    color_options: "",
+    size_options: "",
+    material_options: "",
+    side_options: "",
+    finishing_options: "",
+    processing_options: "",
+    delivery_options: "",
+    quantity_options: "",
+    shipping_options: "",
+  });
+  const [addImageUploading, setAddImageUploading] = useState(false);
+  const [addImageError, setAddImageError] = useState("");
 
   // ✅ NEW: Dashboard stats from API
   const [dashStats, setDashStats] = useState({
@@ -200,8 +223,77 @@ function AdminDashboard() {
       print_type: "offset",
       material: "",
       description: "",
+      images: [],
+      color_options: [],
+      size_options: [],
+      material_options: [],
+      side_options: [],
+      finishing_options: [],
+      processing_options: [],
+      delivery_options: [],
+      quantity_options: [],
+      shipping_options: [],
     });
+    setAddTagInputs({
+      color_options: "",
+      size_options: "",
+      material_options: "",
+      side_options: "",
+      finishing_options: "",
+      processing_options: "",
+      delivery_options: "",
+      quantity_options: "",
+      shipping_options: "",
+    });
+    setAddImageError("");
     setShowAddProductModal(true);
+  };
+
+  // Tag helpers for Add Product modal
+  const addAddTag = (field) => {
+    const val = addTagInputs[field].trim();
+    if (!val || productForm[field].includes(val)) return;
+    setProductForm((prev) => ({ ...prev, [field]: [...prev[field], val] }));
+    setAddTagInputs((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  const removeAddTag = (field, index) => {
+    setProductForm((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index),
+    }));
+  };
+
+  // Upload image for Add Product modal
+  const handleAddImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      setAddImageError("Image must be 3MB or smaller.");
+      e.target.value = "";
+      return;
+    }
+    setAddImageError("");
+    setAddImageUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch(buildApiUrl("/api/products/upload"), {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Upload failed");
+      setProductForm((prev) => ({
+        ...prev,
+        images: [...prev.images, data.url],
+      }));
+    } catch (err) {
+      setAddImageError(err.message || "Upload failed");
+    } finally {
+      setAddImageUploading(false);
+      e.target.value = "";
+    }
   };
 
   // ✅ NEW: Submit add product form
@@ -225,6 +317,16 @@ function AdminDashboard() {
           print_type: productForm.print_type,
           material: productForm.material,
           description: productForm.description,
+          images: productForm.images,
+          color_options: productForm.color_options,
+          size_options: productForm.size_options,
+          material_options: productForm.material_options,
+          side_options: productForm.side_options,
+          finishing_options: productForm.finishing_options,
+          processing_options: productForm.processing_options,
+          delivery_options: productForm.delivery_options,
+          quantity_options: productForm.quantity_options,
+          shipping_options: productForm.shipping_options,
           active: true,
         }),
       });
@@ -568,6 +670,248 @@ function AdminDashboard() {
                   }}
                 />
               </div>
+
+              {/* Image Upload */}
+              <div style={{ marginBottom: "16px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "4px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                  }}
+                >
+                  Product Image{" "}
+                  <span style={{ color: "#9ca3af", fontWeight: "400" }}>
+                    (max 3MB)
+                  </span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handleAddImageUpload}
+                  disabled={addImageUploading}
+                  style={{ fontSize: "13px" }}
+                />
+                {addImageUploading && (
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#6b7280",
+                      marginTop: "4px",
+                    }}
+                  >
+                    Uploading...
+                  </p>
+                )}
+                {addImageError && (
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#e74c3c",
+                      marginTop: "4px",
+                    }}
+                  >
+                    {addImageError}
+                  </p>
+                )}
+                {productForm.images.length > 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "8px",
+                      marginTop: "8px",
+                    }}
+                  >
+                    {productForm.images.map((url, i) => (
+                      <div key={i} style={{ position: "relative" }}>
+                        <img
+                          src={url}
+                          alt={`upload-${i}`}
+                          style={{
+                            width: "60px",
+                            height: "60px",
+                            objectFit: "cover",
+                            borderRadius: "4px",
+                            border: "1px solid #d1d5db",
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setProductForm((prev) => ({
+                              ...prev,
+                              images: prev.images.filter((_, idx) => idx !== i),
+                            }))
+                          }
+                          style={{
+                            position: "absolute",
+                            top: "-6px",
+                            right: "-6px",
+                            background: "#e74c3c",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: "16px",
+                            height: "16px",
+                            fontSize: "10px",
+                            cursor: "pointer",
+                            lineHeight: 1,
+                          }}
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <hr
+                style={{
+                  margin: "4px 0 12px",
+                  border: "none",
+                  borderTop: "1px solid #e5e7eb",
+                }}
+              />
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "#6b7280",
+                  marginBottom: "12px",
+                }}
+              >
+                Quote form options — define selectable choices for each field
+              </p>
+
+              {[
+                { field: "color_options", label: "Color Options" },
+                { field: "size_options", label: "Size Options" },
+                { field: "material_options", label: "Material Options" },
+                { field: "side_options", label: "Printing (Sides) Options" },
+                { field: "finishing_options", label: "Finishing Options" },
+                { field: "processing_options", label: "Processing Options" },
+                { field: "delivery_options", label: "Delivery Options" },
+                {
+                  field: "quantity_options",
+                  label: "Quantity Options",
+                  hint: "format: label|price (e.g. 100 pcs|₱1,270.50)",
+                },
+                {
+                  field: "shipping_options",
+                  label: "Shipping Options",
+                  hint: "format: label|price (e.g. Standard|Free)",
+                },
+              ].map(({ field, label, hint }) => (
+                <div key={field} style={{ marginBottom: "12px" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {label}
+                    {hint && (
+                      <span
+                        style={{
+                          color: "#9ca3af",
+                          fontWeight: "400",
+                          fontSize: "11px",
+                        }}
+                      >
+                        {" "}
+                        — {hint}
+                      </span>
+                    )}
+                  </label>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "6px",
+                      marginBottom: "6px",
+                      minHeight: "28px",
+                    }}
+                  >
+                    {productForm[field].map((tag, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          background: "#e8f0fe",
+                          border: "1px solid #b3c6f7",
+                          borderRadius: "4px",
+                          padding: "2px 8px",
+                          fontSize: "13px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeAddTag(field, i)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            color: "#666",
+                            fontSize: "14px",
+                            lineHeight: 1,
+                            padding: "0 2px",
+                          }}
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    <input
+                      type="text"
+                      value={addTagInputs[field]}
+                      onChange={(e) =>
+                        setAddTagInputs((prev) => ({
+                          ...prev,
+                          [field]: e.target.value,
+                        }))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addAddTag(field);
+                        }
+                      }}
+                      placeholder={`Add ${label.toLowerCase()} option...`}
+                      style={{
+                        flex: 1,
+                        padding: "6px 10px",
+                        border: "1px solid #d1d5db",
+                        borderRadius: "6px",
+                        fontSize: "13px",
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addAddTag(field)}
+                      style={{
+                        padding: "6px 12px",
+                        background: "#1b3f6e",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "6px",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              ))}
 
               <div className="ad-logout-actions">
                 <button
