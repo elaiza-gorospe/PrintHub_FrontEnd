@@ -1,7 +1,7 @@
 /* Page background similar to your green theme */
 .ucart-page {
   min-height: 100vh;
-  background: #0c502b;
+  background: linear-gradient(180deg, #f8f6f1 0%, #eef3f0 55%, #e7efec 100%);
   padding: clamp(16px, 4vw, 44px) clamp(12px, 3vw, 24px);
   font-family: Arial, sans-serif;
 }
@@ -38,7 +38,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #fff;
+  color: #2f3a45;
 }
 
 .ucart-title h1 {
@@ -243,7 +243,7 @@
   margin: 0;
   font-size: 28px;
   font-weight: 700;
-  color: #fff;
+  color: #2f3a45;
 }
 
 @media (max-width: 860px) {

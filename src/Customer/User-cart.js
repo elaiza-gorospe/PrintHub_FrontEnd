@@ -75,14 +75,21 @@ function UserCartPage() {
         <Header />
         <div className="ucart-page">
           <div className="ucart-topbar-alt">
-            <button
-              className="ucart-back"
-              type="button"
-              onClick={() => navigate(-1)}
-            >
-              <FaArrowLeft /> Back
+            <button class="uo-back" type="button" onClick={() => navigate(-1)}>
+              <svg
+                stroke="currentColor"
+                fill="currentColor"
+                stroke-width="0"
+                viewBox="0 0 448 512"
+                height="1em"
+                width="1em"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path>
+              </svg>{" "}
+              Back
             </button>
-            <h1>Your Cart</h1>
+            <h1 class="uo-title">My Orders</h1>
           </div>
           <div className="ucart-wrap">
             <div
@@ -141,7 +148,12 @@ function UserCartPage() {
                     <img
                       src={item.customizations.design.generatedImageUrl}
                       alt="AI design"
-                      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 4 }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: 4,
+                      }}
                     />
                   ) : null}
                 </div>
@@ -178,9 +190,19 @@ function UserCartPage() {
                             {item.customizations.quantity}
                           </div>
                           {item.customizations.design?.prompt && (
-                            <div style={{ fontSize: "11px", color: "#888", marginTop: 2 }}>
-                              Prompt: "{item.customizations.design.prompt.slice(0, 60)}
-                              {item.customizations.design.prompt.length > 60 ? "…" : ""}"
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                color: "#888",
+                                marginTop: 2,
+                              }}
+                            >
+                              Prompt: "
+                              {item.customizations.design.prompt.slice(0, 60)}
+                              {item.customizations.design.prompt.length > 60
+                                ? "…"
+                                : ""}
+                              "
                             </div>
                           )}
                         </>
