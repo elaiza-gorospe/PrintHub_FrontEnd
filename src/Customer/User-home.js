@@ -11,7 +11,15 @@ function UserHomePage() {
   useEffect(() => {
     fetch(buildApiUrl("/api/products?limit=4"))
       .then((r) => r.json())
-      .then((data) => setProducts(data.products || data))
+      .then((data) =>
+        setProducts(
+          Array.isArray(data.products)
+            ? data.products
+            : Array.isArray(data)
+              ? data
+              : [],
+        ),
+      )
       .catch(() => {});
   }, []);
 

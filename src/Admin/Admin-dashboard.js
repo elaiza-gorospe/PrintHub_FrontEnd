@@ -8,6 +8,7 @@ import AdminOrders from "./AdminOrders";
 import AdminInquiries from "./AdminInquiries";
 import AdminProducts from "./AdminProducts";
 import { buildApiUrl } from "../config/api";
+import { CATEGORY_DEFAULTS, CATEGORY_NAMES } from "../config/categoryDefaults";
 
 // ✅ Icons (only keep unused, but needed)
 import {
@@ -44,6 +45,7 @@ function AdminDashboard() {
     print_type: "offset",
     material: "",
     description: "",
+    ai_prompt_rules: "",
     images: [],
     color_options: [],
     size_options: [],
@@ -223,6 +225,7 @@ function AdminDashboard() {
       print_type: "offset",
       material: "",
       description: "",
+      ai_prompt_rules: "",
       images: [],
       color_options: [],
       size_options: [],
@@ -247,6 +250,28 @@ function AdminDashboard() {
     });
     setAddImageError("");
     setShowAddProductModal(true);
+  };
+
+  // Apply category template to productForm
+  const applyAddTemplate = (categoryName) => {
+    if (!categoryName) return;
+    const defaults = CATEGORY_DEFAULTS[categoryName];
+    if (!defaults) return;
+    setProductForm((prev) => ({
+      ...prev,
+      print_type: defaults.print_type || prev.print_type,
+      material: defaults.material || prev.material,
+      ai_prompt_rules: defaults.ai_prompt_rules || prev.ai_prompt_rules,
+      color_options: [...(defaults.color_options || [])],
+      size_options: [...(defaults.size_options || [])],
+      material_options: [...(defaults.material_options || [])],
+      side_options: [...(defaults.side_options || [])],
+      finishing_options: [...(defaults.finishing_options || [])],
+      processing_options: [...(defaults.processing_options || [])],
+      delivery_options: [...(defaults.delivery_options || [])],
+      quantity_options: [...(defaults.quantity_options || [])],
+      shipping_options: [...(defaults.shipping_options || [])],
+    }));
   };
 
   // Tag helpers for Add Product modal
@@ -317,6 +342,7 @@ function AdminDashboard() {
           print_type: productForm.print_type,
           material: productForm.material,
           description: productForm.description,
+          ai_prompt_rules: productForm.ai_prompt_rules,
           images: productForm.images,
           color_options: productForm.color_options,
           size_options: productForm.size_options,
@@ -435,6 +461,41 @@ function AdminDashboard() {
             </p>
 
             <form onSubmit={submitAddProduct}>
+              {/* Category Template */}
+              <div style={{ marginBottom: "16px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "4px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                  }}
+                >
+                  Category Template{" "}
+                  <span style={{ color: "#9ca3af", fontWeight: "400" }}>
+                    (auto-fills options)
+                  </span>
+                </label>
+                <select
+                  defaultValue=""
+                  onChange={(e) => applyAddTemplate(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                  }}
+                >
+                  <option value="">— Select a template —</option>
+                  {CATEGORY_NAMES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div
                 style={{
                   display: "grid",
@@ -667,6 +728,43 @@ function AdminDashboard() {
                     borderRadius: "6px",
                     fontSize: "14px",
                     fontFamily: "Arial, sans-serif",
+                  }}
+                />
+              </div>
+
+              {/* AI Prompt Rules */}
+              <div style={{ marginBottom: "16px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "4px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                  }}
+                >
+                  AI Prompt Rules{" "}
+                  <span style={{ color: "#9ca3af", fontWeight: "400" }}>
+                    (instructions the AI must follow strictly)
+                  </span>
+                </label>
+                <textarea
+                  value={productForm.ai_prompt_rules}
+                  onChange={(e) =>
+                    setProductForm({
+                      ...productForm,
+                      ai_prompt_rules: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., Always use 300dpi. Bleed must be 0.125in. No clipart..."
+                  rows="4"
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    fontSize: "13px",
+                    fontFamily: "Arial, sans-serif",
+                    background: "#f9fafb",
                   }}
                 />
               </div>

@@ -1,0 +1,400 @@
+/**
+ * Category Defaults
+ * Pre-filled product options and AI prompt rules per product category.
+ * Used in Admin Add/Edit Product modals to auto-populate fields.
+ */
+
+const COLOR_OPTIONS = [
+  "Full Color (CMYK)",
+  "Black & White",
+  "1 Color (Spot)",
+  "2 Colors (Spot)",
+];
+
+const SIDE_OPTIONS = ["Single Side", "Double Side"];
+
+const FINISHING_OPTIONS = [
+  "None",
+  "Gloss Lamination",
+  "Matte Lamination",
+  "Spot UV",
+  "Foil Stamping",
+  "Embossing",
+  "Die Cutting",
+  "Rounded Corners",
+  "Perforation",
+  "Scoring & Folding",
+];
+
+const PROCESSING_OPTIONS = ["Standard", "Rush (24 hrs)", "Express (48 hrs)"];
+
+const DELIVERY_OPTIONS = [
+  "Pick Up",
+  "Metro Manila Delivery",
+  "Provincial Delivery",
+  "Same Day (Metro Manila)",
+];
+
+export const CATEGORY_DEFAULTS = {
+  "Business Cards": {
+    print_type: "offset",
+    material: "14pt Card Stock",
+    color_options: COLOR_OPTIONS,
+    size_options: [
+      "Standard 3.5x2 in",
+      "Square 2.5x2.5 in",
+      "Mini 3.5x1.5 in",
+      "Folded 3.5x4 in",
+    ],
+    material_options: [
+      "14pt Card Stock",
+      "16pt Card Stock",
+      "100lb Gloss Cover",
+      "100lb Matte Cover",
+      "Kraft Paper",
+      "Linen Stock",
+    ],
+    side_options: SIDE_OPTIONS,
+    finishing_options: FINISHING_OPTIONS,
+    processing_options: PROCESSING_OPTIONS,
+    delivery_options: DELIVERY_OPTIONS,
+    quantity_options: [
+      "100 pcs|₱350.00",
+      "250 pcs|₱550.00",
+      "500 pcs|₱850.00",
+      "1000 pcs|₱1,200.00",
+    ],
+    shipping_options: ["Pick Up|Free", "Delivery|₱150.00"],
+    ai_prompt_rules:
+      "Generate a professional business card design. Use clean typography and ample white space. Brand colors must be used prominently. Include name, title, email, phone, and website. No clipart. No gradients unless part of approved branding. Bleed area: 0.125in on all sides. Text must be at least 7pt. Resolution: 300dpi minimum.",
+  },
+
+  Flyers: {
+    print_type: "digital",
+    material: "100gsm Gloss Paper",
+    color_options: COLOR_OPTIONS,
+    size_options: [
+      "A4 (8.27x11.69 in)",
+      "A5 (5.83x8.27 in)",
+      "Half Letter (5.5x8.5 in)",
+      "DL (3.9x8.27 in)",
+    ],
+    material_options: [
+      "80gsm Bond Paper",
+      "90gsm Bond Paper",
+      "100gsm Gloss Paper",
+      "100gsm Matte Paper",
+      "130gsm Gloss Paper",
+    ],
+    side_options: SIDE_OPTIONS,
+    finishing_options: ["None", "Gloss Lamination", "Matte Lamination"],
+    processing_options: PROCESSING_OPTIONS,
+    delivery_options: DELIVERY_OPTIONS,
+    quantity_options: [
+      "50 pcs|₱750.00",
+      "100 pcs|₱1,000.00",
+      "250 pcs|₱1,800.00",
+      "500 pcs|₱2,800.00",
+      "1000 pcs|₱4,500.00",
+    ],
+    shipping_options: ["Pick Up|Free", "Delivery|₱150.00"],
+    ai_prompt_rules:
+      "Generate a bold, attention-grabbing flyer design. Headline must be the largest element. Use high-contrast color combinations. Include call-to-action (CTA) button or text. Contact details must be clearly visible. Safe zone: 0.25in from all edges. Text must not overlap complex backgrounds without a legible overlay. Resolution: 300dpi minimum.",
+  },
+
+  Brochures: {
+    print_type: "offset",
+    material: "130gsm Gloss Paper",
+    color_options: COLOR_OPTIONS,
+    size_options: [
+      "Tri-Fold A4",
+      "Bi-Fold A4",
+      "Tri-Fold Letter",
+      "Bi-Fold Letter",
+      "Z-Fold A4",
+    ],
+    material_options: [
+      "100gsm Gloss Paper",
+      "130gsm Gloss Paper",
+      "150gsm Gloss Paper",
+      "100gsm Matte Paper",
+      "130gsm Matte Paper",
+    ],
+    side_options: ["Double Side"],
+    finishing_options: [
+      "None",
+      "Gloss Lamination",
+      "Matte Lamination",
+      "Spot UV",
+    ],
+    processing_options: PROCESSING_OPTIONS,
+    delivery_options: DELIVERY_OPTIONS,
+    quantity_options: [
+      "100 pcs|₱2,500.00",
+      "250 pcs|₱4,000.00",
+      "500 pcs|₱6,500.00",
+      "1000 pcs|₱10,000.00",
+    ],
+    shipping_options: ["Pick Up|Free", "Delivery|₱200.00"],
+    ai_prompt_rules:
+      "Generate a clean, structured brochure layout. Each panel must have a clear purpose: cover, inside content, back contact info. Use consistent brand colors and fonts throughout. Product/service descriptions must be concise. Include at least one image placeholder per panel. Fold lines must be accounted for in the layout. Resolution: 300dpi minimum.",
+  },
+
+  "Stickers & Labels": {
+    print_type: "digital",
+    material: "Glossy Vinyl",
+    color_options: COLOR_OPTIONS,
+    size_options: [
+      "1x1 in",
+      "2x2 in",
+      "3x3 in",
+      "2x4 in",
+      "3x5 in",
+      "Custom Size",
+    ],
+    material_options: [
+      "Glossy Vinyl",
+      "Matte Vinyl",
+      "Clear Vinyl",
+      "White Bond",
+      "Kraft Label",
+      "Holographic",
+    ],
+    side_options: ["Single Side"],
+    finishing_options: [
+      "None",
+      "Gloss Lamination",
+      "Matte Lamination",
+      "Die Cutting",
+      "Kiss Cut",
+      "Rounded Corners",
+    ],
+    processing_options: PROCESSING_OPTIONS,
+    delivery_options: DELIVERY_OPTIONS,
+    quantity_options: [
+      "50 pcs|₱250.00",
+      "100 pcs|₱400.00",
+      "250 pcs|₱750.00",
+      "500 pcs|₱1,200.00",
+      "1000 pcs|₱2,000.00",
+    ],
+    shipping_options: ["Pick Up|Free", "Delivery|₱100.00"],
+    ai_prompt_rules:
+      "Generate a compact, visually striking sticker or label design. Design must be fully contained within the die-cut shape with 0.1in bleed. Important elements (logo, text) must be 0.125in from cut edge. Background must reach the bleed line. No thin strokes less than 0.5pt. For clear vinyl: design must work without a white background. Resolution: 300dpi minimum.",
+  },
+
+  "Product Hang Tags": {
+    print_type: "offset",
+    material: "350gsm Card Stock",
+    color_options: COLOR_OPTIONS,
+    size_options: [
+      "2x3.5 in",
+      "2x4 in",
+      "2.5x4 in",
+      "3x5 in",
+      "Rounded 2x3.5 in",
+    ],
+    material_options: [
+      "300gsm Card Stock",
+      "350gsm Card Stock",
+      "Kraft Paper",
+      "White Matte Board",
+    ],
+    side_options: SIDE_OPTIONS,
+    finishing_options: [
+      "None",
+      "Gloss Lamination",
+      "Matte Lamination",
+      "Spot UV",
+      "Foil Stamping",
+      "Embossing",
+      "Die Cutting",
+      "Hole Punching",
+    ],
+    processing_options: PROCESSING_OPTIONS,
+    delivery_options: DELIVERY_OPTIONS,
+    quantity_options: [
+      "100 pcs|₱800.00",
+      "250 pcs|₱1,500.00",
+      "500 pcs|₱2,500.00",
+      "1000 pcs|₱4,000.00",
+    ],
+    shipping_options: ["Pick Up|Free", "Delivery|₱150.00"],
+    ai_prompt_rules:
+      "Generate an elegant, brand-consistent hang tag design. Front: logo, product name, tagline. Back: barcode placeholder, price, care instructions, or social handles. Include hole punch position at top center (0.25in from edge, 0.1875in diameter). Maintain 0.125in bleed and 0.125in safe zone. Luxury feel preferred: minimal text, strong typography. Resolution: 300dpi minimum.",
+  },
+
+  Posters: {
+    print_type: "digital",
+    material: "130gsm Gloss Paper",
+    color_options: COLOR_OPTIONS,
+    size_options: [
+      "A3 (11.69x16.54 in)",
+      "A2 (16.54x23.39 in)",
+      "A1 (23.39x33.11 in)",
+      "12x18 in",
+      "18x24 in",
+      "24x36 in",
+    ],
+    material_options: [
+      "100gsm Gloss Paper",
+      "130gsm Gloss Paper",
+      "170gsm Gloss Paper",
+      "100gsm Matte Paper",
+      "Satin Photo Paper",
+    ],
+    side_options: ["Single Side"],
+    finishing_options: ["None", "Gloss Lamination", "Matte Lamination"],
+    processing_options: PROCESSING_OPTIONS,
+    delivery_options: DELIVERY_OPTIONS,
+    quantity_options: [
+      "1 pc|₱80.00",
+      "5 pcs|₱350.00",
+      "10 pcs|₱650.00",
+      "25 pcs|₱1,500.00",
+      "50 pcs|₱2,500.00",
+    ],
+    shipping_options: ["Pick Up|Free", "Delivery|₱200.00"],
+    ai_prompt_rules:
+      "Generate a high-impact poster with a dominant visual element occupying at least 40% of the layout. Headline must be large and legible from a distance. Use bold, contrasting colors. Event/promo details (date, time, venue, contact) must all be present. Keep 0.25in safe zone from trim edge. Avoid cluttered layouts — use hierarchy: headline > subheadline > details. Resolution: 150dpi minimum at final print size.",
+  },
+
+  "Tarpaulin / Banners": {
+    print_type: "large-format",
+    material: "13oz Vinyl",
+    color_options: ["Full Color (CMYK)"],
+    size_options: [
+      "1x2 ft",
+      "2x3 ft",
+      "2x4 ft",
+      "3x4 ft",
+      "3x6 ft",
+      "4x6 ft",
+      "4x8 ft",
+      "Custom Size",
+    ],
+    material_options: [
+      "13oz Vinyl",
+      "16oz Vinyl (Outdoor)",
+      "Mesh Vinyl (Wind-resistant)",
+      "Canvas",
+      "Backlit Film",
+    ],
+    side_options: ["Single Side"],
+    finishing_options: [
+      "None",
+      "Eyelets / Grommets",
+      "Hemming",
+      "Pole Pockets",
+    ],
+    processing_options: PROCESSING_OPTIONS,
+    delivery_options: DELIVERY_OPTIONS,
+    quantity_options: [
+      "1 pc|₱350.00",
+      "2 pcs|₱650.00",
+      "5 pcs|₱1,500.00",
+      "10 pcs|₱2,800.00",
+    ],
+    shipping_options: ["Pick Up|Free", "Delivery|₱300.00"],
+    ai_prompt_rules:
+      "Generate a large format banner design viewable from a distance. Text must be large — minimum 1in tall per 10ft viewing distance. Use maximum 3 fonts. High contrast between text and background is mandatory. Include logo at top or bottom. Business name/event must be prominent. Add bleed: 0.5in on all sides. Avoid fine details — they will not be visible at distance. Resolution: 100dpi at final print size (72dpi minimum).",
+  },
+
+  "Note Cards / Thank You Cards": {
+    print_type: "digital",
+    material: "300gsm Card Stock",
+    color_options: COLOR_OPTIONS,
+    size_options: [
+      "A6 (4.13x5.83 in)",
+      "A7 (5.12x7.09 in)",
+      "2x3.5 in",
+      "4x6 in",
+    ],
+    material_options: [
+      "300gsm Card Stock",
+      "350gsm Card Stock",
+      "Linen Stock",
+      "Kraft Paper",
+    ],
+    side_options: SIDE_OPTIONS,
+    finishing_options: [
+      "None",
+      "Gloss Lamination",
+      "Matte Lamination",
+      "Spot UV",
+      "Foil Stamping",
+      "Rounded Corners",
+    ],
+    processing_options: PROCESSING_OPTIONS,
+    delivery_options: DELIVERY_OPTIONS,
+    quantity_options: [
+      "50 pcs|₱600.00",
+      "100 pcs|₱1,000.00",
+      "250 pcs|₱2,000.00",
+      "500 pcs|₱3,500.00",
+    ],
+    shipping_options: ["Pick Up|Free", "Delivery|₱150.00"],
+    ai_prompt_rules:
+      "Generate a warm, elegant card design. Tone must be personal and appreciative. Keep design minimal — focus on the message area. Include space for a handwritten note (blank area or lined area). Logo and brand accent should be subtle. Use soft, welcoming color palette. Bleed: 0.125in. Safe zone: 0.125in. Resolution: 300dpi minimum.",
+  },
+
+  "Custom Notebooks": {
+    print_type: "offset",
+    material: "Softcover (300gsm)",
+    color_options: COLOR_OPTIONS,
+    size_options: ["A4", "A5", "A6", "Pocket (3.5x5.5 in)"],
+    material_options: [
+      "Softcover (300gsm)",
+      "Hardcover",
+      "Kraft Cover",
+      "Leatherette Cover",
+    ],
+    side_options: ["Single Side"],
+    finishing_options: [
+      "None",
+      "Gloss Lamination",
+      "Matte Lamination",
+      "Spot UV",
+      "Embossing",
+      "Foil Stamping",
+      "Spiral Binding",
+      "Saddle Stitch",
+    ],
+    processing_options: PROCESSING_OPTIONS,
+    delivery_options: DELIVERY_OPTIONS,
+    quantity_options: [
+      "25 pcs|₱3,000.00",
+      "50 pcs|₱5,500.00",
+      "100 pcs|₱10,000.00",
+      "200 pcs|₱18,000.00",
+    ],
+    shipping_options: ["Pick Up|Free", "Delivery|₱300.00"],
+    ai_prompt_rules:
+      "Generate a professional notebook cover design. Cover must feature the brand logo prominently. Use clean layout with title area. Spine width must be accounted for in the layout. Back cover: include website, tagline, or barcode placeholder. Colors must be consistent with brand identity. Embossing/foil areas must be marked as separate spot layers. Bleed: 0.125in. Resolution: 300dpi minimum.",
+  },
+};
+
+export const CATEGORY_NAMES = Object.keys(CATEGORY_DEFAULTS);
+
+/** Returns a blank form state with empty option arrays */
+export const blankProductForm = (extra = {}) => ({
+  name: "",
+  sku: "",
+  price: "",
+  stock: "",
+  print_type: "offset",
+  material: "",
+  description: "",
+  ai_prompt_rules: "",
+  images: [],
+  color_options: [],
+  size_options: [],
+  material_options: [],
+  side_options: [],
+  finishing_options: [],
+  processing_options: [],
+  delivery_options: [],
+  quantity_options: [],
+  shipping_options: [],
+  ...extra,
+});

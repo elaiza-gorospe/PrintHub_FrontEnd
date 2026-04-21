@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import "./Admin-dashboard.css";
 import { buildApiUrl } from "../config/api";
+import { CATEGORY_DEFAULTS, CATEGORY_NAMES } from "../config/categoryDefaults";
 
 function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
   const [products, setProducts] = useState([]);
@@ -32,6 +33,7 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
     print_type: "offset",
     material: "",
     description: "",
+    ai_prompt_rules: "",
     status: "active",
     images: [],
     color_options: [],
@@ -82,6 +84,7 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
           dbId: product.id,
           material: product.material,
           description: product.description,
+          images: product.images || [],
           updatedAt:
             product.updatedAt || product.createdAt || new Date().toISOString(),
         }));
@@ -162,6 +165,7 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
             : "offset",
       material: product.material || "",
       description: product.description || "",
+      ai_prompt_rules: fullProduct.ai_prompt_rules || "",
       status: product.status,
       images: fullProduct.images || [],
       color_options: fullProduct.color_options || [],
@@ -232,6 +236,7 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
             print_type: editForm.print_type,
             material: editForm.material,
             description: editForm.description,
+            ai_prompt_rules: editForm.ai_prompt_rules,
             active: editForm.status === "active",
             images: editForm.images,
             color_options: editForm.color_options,
@@ -272,6 +277,28 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
     setEditForm((prev) => ({
       ...prev,
       [field]: prev[field].filter((_, i) => i !== index),
+    }));
+  };
+
+  // Apply category template to editForm
+  const applyEditTemplate = (categoryName) => {
+    if (!categoryName) return;
+    const defaults = CATEGORY_DEFAULTS[categoryName];
+    if (!defaults) return;
+    setEditForm((prev) => ({
+      ...prev,
+      print_type: defaults.print_type || prev.print_type,
+      material: defaults.material || prev.material,
+      ai_prompt_rules: defaults.ai_prompt_rules || prev.ai_prompt_rules,
+      color_options: [...(defaults.color_options || [])],
+      size_options: [...(defaults.size_options || [])],
+      material_options: [...(defaults.material_options || [])],
+      side_options: [...(defaults.side_options || [])],
+      finishing_options: [...(defaults.finishing_options || [])],
+      processing_options: [...(defaults.processing_options || [])],
+      delivery_options: [...(defaults.delivery_options || [])],
+      quantity_options: [...(defaults.quantity_options || [])],
+      shipping_options: [...(defaults.shipping_options || [])],
     }));
   };
 
@@ -534,6 +561,7 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
         <table className="dashpage-table">
           <thead>
             <tr>
+              <th>Image</th>
               <th>SKU</th>
               <th>Product</th>
               <th>Category</th>
@@ -547,6 +575,37 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
           <tbody>
             {filteredProducts.map((p) => (
               <tr key={p.dbId}>
+                <td data-label="Image">
+                  {p.images?.[0] ? (
+                    <img
+                      src={p.images[0]}
+                      alt={p.name}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        objectFit: "cover",
+                        borderRadius: 6,
+                        display: "block",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 6,
+                        background: "#e5e7eb",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 10,
+                        color: "#9ca3af",
+                      }}
+                    >
+                      No img
+                    </div>
+                  )}
+                </td>
                 <td data-label="SKU" className="strong">
                   {p.sku}
                 </td>
@@ -675,6 +734,41 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
             </p>
 
             <form onSubmit={submitEditProduct}>
+              {/* Category Template */}
+              <div style={{ marginBottom: "16px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "4px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                  }}
+                >
+                  Category Template{" "}
+                  <span style={{ color: "#9ca3af", fontWeight: "400" }}>
+                    (overwrites option arrays)
+                  </span>
+                </label>
+                <select
+                  defaultValue=""
+                  onChange={(e) => applyEditTemplate(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                  }}
+                >
+                  <option value="">— Select a template —</option>
+                  {CATEGORY_NAMES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div
                 style={{
                   display: "grid",
@@ -939,6 +1033,43 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
                     borderRadius: "6px",
                     fontSize: "14px",
                     fontFamily: "Arial, sans-serif",
+                  }}
+                />
+              </div>
+
+              {/* AI Prompt Rules */}
+              <div style={{ marginBottom: "16px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "4px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                  }}
+                >
+                  AI Prompt Rules{" "}
+                  <span style={{ color: "#9ca3af", fontWeight: "400" }}>
+                    (instructions the AI must follow strictly)
+                  </span>
+                </label>
+                <textarea
+                  value={editForm.ai_prompt_rules}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      ai_prompt_rules: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., Always use 300dpi. Bleed must be 0.125in. No clipart..."
+                  rows="4"
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    fontSize: "13px",
+                    fontFamily: "Arial, sans-serif",
+                    background: "#f9fafb",
                   }}
                 />
               </div>
