@@ -4,6 +4,7 @@ import "./User-orders.css";
 import Header from "../components/Header";
 import { FaArrowLeft } from "react-icons/fa";
 import { buildApiUrl } from "../config/api";
+import { Capacitor } from "@capacitor/core";
 
 function UserOrders() {
   const navigate = useNavigate();
@@ -142,48 +143,58 @@ function UserOrders() {
                   {order.items && order.items.length > 0 ? (
                     <div className="uo-items-list">
                       {order.items.map((item) => {
-                          const design = item.customizations?.design;
-                          const productImg = item.product?.images?.[0];
-                          const productName = item.product?.name || `Product #${item.productId}`;
-                          return (
-                            <div key={item.id} className="uo-item-row">
-                              <div className="uo-item-thumbs">
-                                {productImg && (
+                        const design = item.customizations?.design;
+                        const productImg = item.product?.images?.[0];
+                        const productName =
+                          item.product?.name || `Product #${item.productId}`;
+                        return (
+                          <div key={item.id} className="uo-item-row">
+                            <div className="uo-item-thumbs">
+                              {productImg && (
+                                <img
+                                  src={productImg}
+                                  alt={productName}
+                                  className="uo-item-thumb"
+                                  title="Product"
+                                />
+                              )}
+                              {design?.generatedImageUrl && (
+                                <div className="uo-item-design-wrap">
                                   <img
-                                    src={productImg}
-                                    alt={productName}
-                                    className="uo-item-thumb"
-                                    title="Product"
+                                    src={design.generatedImageUrl}
+                                    alt="AI Design"
+                                    className="uo-item-thumb uo-item-thumb-design"
+                                    title="AI Design"
                                   />
-                                )}
-                                {design?.generatedImageUrl && (
-                                  <div className="uo-item-design-wrap">
-                                    <img
-                                      src={design.generatedImageUrl}
-                                      alt="AI Design"
-                                      className="uo-item-thumb uo-item-thumb-design"
-                                      title="AI Design"
-                                    />
-                                    <span className="uo-design-badge">AI Design</span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="uo-item-details">
-                                <p className="uo-item-name">{productName}</p>
-                                {design?.prompt && (
-                                  <p className="uo-item-design-prompt">
-                                    "{design.prompt.length > 80 ? design.prompt.slice(0, 80) + "…" : design.prompt}"
-                                  </p>
-                                )}
-                                <p className="uo-item-qty">Qty: {item.quantity}</p>
-                              </div>
-                              <div className="uo-item-price">
-                                {formatCurrency(item.unit_price)} × {item.quantity}{" "}
-                                = {formatCurrency(item.total_price)}
-                              </div>
+                                  <span className="uo-design-badge">
+                                    AI Design
+                                  </span>
+                                </div>
+                              )}
                             </div>
-                          );
-                        })}
+                            <div className="uo-item-details">
+                              <p className="uo-item-name">{productName}</p>
+                              {design?.prompt && (
+                                <p className="uo-item-design-prompt">
+                                  "
+                                  {design.prompt.length > 80
+                                    ? design.prompt.slice(0, 80) + "…"
+                                    : design.prompt}
+                                  "
+                                </p>
+                              )}
+                              <p className="uo-item-qty">
+                                Qty: {item.quantity}
+                              </p>
+                            </div>
+                            <div className="uo-item-price">
+                              {formatCurrency(item.unit_price)} ×{" "}
+                              {item.quantity} ={" "}
+                              {formatCurrency(item.total_price)}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="uo-no-items">No items in this order</p>
@@ -202,24 +213,61 @@ function UserOrders() {
                     <strong>Total:</strong>
                     <strong>{formatCurrency(order.total)}</strong>
                   </div>
-                  {order.total > 0 && order.status !== "cancelled" && order.payment_status !== "paid" && (
-                    <div className="uo-pay-row">
-                      <span className="uo-pay-label">
-                        {order.payment_status === "awaiting_payment" ? "Awaiting payment" : "Payment pending"}
-                      </span>
-                      <button
-                        type="button"
-                        className="uo-pay-btn"
-                        onClick={() =>
-                          alert(
-                            `Payment link for Order #${order.id} will be provided by our team. Please check your email or contact us.`,
-                          )
-                        }
-                      >
-                        Pay Now
-                      </button>
-                    </div>
-                  )}
+                  {order.total > 0 &&
+                    order.status !== "cancelled" &&
+                    order.payment_status !== "paid" && (
+                      <div className="uo-pay-row">
+                        <span className="uo-pay-label">
+                          {order.payment_status === "awaiting_payment"
+                            ? "Awaiting payment"
+                            : "Payment pending"}
+                        </span>
+                        <button
+                          type="button"
+                          className="uo-pay-btn"
+                          onClick={async () => {
+                            // Use stored checkout_url if available
+                            if (order.checkout_url) {
+                              // Always create a fresh session so the return URL matches current platform
+                              // Fall through to create new session below
+                            }
+                            // Create a new PayMongo session with correct return URL for this platform
+                            try {
+                              const returnBase = Capacitor.isNativePlatform()
+                                ? "printhub://"
+                                : window.location.origin;
+                              const res = await fetch(
+                                buildApiUrl("/api/payments/checkout"),
+                                {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({
+                                    orderId: order.id,
+                                    returnBase,
+                                  }),
+                                },
+                              );
+                              const data = await res.json();
+                              if (!res.ok)
+                                throw new Error(
+                                  data.message ||
+                                    "Failed to create payment session",
+                                );
+                              window.location.href = data.checkout_url;
+                            } catch (err) {
+                              alert(
+                                err.message ||
+                                  "Could not initiate payment. Please try again.",
+                              );
+                            }
+                          }}
+                        >
+                          Pay Now
+                        </button>
+                      </div>
+                    )}
                   {order.delivered_at && (
                     <p className="uo-delivered">
                       Delivered on{" "}
