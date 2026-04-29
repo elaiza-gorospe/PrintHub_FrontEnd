@@ -22,8 +22,8 @@ export default function AIBuilderPanel({
   activeDesign,
   ai_prompt_rules,
 }) {
-  // ── mode: "generate" | "upload" ────────────────────────────────
-  const [mode, setMode] = useState("generate");
+  // ── mode: always "generate" (upload mode hidden) ─────────────────
+  const [mode] = useState("generate");
 
   // ── generate state ──────────────────────────────────────────────
   const [prompt, setPrompt] = useState("");
@@ -113,8 +113,13 @@ export default function AIBuilderPanel({
       if (!res.ok) throw new Error(data.message || "Generation failed");
 
       setImgLoading(true);
-      // Store display prompt (without rules) for UI
-      setResultMeta({ ...data, prompt: displayPrompt, source: "generated" });
+      // Store display prompt (without rules) for UI and original user input for intent
+      setResultMeta({
+        ...data,
+        prompt: displayPrompt,
+        userPrompt: prompt.trim(),
+        source: "generated",
+      });
       setShowEditor(true);
     } catch (e) {
       setGenError(e.message || "Something went wrong. Please try again.");
@@ -238,10 +243,11 @@ export default function AIBuilderPanel({
       if (!res.ok) throw new Error(data.message || "Generation failed");
 
       setImgLoading(true);
-      // Store display prompt (without rules) for UI
+      // Store display prompt (without rules) for UI and original user input for intent
       setResultMeta({
         ...data,
         prompt: displayPrompt,
+        userPrompt: displayPrompt,
         source: "generated",
         sourceImageUrl: uploadedMeta.url,
       });
@@ -320,14 +326,12 @@ export default function AIBuilderPanel({
           <button
             type="button"
             className={`aib-mode-tab ${mode === "generate" ? "active" : ""}`}
-            onClick={() => setMode("generate")}
           >
             Generate with AI
           </button>
           <button
             type="button"
             className={`aib-mode-tab ${mode === "upload" ? "active" : ""}`}
-            onClick={() => setMode("upload")}
           >
             Upload Image
           </button>
@@ -475,7 +479,7 @@ export default function AIBuilderPanel({
             <div className="aib-editor-info">
               <div className="aib-info-label">Design Intent:</div>
               <div className="aib-info-text">
-                {getDisplayPrompt(resultMeta.prompt)}
+                {getDisplayPrompt(resultMeta.userPrompt || resultMeta.prompt)}
               </div>
             </div>
           )}

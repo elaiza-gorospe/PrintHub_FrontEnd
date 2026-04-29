@@ -10,7 +10,7 @@
 }
 
 .aib-header {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 10px;
 }
@@ -35,11 +35,7 @@
 
 /* Mode tabs */
 .aib-mode-tabs {
-  display: flex;
-  border: 1px solid #d1d9e0;
-  border-radius: 8px;
-  overflow: hidden;
-  width: fit-content;
+  display: none;
 }
 
 .aib-mode-tab {
