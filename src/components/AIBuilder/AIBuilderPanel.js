@@ -57,6 +57,13 @@ export default function AIBuilderPanel({
     return parseInt(localStorage.getItem("userId"), 10) || null;
   };
 
+  // ── helper to remove design rules from display text ─────────────
+  const getDisplayPrompt = (text) => {
+    if (!text) return "";
+    // Remove [Design Rules] section and everything after it
+    return text.replace(/\n\n\[Design Rules\]:[\s\S]*$/i, "").trim();
+  };
+
   // ── Generate ────────────────────────────────────────────────────
   const handleGenerate = async () => {
     const userId = getUserId();
@@ -77,11 +84,13 @@ export default function AIBuilderPanel({
 
     try {
       const productName = product?.title || "";
-      let fullPrompt = productName
+      // User-visible prompt (without design rules)
+      const displayPrompt = productName
         ? `A professional print design for ${productName}. ${prompt.trim()}. The design must be clearly suitable for ${productName}, high quality, print-ready.`
         : prompt.trim();
 
-      // Append ai_prompt_rules if available
+      // Full prompt with rules for API (hidden from frontend)
+      let fullPrompt = displayPrompt;
       if (ai_prompt_rules && ai_prompt_rules.trim()) {
         fullPrompt += `\n\n[Design Rules]: ${ai_prompt_rules}`;
       }
@@ -104,7 +113,8 @@ export default function AIBuilderPanel({
       if (!res.ok) throw new Error(data.message || "Generation failed");
 
       setImgLoading(true);
-      setResultMeta({ ...data, prompt: fullPrompt, source: "generated" });
+      // Store display prompt (without rules) for UI
+      setResultMeta({ ...data, prompt: displayPrompt, source: "generated" });
       setShowEditor(true);
     } catch (e) {
       setGenError(e.message || "Something went wrong. Please try again.");
@@ -143,8 +153,11 @@ export default function AIBuilderPanel({
       const formData = new FormData();
       formData.append("file", file);
 
-      // Build description with ai_prompt_rules
-      let fullDescription = uploadDescription.trim();
+      // User-visible description (without design rules)
+      const displayDescription = uploadDescription.trim();
+
+      // Full description with rules for backend (hidden from frontend)
+      let fullDescription = displayDescription;
       if (ai_prompt_rules && ai_prompt_rules.trim()) {
         fullDescription += fullDescription
           ? `\n\n[Design Rules]: ${ai_prompt_rules}`
@@ -164,10 +177,10 @@ export default function AIBuilderPanel({
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Upload failed");
 
-      // Store uploaded image temporarily - don't open editor yet
+      // Store uploaded image temporarily with user-visible description (no rules)
       setUploadedMeta({
         ...data,
-        description: fullDescription || null,
+        description: displayDescription || null,
       });
       setUploadError("");
     } catch (e) {
@@ -193,9 +206,15 @@ export default function AIBuilderPanel({
     setUploadError("");
 
     try {
-      // Use the uploaded image URL + description as prompt
-      const sourcePrompt =
+      // User-visible prompt (without design rules)
+      const displayPrompt =
         uploadedMeta.description || "Refine and enhance this design.";
+
+      // Full prompt with rules for API (hidden from frontend)
+      let fullPrompt = displayPrompt;
+      if (ai_prompt_rules && ai_prompt_rules.trim()) {
+        fullPrompt += `\n\n[Design Rules]: ${ai_prompt_rules}`;
+      }
 
       const res = await fetch(buildApiUrl("/api/builder/generate"), {
         method: "POST",
@@ -204,7 +223,7 @@ export default function AIBuilderPanel({
           "X-User-Id": String(userId),
         },
         body: JSON.stringify({
-          prompt: sourcePrompt,
+          prompt: fullPrompt,
           productId: product?.id,
           sourceImageUrl: uploadedMeta.url,
         }),
@@ -219,9 +238,10 @@ export default function AIBuilderPanel({
       if (!res.ok) throw new Error(data.message || "Generation failed");
 
       setImgLoading(true);
+      // Store display prompt (without rules) for UI
       setResultMeta({
         ...data,
-        prompt: sourcePrompt,
+        prompt: displayPrompt,
         source: "generated",
         sourceImageUrl: uploadedMeta.url,
       });
@@ -413,7 +433,7 @@ export default function AIBuilderPanel({
                 <div className="aib-upload-description">
                   <div className="aib-desc-label">Design Intent:</div>
                   <div className="aib-desc-text">
-                    {uploadedMeta.description}
+                    {getDisplayPrompt(uploadedMeta.description)}
                   </div>
                 </div>
               )}
@@ -454,7 +474,9 @@ export default function AIBuilderPanel({
           {resultMeta.prompt && (
             <div className="aib-editor-info">
               <div className="aib-info-label">Design Intent:</div>
-              <div className="aib-info-text">{resultMeta.prompt}</div>
+              <div className="aib-info-text">
+                {getDisplayPrompt(resultMeta.prompt)}
+              </div>
             </div>
           )}
 
