@@ -376,7 +376,6 @@ function ProductDetail() {
                   ai_prompt_rules={product?.ai_prompt_rules}
                   onDesignReady={(meta) => {
                     setActiveDesign(meta);
-                    setActiveTab("product");
                   }}
                   onClear={() => setActiveDesign(null)}
                 />

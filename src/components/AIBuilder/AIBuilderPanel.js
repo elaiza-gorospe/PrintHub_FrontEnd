@@ -33,8 +33,10 @@ export default function AIBuilderPanel({
 
   // ── upload state ────────────────────────────────────────────────
   const [uploadDescription, setUploadDescription] = useState("");
+  const [uploadedMeta, setUploadedMeta] = useState(null); // temporarily holds uploaded image
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [uploadGenerating, setUploadGenerating] = useState(false);
   const fileInputRef = useRef(null);
 
   // ── result / editor state ───────────────────────────────────────
@@ -162,13 +164,12 @@ export default function AIBuilderPanel({
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Upload failed");
 
-      setImgLoading(true);
-      setResultMeta({
+      // Store uploaded image temporarily - don't open editor yet
+      setUploadedMeta({
         ...data,
-        source: "upload",
-        prompt: fullDescription || null,
+        description: fullDescription || null,
       });
-      setShowEditor(true);
+      setUploadError("");
     } catch (e) {
       setUploadError(e.message || "Upload failed. Please try again.");
     } finally {
@@ -176,6 +177,69 @@ export default function AIBuilderPanel({
       // reset file input so same file can be re-selected
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  };
+
+  // ── Generate from uploaded image ───────────────────────────────
+  const handleGenerateFromUpload = async () => {
+    if (!uploadedMeta) return;
+
+    const userId = getUserId();
+    if (!userId) {
+      setUploadError("You must be logged in.");
+      return;
+    }
+
+    setUploadGenerating(true);
+    setUploadError("");
+
+    try {
+      // Use the uploaded image URL + description as prompt
+      const sourcePrompt =
+        uploadedMeta.description || "Refine and enhance this design.";
+
+      const res = await fetch(buildApiUrl("/api/builder/generate"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Id": String(userId),
+        },
+        body: JSON.stringify({
+          prompt: sourcePrompt,
+          productId: product?.id,
+          sourceImageUrl: uploadedMeta.url,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.status === 429) {
+        setUploadError(data.message || "Please wait before generating again.");
+        return;
+      }
+      if (!res.ok) throw new Error(data.message || "Generation failed");
+
+      setImgLoading(true);
+      setResultMeta({
+        ...data,
+        prompt: sourcePrompt,
+        source: "generated",
+        sourceImageUrl: uploadedMeta.url,
+      });
+      setShowEditor(true);
+      setUploadedMeta(null);
+    } catch (e) {
+      setUploadError(e.message || "Something went wrong. Please try again.");
+    } finally {
+      setUploadGenerating(false);
+    }
+  };
+
+  // ── Discard uploaded image ────────────────────────────────────
+  const handleDiscardUpload = () => {
+    setUploadedMeta(null);
+    setUploadDescription("");
+    setUploadError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   // ── Use this design ─────────────────────────────────────────────
@@ -192,10 +256,10 @@ export default function AIBuilderPanel({
       generatedAt: new Date().toISOString(),
     };
     onDesignReady(designMeta);
+    // Close editor but stay in AI Builder tab to show applied design
     setShowEditor(false);
-    // Reset form states
-    setPrompt("");
-    setUploadDescription("");
+    setResultMeta(null);
+    setBuilderState(null);
   };
 
   // ── Discard result ──────────────────────────────────────────────
@@ -336,12 +400,64 @@ export default function AIBuilderPanel({
             </div>
           )}
           {uploadError && <div className="aib-error">{uploadError}</div>}
+
+          {/* Show uploaded image with Generate button */}
+          {uploadedMeta && !uploading && (
+            <>
+              <div className="aib-upload-preview">
+                <img src={uploadedMeta.url} alt="uploaded design" />
+                <div className="aib-preview-label">Uploaded Image</div>
+              </div>
+
+              {uploadedMeta.description && (
+                <div className="aib-upload-description">
+                  <div className="aib-desc-label">Design Intent:</div>
+                  <div className="aib-desc-text">
+                    {uploadedMeta.description}
+                  </div>
+                </div>
+              )}
+
+              <div className="aib-upload-actions">
+                <button
+                  type="button"
+                  className="aib-btn-generate"
+                  onClick={handleGenerateFromUpload}
+                  disabled={uploadGenerating}
+                >
+                  {uploadGenerating ? "Generating…" : "Generate Design"}
+                </button>
+                <button
+                  type="button"
+                  className="aib-btn-discard"
+                  onClick={handleDiscardUpload}
+                  disabled={uploadGenerating}
+                >
+                  Upload Different
+                </button>
+              </div>
+
+              {uploadGenerating && (
+                <div className="aib-status">
+                  <span className="aib-spinner" />
+                  Generating design from your image…
+                </div>
+              )}
+            </>
+          )}
         </>
       )}
 
       {/* ── Result + Editor ── */}
       {showEditor && resultMeta && (
         <>
+          {resultMeta.prompt && (
+            <div className="aib-editor-info">
+              <div className="aib-info-label">Design Intent:</div>
+              <div className="aib-info-text">{resultMeta.prompt}</div>
+            </div>
+          )}
+
           <AIBuilderEditor
             productImage={productImage}
             designImage={resultMeta.url}
