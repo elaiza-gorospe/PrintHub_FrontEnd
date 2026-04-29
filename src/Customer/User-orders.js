@@ -234,7 +234,7 @@ function UserOrders() {
                             // Create a new PayMongo session with correct return URL for this platform
                             try {
                               const returnBase = Capacitor.isNativePlatform()
-                                ? "printhub://"
+                                ? "com.printhub.customer://"
                                 : window.location.origin;
                               const res = await fetch(
                                 buildApiUrl("/api/payments/checkout"),
@@ -255,7 +255,7 @@ function UserOrders() {
                                   data.message ||
                                     "Failed to create payment session",
                                 );
-                              window.location.href = data.checkout_url;
+                              window.location.assign(data.checkout_url);
                             } catch (err) {
                               alert(
                                 err.message ||
