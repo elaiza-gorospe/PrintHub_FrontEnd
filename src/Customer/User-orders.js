@@ -57,12 +57,19 @@ function UserOrders() {
     }).format(price);
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status, paymentStatus) => {
+    // If payment is not done, prioritize payment status in display
+    if (paymentStatus !== "paid") {
+      return "#ff6b6b"; // Red for unpaid orders
+    }
+
     switch (status) {
       case "pending":
         return "#ff9800";
       case "processing":
         return "#2196f3";
+      case "confirmed":
+        return "#4caf50";
       case "shipped":
         return "#4caf50";
       case "delivered":
@@ -131,10 +138,17 @@ function UserOrders() {
                   </div>
                   <div
                     className="uo-status"
-                    style={{ backgroundColor: getStatusColor(order.status) }}
+                    style={{
+                      backgroundColor: getStatusColor(
+                        order.status,
+                        order.payment_status,
+                      ),
+                    }}
                   >
-                    {order.status?.charAt(0).toUpperCase() +
-                      order.status?.slice(1)}
+                    {order.payment_status !== "paid"
+                      ? `PAYMENT PENDING`
+                      : order.status?.charAt(0).toUpperCase() +
+                        order.status?.slice(1)}
                   </div>
                 </div>
 
