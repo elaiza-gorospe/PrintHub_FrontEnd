@@ -33,6 +33,7 @@ function mapApiProduct(data) {
     processing: data.processing_options || [],
     quantities: parseOptions(data.quantity_options),
     shipping: parseOptions(data.shipping_options),
+    ai_prompt_rules: data.ai_prompt_rules || null,
   };
 }
 
@@ -372,6 +373,7 @@ function ProductDetail() {
                   product={product}
                   productImage={selectedImage}
                   activeDesign={activeDesign}
+                  ai_prompt_rules={product?.ai_prompt_rules}
                   onDesignReady={(meta) => {
                     setActiveDesign(meta);
                     setActiveTab("product");

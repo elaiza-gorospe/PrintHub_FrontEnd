@@ -14,7 +14,14 @@ import { buildApiUrl } from "../../config/api";
 import AIBuilderEditor from "./AIBuilderEditor";
 import "./AIBuilder.css";
 
-export default function AIBuilderPanel({ product, productImage, onDesignReady, onClear, activeDesign }) {
+export default function AIBuilderPanel({
+  product,
+  productImage,
+  onDesignReady,
+  onClear,
+  activeDesign,
+  ai_prompt_rules,
+}) {
   // ── mode: "generate" | "upload" ────────────────────────────────
   const [mode, setMode] = useState("generate");
 
@@ -25,6 +32,7 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
   const [cooldownMsg, setCooldownMsg] = useState("");
 
   // ── upload state ────────────────────────────────────────────────
+  const [uploadDescription, setUploadDescription] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef(null);
@@ -41,7 +49,9 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
     try {
       const u = localStorage.getItem("user");
       if (u) return JSON.parse(u).id;
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return parseInt(localStorage.getItem("userId"), 10) || null;
   };
 
@@ -65,9 +75,14 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
 
     try {
       const productName = product?.title || "";
-      const fullPrompt = productName
+      let fullPrompt = productName
         ? `A professional print design for ${productName}. ${prompt.trim()}. The design must be clearly suitable for ${productName}, high quality, print-ready.`
         : prompt.trim();
+
+      // Append ai_prompt_rules if available
+      if (ai_prompt_rules && ai_prompt_rules.trim()) {
+        fullPrompt += `\n\n[Design Rules]: ${ai_prompt_rules}`;
+      }
 
       const res = await fetch(buildApiUrl("/api/builder/generate"), {
         method: "POST",
@@ -75,7 +90,7 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
           "Content-Type": "application/json",
           "X-User-Id": String(userId),
         },
-        body: JSON.stringify({ prompt: fullPrompt }),
+        body: JSON.stringify({ prompt: fullPrompt, productId: product?.id }),
       });
 
       const data = await res.json();
@@ -126,6 +141,18 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
       const formData = new FormData();
       formData.append("file", file);
 
+      // Build description with ai_prompt_rules
+      let fullDescription = uploadDescription.trim();
+      if (ai_prompt_rules && ai_prompt_rules.trim()) {
+        fullDescription += fullDescription
+          ? `\n\n[Design Rules]: ${ai_prompt_rules}`
+          : `[Design Rules]: ${ai_prompt_rules}`;
+      }
+
+      if (fullDescription) {
+        formData.append("description", fullDescription);
+      }
+
       const res = await fetch(buildApiUrl("/api/builder/upload"), {
         method: "POST",
         headers: { "X-User-Id": String(userId) },
@@ -136,7 +163,11 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
       if (!res.ok) throw new Error(data.message || "Upload failed");
 
       setImgLoading(true);
-      setResultMeta({ ...data, source: "upload", prompt: null });
+      setResultMeta({
+        ...data,
+        source: "upload",
+        prompt: fullDescription || null,
+      });
       setShowEditor(true);
     } catch (e) {
       setUploadError(e.message || "Upload failed. Please try again.");
@@ -162,6 +193,9 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
     };
     onDesignReady(designMeta);
     setShowEditor(false);
+    // Reset form states
+    setPrompt("");
+    setUploadDescription("");
   };
 
   // ── Discard result ──────────────────────────────────────────────
@@ -169,6 +203,7 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
     setResultMeta(null);
     setShowEditor(false);
     setBuilderState(null);
+    setUploadDescription("");
   };
 
   return (
@@ -185,7 +220,11 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
         <div className="aib-design-badge">
           <img src={activeDesign.generatedImageUrl} alt="active design" />
           <span>Design attached to this item</span>
-          <button className="aib-design-badge-clear" onClick={onClear} type="button">
+          <button
+            className="aib-design-badge-clear"
+            onClick={onClear}
+            type="button"
+          >
             Remove
           </button>
         </div>
@@ -252,14 +291,33 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
       {/* ── Upload mode ── */}
       {!showEditor && mode === "upload" && (
         <>
+          <div className="aib-field">
+            <label htmlFor="aib-upload-desc">
+              Describe your design (optional)
+            </label>
+            <textarea
+              id="aib-upload-desc"
+              className="aib-textarea"
+              rows={3}
+              maxLength={1000}
+              placeholder="e.g. 'Add gold accents and adjust colors to match our brand' — design rules will be applied automatically"
+              value={uploadDescription}
+              onChange={(e) => setUploadDescription(e.target.value)}
+            />
+          </div>
+
           <div
             className="aib-upload-zone"
             onClick={() => fileInputRef.current?.click()}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => e.key === "Enter" && fileInputRef.current?.click()}
+            onKeyDown={(e) =>
+              e.key === "Enter" && fileInputRef.current?.click()
+            }
           >
-            <div className="aib-upload-icon"><FaCloudUploadAlt /></div>
+            <div className="aib-upload-icon">
+              <FaCloudUploadAlt />
+            </div>
             <p>Click to upload your image or logo</p>
             <p>JPEG, PNG, WebP, GIF — up to 10 MB</p>
           </div>
@@ -295,11 +353,20 @@ export default function AIBuilderPanel({ product, productImage, onDesignReady, o
           />
 
           <div className="aib-result-actions">
-            <button type="button" className="aib-btn-use" onClick={handleUseDesign} disabled={imgLoading}>
+            <button
+              type="button"
+              className="aib-btn-use"
+              onClick={handleUseDesign}
+              disabled={imgLoading}
+            >
               <FaCheckCircle style={{ marginRight: 6 }} />
               Use this design
             </button>
-            <button type="button" className="aib-btn-discard" onClick={handleDiscard}>
+            <button
+              type="button"
+              className="aib-btn-discard"
+              onClick={handleDiscard}
+            >
               Discard
             </button>
           </div>
