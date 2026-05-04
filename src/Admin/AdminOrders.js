@@ -10,9 +10,12 @@ import {
   FaCheck,
   FaEye,
   FaTimes,
+  FaDownload,
+  FaCube,
 } from "react-icons/fa";
 import "./Admin-dashboard.css";
 import { buildApiUrl } from "../config/api";
+import AIBuilder3DPreview from "../components/AIBuilder/AIBuilder3DPreview";
 
 function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -22,6 +25,8 @@ function AdminOrders() {
   const [ordersStatus, setOrdersStatus] = useState("all");
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [detailOrder, setDetailOrder] = useState(null);
+  const [aiPreviewModal, setAiPreviewModal] = useState(null); // { imageUrl, productName }
+  const [ai3DPreviewModal, setAi3DPreviewModal] = useState(null); // { imageUrl, productName }
 
   // Fetch orders from API
   useEffect(() => {
@@ -151,6 +156,27 @@ function AdminOrders() {
   const handleProcessOrder = (order) => updateOrderStatus(order, "processing");
   const handleDeliverOrder = (order) => updateOrderStatus(order, "delivered");
   const handleCompleteOrder = (order) => updateOrderStatus(order, "completed");
+
+  // Download AI-generated image
+  const handleDownloadAiImage = async (imageUrl, productName) => {
+    try {
+      const response = await fetch(imageUrl);
+      if (!response.ok) throw new Error("Failed to download image");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${productName.replace(/\s+/g, "-")}-ai-design.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error downloading AI image:", err);
+      alert("Failed to download image");
+    }
+  };
 
   if (loading) {
     return (
@@ -493,12 +519,19 @@ function AdminOrders() {
                                   style={{
                                     position: "relative",
                                     flexShrink: 0,
+                                    cursor: "pointer",
                                   }}
+                                  onClick={() =>
+                                    setAiPreviewModal({
+                                      imageUrl: design.generatedImageUrl,
+                                      productName,
+                                    })
+                                  }
+                                  title="Click to preview AI design"
                                 >
                                   <img
                                     src={design.generatedImageUrl}
                                     alt="AI Design"
-                                    title="AI Design"
                                     style={{
                                       width: 52,
                                       height: 52,
@@ -770,11 +803,23 @@ function AdminOrders() {
                         />
                       )}
                       {design?.generatedImageUrl && (
-                        <div style={{ position: "relative", flexShrink: 0 }}>
+                        <div
+                          style={{
+                            position: "relative",
+                            flexShrink: 0,
+                            cursor: "pointer",
+                          }}
+                          onClick={() =>
+                            setAiPreviewModal({
+                              imageUrl: design.generatedImageUrl,
+                              productName,
+                            })
+                          }
+                          title="Click to preview AI design"
+                        >
                           <img
                             src={design.generatedImageUrl}
                             alt="AI Design"
-                            title="AI Design"
                             style={{
                               width: 56,
                               height: 56,
@@ -884,6 +929,259 @@ function AdminOrders() {
                   );
                 })}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Image Preview Modal */}
+      {aiPreviewModal && (
+        <div
+          onClick={() => setAiPreviewModal(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.7)",
+            zIndex: 2000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              borderRadius: 12,
+              width: "100%",
+              maxWidth: 600,
+              overflow: "hidden",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+            }}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "16px 20px",
+                borderBottom: "1px solid #e4e9f0",
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: 16, color: "#2f3a45" }}>
+                AI Generated Design
+              </h3>
+              <button
+                onClick={() => setAiPreviewModal(null)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#667085",
+                  padding: 4,
+                  fontSize: 20,
+                }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            {/* Preview Image */}
+            <div
+              style={{
+                padding: "20px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src={aiPreviewModal.imageUrl}
+                alt="AI Design Preview"
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "400px",
+                  borderRadius: 8,
+                  border: "1px solid #e4e9f0",
+                  marginBottom: 16,
+                }}
+              />
+            </div>
+
+            {/* Modal Footer with Download Button */}
+            <div
+              style={{
+                padding: "16px 20px",
+                borderTop: "1px solid #e4e9f0",
+                display: "flex",
+                gap: 10,
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                onClick={() => setAiPreviewModal(null)}
+                style={{
+                  background: "#f0f2f5",
+                  color: "#2f3a45",
+                  border: "1px solid #e4e9f0",
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  setAi3DPreviewModal({
+                    imageUrl: aiPreviewModal.imageUrl,
+                    productName: aiPreviewModal.productName,
+                  });
+                }}
+                style={{
+                  background: "#667085",
+                  color: "#fff",
+                  border: "none",
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <FaCube size={12} />
+                3D Preview
+              </button>
+              <button
+                onClick={() => {
+                  handleDownloadAiImage(
+                    aiPreviewModal.imageUrl,
+                    aiPreviewModal.productName,
+                  );
+                }}
+                style={{
+                  background: "#455073",
+                  color: "#fff",
+                  border: "none",
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <FaDownload size={12} />
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3D Preview Modal */}
+      {ai3DPreviewModal && (
+        <div
+          onClick={() => setAi3DPreviewModal(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.7)",
+            zIndex: 2100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              borderRadius: 12,
+              width: "100%",
+              maxWidth: 900,
+              height: "min(720px, 86vh)",
+              overflow: "hidden",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "16px 20px",
+                borderBottom: "1px solid #e4e9f0",
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: 16, color: "#2f3a45" }}>
+                3D Design Preview
+              </h3>
+              <button
+                onClick={() => setAi3DPreviewModal(null)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#667085",
+                  padding: 4,
+                  fontSize: 20,
+                }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            {/* 3D Canvas */}
+            <div
+              style={{
+                flex: 1,
+                display: "block",
+                width: "100%",
+                height: "100%",
+              }}
+            >
+              <AIBuilder3DPreview designImage={ai3DPreviewModal.imageUrl} />
+            </div>
+
+            {/* Modal Footer */}
+            <div
+              style={{
+                padding: "12px 20px",
+                borderTop: "1px solid #e4e9f0",
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 10,
+              }}
+            >
+              <button
+                onClick={() => setAi3DPreviewModal(null)}
+                style={{
+                  background: "#f0f2f5",
+                  color: "#2f3a45",
+                  border: "1px solid #e4e9f0",
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
