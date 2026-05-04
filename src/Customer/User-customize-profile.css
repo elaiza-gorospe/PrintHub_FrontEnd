@@ -5,11 +5,13 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
-img, svg {
+img,
+svg {
   max-width: 100%;
   display: block;
 }
@@ -17,7 +19,7 @@ img, svg {
 /* ✅ Page wrapper (match Admin-profile background) */
 .ucp-adminlike-page {
   min-height: 100vh;
-  background-color: #0c502b;
+  background-color: #f2f1eb;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,8 +32,8 @@ img, svg {
 /* ✅ Back button (match Admin-profile style) */
 .ucp-back-button {
   align-self: flex-start;
-  background-color: #135e30;
-  color: #ffffff;
+  background-color: rgba(27, 63, 110, 0.1);
+  color: #1b3f6e;
   border: none;
 
   padding: clamp(10px, 2.5vw, 12px) clamp(14px, 3vw, 18px);
@@ -42,11 +44,13 @@ img, svg {
   cursor: pointer;
 
   min-height: 44px;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .ucp-back-button:hover {
-  background-color: #0f4a27;
+  background-color: rgba(27, 63, 110, 0.1);
   transform: translateY(-1px);
 }
 
@@ -56,7 +60,7 @@ img, svg {
   background: #fff;
   border-radius: 14px;
   padding: clamp(16px, 3.5vw, 30px);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
   margin-inline: auto;
 }
 
@@ -73,7 +77,7 @@ img, svg {
   width: clamp(70px, 14vw, 96px);
   height: clamp(70px, 14vw, 96px);
   border-radius: 50%;
-  background: #135e30;
+  background: #f2f1eb;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,9 +124,9 @@ img, svg {
 }
 
 .ucp-cancel-button {
-  background: #e6f3ea;
-  color: #135e30;
-  border: 1px solid #b8dbc6;
+  background: rgba(27, 63, 110, 0.1);
+  color: #1b3f6e;
+  border: 1px solid rgba(27, 63, 110, 0.2);
 }
 
 .ucp-cancel-button:hover {
@@ -130,12 +134,12 @@ img, svg {
 }
 
 .ucp-save-button {
-  background: #135e30;
+  background: #1b3f6e;
   color: #fff;
 }
 
 .ucp-save-button:hover {
-  background: #0f4a27;
+  background: #3466a3;
 }
 
 /* ✅ FORM (Admin-profile style: label + field) */
@@ -270,7 +274,7 @@ img, svg {
   border-radius: 12px;
   font-size: 13px;
   font-weight: 700;
-  box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
   z-index: 9999;
 }
 
@@ -287,7 +291,7 @@ img, svg {
 .ucp-discard-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -300,7 +304,7 @@ img, svg {
   background: #fff;
   border-radius: 14px;
   padding: 18px;
-  box-shadow: 0 10px 22px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
 }
 
 .ucp-discard-title {

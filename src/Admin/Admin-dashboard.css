@@ -9,7 +9,7 @@
 /* Sidebar Styles */
 .sidebar {
   width: 250px;
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  background: #f7f7f5;
   color: #0f172a;
   display: flex;
   flex-direction: column;
@@ -38,7 +38,7 @@
   font-size: 20px;
   font-weight: 600;
   margin: 0;
-  color: #0f172a;
+  color: #000;
 }
 
 .collapse-btn {
