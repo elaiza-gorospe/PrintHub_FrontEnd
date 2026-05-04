@@ -1058,7 +1058,13 @@ function AdminDashboard() {
         {!isCollapsed && (
           <div className="user-info">
             <div className="user-avatar">
-              <div className="avatar-circle">AD</div>
+              <div className="avatar-circle">
+                {storedUser?.avatar_url ? (
+                  <img src={storedUser.avatar_url} alt="avatar" />
+                ) : (
+                  "AD"
+                )}
+              </div>
             </div>
             <div className="user-details">
               <h4 className="user-name">
@@ -1077,7 +1083,13 @@ function AdminDashboard() {
 
         {isCollapsed && (
           <div className="user-collapsed">
-            <div className="avatar-small">A</div>
+            <div className="avatar-small">
+              {storedUser?.avatar_url ? (
+                <img src={storedUser.avatar_url} alt="avatar" />
+              ) : (
+                "A"
+              )}
+            </div>
           </div>
         )}
 

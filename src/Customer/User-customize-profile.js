@@ -31,6 +31,9 @@ function UserCustomizeProfile() {
     type: "success",
     message: "",
   });
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+  const [avatarPreview, setAvatarPreview] = useState("");
 
   const [showDiscardModal, setShowDiscardModal] = useState(false);
 
@@ -72,12 +75,14 @@ function UserCustomizeProfile() {
           gender: data.gender || "",
           phone: data.phone || "+63",
           address: data.address || "",
+          avatar_url: data.avatar_url || "",
         };
 
         if (!loaded.phone.startsWith("+63")) loaded.phone = "+63";
 
         setForm(loaded);
         setInitialForm(loaded);
+        setAvatarPreview(loaded.avatar_url || "");
       })
       .catch((err) => {
         console.error(err);
@@ -167,6 +172,68 @@ function UserCustomizeProfile() {
     }
   };
 
+  const handleAvatarClick = () => {
+    const inp = document.getElementById("ucp-avatar-input");
+    if (inp) inp.click();
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    setAvatarError("");
+    if (!file) return;
+
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowed.includes(file.type)) {
+      setAvatarError("Only JPEG, PNG, WebP and GIF are allowed");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarError("Image must be 2MB or smaller.");
+      e.target.value = "";
+      return;
+    }
+
+    setAvatarUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+
+      const res = await fetch(buildApiUrl("/api/user/avatar-upload"), {
+        method: "POST",
+        body: fd,
+        headers: { "x-user-id": userId || "" },
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Upload failed");
+
+      // update preview and form
+      setAvatarPreview(data.url || "");
+      setForm((prev) => ({ ...prev, avatar_url: data.url }));
+
+      // try to persist to profile (best-effort)
+      if (userId) {
+        try {
+          await fetch(buildApiUrl(`/api/user-profile/${userId}`), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...form, avatar_url: data.url }),
+          });
+        } catch (err) {
+          // ignore; we still show uploaded avatar locally
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setAvatarError(err.message || "Upload failed");
+    } finally {
+      setAvatarUploading(false);
+      e.target.value = "";
+    }
+  };
+
   const handleDiscard = () => {
     setShowDiscardModal(false);
     setForm(initialForm);
@@ -188,7 +255,26 @@ function UserCustomizeProfile() {
 
       <div className="ucp-profile-card">
         <div className="ucp-profile-top">
-          <div className="ucp-profile-avatar">👤</div>
+          <div
+            className="ucp-profile-avatar"
+            onClick={handleAvatarClick}
+            role="button"
+            aria-label="Change avatar"
+          >
+            {avatarPreview ? <img src={avatarPreview} alt="avatar" /> : "👤"}
+
+            <input
+              id="ucp-avatar-input"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={handleAvatarUpload}
+              style={{ display: "none" }}
+            />
+
+            {avatarUploading && (
+              <div className="ucp-avatar-loading">Uploading...</div>
+            )}
+          </div>
           <div>
             <h2 className="ucp-profile-name">{form.name || "Your Name"}</h2>
             <p className="ucp-profile-role">Customer</p>

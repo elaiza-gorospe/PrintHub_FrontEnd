@@ -15,6 +15,7 @@ function AdminProfile() {
     birthday: "",
     gender: "",
     phone: "+63", // ✅ +63 pre-filled
+    avatar_url: "",
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -85,6 +86,7 @@ function AdminProfile() {
           gender: data.gender || "",
           phone:
             data.phone && String(data.phone).trim() !== "" ? data.phone : "+63", // ✅ fallback to +63
+          avatar_url: data.avatar_url || "",
         });
       })
       .catch((err) => {
@@ -231,6 +233,79 @@ function AdminProfile() {
     });
   };
 
+  // Avatar upload state + handlers
+  const [adminAvatarUploading, setAdminAvatarUploading] = useState(false);
+  const [adminAvatarError, setAdminAvatarError] = useState("");
+  const [adminAvatarPreview, setAdminAvatarPreview] = useState("");
+
+  useEffect(() => {
+    setAdminAvatarPreview(admin.avatar_url || "");
+  }, [admin.avatar_url]);
+
+  const handleAdminAvatarClick = () => {
+    const inp = document.getElementById("admin-avatar-input");
+    if (inp) inp.click();
+  };
+
+  const handleAdminAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    setAdminAvatarError("");
+    if (!file) return;
+
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowed.includes(file.type)) {
+      setAdminAvatarError("Only JPEG, PNG, WebP and GIF are allowed");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setAdminAvatarError("Image must be 2MB or smaller.");
+      e.target.value = "";
+      return;
+    }
+
+    setAdminAvatarUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+
+      const stored =
+        localStorage.getItem("adminUser") || localStorage.getItem("user");
+      const userId = stored ? JSON.parse(stored).id : null;
+
+      const res = await fetch(buildApiUrl("/api/user/avatar-upload"), {
+        method: "POST",
+        body: fd,
+        headers: { "x-user-id": userId || "" },
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Upload failed");
+
+      setAdminAvatarPreview(data.url || "");
+
+      // Save to profile (best-effort)
+      if (userId) {
+        try {
+          await fetch(buildApiUrl(`/api/user-profile/${userId}`), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ avatar_url: data.url }),
+          });
+        } catch (err) {
+          // ignore
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setAdminAvatarError(err.message || "Upload failed");
+    } finally {
+      setAdminAvatarUploading(false);
+      e.target.value = "";
+    }
+  };
+
   const closeChangePassword = () => {
     setShowChangePassword(false);
     setChangePassError("");
@@ -353,6 +428,37 @@ function AdminProfile() {
       )}
 
       <div className="settings-card">
+        <div className="profile-avatar-row">
+          <div
+            className="profile-avatar"
+            onClick={isEditing ? handleAdminAvatarClick : undefined}
+            role={isEditing ? "button" : undefined}
+            aria-label="Change avatar"
+          >
+            {adminAvatarPreview ? (
+              <img src={adminAvatarPreview} alt="avatar" />
+            ) : (
+              "AD"
+            )}
+
+            <input
+              id="admin-avatar-input"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={handleAdminAvatarUpload}
+              style={{ display: "none" }}
+            />
+          </div>
+
+          {adminAvatarUploading && (
+            <div className="profile-msg">Uploading avatar...</div>
+          )}
+          {adminAvatarError && (
+            <div className="profile-msg profile-msg-error">
+              {adminAvatarError}
+            </div>
+          )}
+        </div>
         <div className="form-grid">
           <div className="field">
             <label>First Name</label>
