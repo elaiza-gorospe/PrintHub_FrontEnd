@@ -3,7 +3,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   max-width: 100%;
   overflow-x: hidden;
 }
@@ -15,7 +16,7 @@ html, body {
 
 /* ---------- Navbar Styles ---------- */
 .navbar {
-  background-color: #0f3429;
+  background-color: #fdfdfc;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -38,7 +39,7 @@ html, body {
 .navbar-logo {
   font-size: 24px;
   font-weight: 700;
-  color: #ffffff;
+  color: #4d5f6b;
   cursor: pointer;
   transition: color 0.3s ease;
   white-space: nowrap;
@@ -74,7 +75,7 @@ html, body {
 }
 
 .navbar-menu a::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 0;
   height: 2px;
@@ -90,7 +91,7 @@ html, body {
 
 /* ---------- BUTTON NAV LINKS (Home, About, Contact) ---------- */
 .navbar-menu .navlink-btn {
-  color: #ffffff;
+  color: #4d5f6b;
   text-decoration: none;
   font-size: 16px;
   font-weight: 500;
@@ -110,7 +111,7 @@ html, body {
 }
 
 .navbar-menu .navlink-btn::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 0;
   height: 2px;
@@ -126,8 +127,8 @@ html, body {
 
 /* ---------- LOGIN BUTTON ---------- */
 .navbar-login {
-  background-color: #ffffff;
-  color: #000000 !important;
+  background-color: #455073;
+  color: #fff !important;
   padding: 10px 20px !important;
   border-radius: 6px;
   transition: all 0.3s ease;
@@ -187,7 +188,6 @@ html, body {
 
 /* ---------- Responsive Design ---------- */
 @media (max-width: 768px) {
-
   .navbar-container {
     flex-direction: column;
     align-items: center;
@@ -253,7 +253,6 @@ html, body {
 }
 
 @media (max-width: 480px) {
-
   .navbar-logo {
     font-size: 18px;
   }

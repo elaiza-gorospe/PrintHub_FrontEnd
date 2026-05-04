@@ -9,9 +9,15 @@
  *   activeDesign  {object|null} – currently applied designMeta (or null)
  */
 import React, { useRef, useState } from "react";
-import { FaCloudUploadAlt, FaMagic, FaCheckCircle } from "react-icons/fa";
+import {
+  FaCloudUploadAlt,
+  FaMagic,
+  FaCheckCircle,
+  FaCube,
+} from "react-icons/fa";
 import { buildApiUrl } from "../../config/api";
 import AIBuilderEditor from "./AIBuilderEditor";
+import AIBuilder3DPreview from "./AIBuilder3DPreview";
 import "./AIBuilder.css";
 
 export default function AIBuilderPanel({
@@ -45,6 +51,7 @@ export default function AIBuilderPanel({
   const [showEditor, setShowEditor] = useState(false);
   const [builderState, setBuilderState] = useState(null); // from AIBuilderEditor
   const [imgLoading, setImgLoading] = useState(false); // true while Pollinations image loads
+  const [show3D, setShow3D] = useState(false);
 
   // ── helper to get current user id ──────────────────────────────
   const getUserId = () => {
@@ -534,6 +541,15 @@ export default function AIBuilderPanel({
             </button>
             <button
               type="button"
+              className="aib-btn-3d"
+              onClick={() => setShow3D(true)}
+              disabled={imgLoading}
+            >
+              <FaCube style={{ marginRight: 6 }} />
+              3D Preview
+            </button>
+            <button
+              type="button"
               className="aib-btn-discard"
               onClick={handleDiscard}
             >
@@ -541,6 +557,30 @@ export default function AIBuilderPanel({
             </button>
           </div>
         </>
+      )}
+
+      {/* 3D Preview modal */}
+      {show3D && resultMeta && (
+        <div
+          className="aib-3d-modal"
+          role="dialog"
+          onClick={() => setShow3D(false)}
+        >
+          <div
+            className="aib-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="aib-modal-close"
+              onClick={() => setShow3D(false)}
+            >
+              Close
+            </button>
+            <div className="aib-3d-wrapper">
+              <AIBuilder3DPreview designImage={resultMeta.url} />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
