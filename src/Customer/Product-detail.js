@@ -4,7 +4,7 @@ import { FaIdCard, FaHeadset, FaCheck, FaCheckCircle } from "react-icons/fa";
 import "./Product-detail.css";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useCart } from "../hooks/useCart";
-import { extractNumericPrice } from "../utils/priceUtils";
+import { extractNumericPrice, formatPrice } from "../utils/priceUtils";
 import Header from "../components/Header";
 import { buildApiUrl } from "../config/api";
 import AIBuilderPanel from "../components/AIBuilder/AIBuilderPanel";
@@ -807,7 +807,12 @@ function ProductDetail() {
                   <hr />
                   <p className="grand-total">
                     <span>Total</span>
-                    <strong>{selectedQty?.price}</strong>
+                    <strong>
+                      {formatPrice(
+                        extractNumericPrice(selectedQty?.price) +
+                          extractNumericPrice(selectedShipping?.price),
+                      )}
+                    </strong>
                   </p>
                   {successMessage && (
                     <div className="pd-success-message">

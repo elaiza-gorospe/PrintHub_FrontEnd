@@ -51,7 +51,16 @@ export function CartProvider({ children }) {
       design,
     } = product;
 
+    // Extract numeric quantity from label (e.g., "500 pcs" -> 500, "1000" -> 1000)
+    const extractQuantityValue = (quantityLabel) => {
+      if (!quantityLabel) return 1;
+      const match = quantityLabel.toString().match(/(\d+)/);
+      return match ? parseInt(match[1], 10) : 1;
+    };
+
     setCartItems((prevItems) => {
+      const qtyValue = extractQuantityValue(quantity?.label);
+
       // Items with a design are always distinct — never merge them
       if (!design) {
         // Check if item with same customizations already exists (no design)
@@ -69,18 +78,20 @@ export function CartProvider({ children }) {
 
         if (existingItem) {
           return prevItems.map((item) =>
-            item.id === existingItem.id ? { ...item, qty: item.qty + 1 } : item,
+            item.id === existingItem.id
+              ? { ...item, qty: item.qty + qtyValue }
+              : item,
           );
         }
       }
 
-      // Add new item
+      // Add new item with quantity extracted from quantity label
       const newItem = {
         id: Date.now(),
         productId,
         title,
         price: price,
-        qty: 1,
+        qty: qtyValue,
         customizations: {
           size,
           material,
