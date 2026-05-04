@@ -9,6 +9,7 @@
  *   activeDesign  {object|null} – currently applied designMeta (or null)
  */
 import React, { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaCloudUploadAlt,
   FaMagic,
@@ -52,6 +53,7 @@ export default function AIBuilderPanel({
   const [builderState, setBuilderState] = useState(null); // from AIBuilderEditor
   const [imgLoading, setImgLoading] = useState(false); // true while Pollinations image loads
   const [show3D, setShow3D] = useState(false);
+  const navigate = useNavigate();
 
   // ── helper to get current user id ──────────────────────────────
   const getUserId = () => {
@@ -82,6 +84,9 @@ export default function AIBuilderPanel({
       return getGuestGenCount();
     }
   };
+  const GUEST_LIMIT = 3;
+  const guestCount = getGuestGenCount();
+  const guestRemaining = Math.max(0, GUEST_LIMIT - guestCount);
 
   // ── helper to remove design rules from display text ─────────────
   const getDisplayPrompt = (text) => {
@@ -388,6 +393,52 @@ export default function AIBuilderPanel({
               onChange={(e) => setPrompt(e.target.value)}
             />
           </div>
+
+          {/* Guest remaining counter / CTA */}
+          {!getUserId() && (
+            <div style={{ fontSize: 13, color: "#475569", marginTop: 8 }}>
+              {guestRemaining > 0 ? (
+                <>
+                  You have <strong>{guestRemaining}</strong> free AI generation
+                  {guestRemaining > 1 ? "s" : ""} remaining.
+                  <button
+                    type="button"
+                    onClick={() => navigate("/user-register")}
+                    style={{
+                      marginLeft: 8,
+                      border: "none",
+                      background: "transparent",
+                      color: "#2b6cb0",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                    }}
+                  >
+                    Register
+                  </button>{" "}
+                  to get more.
+                </>
+              ) : (
+                <>
+                  You have used all free AI generations.
+                  <button
+                    type="button"
+                    onClick={() => navigate("/user-register")}
+                    style={{
+                      marginLeft: 8,
+                      border: "none",
+                      background: "transparent",
+                      color: "#2b6cb0",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                    }}
+                  >
+                    Register
+                  </button>{" "}
+                  to continue generating.
+                </>
+              )}
+            </div>
+          )}
 
           <div className="aib-row">
             <button
