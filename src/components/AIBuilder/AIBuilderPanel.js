@@ -57,6 +57,25 @@ export default function AIBuilderPanel({
     return parseInt(localStorage.getItem("userId"), 10) || null;
   };
 
+  // ── guest generation counter (limit to 3) ──────────────────────
+  const GUEST_GEN_KEY = "ai_guest_generations";
+  const getGuestGenCount = () => {
+    try {
+      return parseInt(localStorage.getItem(GUEST_GEN_KEY) || "0", 10) || 0;
+    } catch {
+      return 0;
+    }
+  };
+  const incrementGuestGenCount = () => {
+    try {
+      const v = getGuestGenCount() + 1;
+      localStorage.setItem(GUEST_GEN_KEY, String(v));
+      return v;
+    } catch {
+      return getGuestGenCount();
+    }
+  };
+
   // ── helper to remove design rules from display text ─────────────
   const getDisplayPrompt = (text) => {
     if (!text) return "";
@@ -67,9 +86,15 @@ export default function AIBuilderPanel({
   // ── Generate ────────────────────────────────────────────────────
   const handleGenerate = async () => {
     const userId = getUserId();
-    if (!userId) {
-      setGenError("You must be logged in to use the AI builder.");
-      return;
+    const isGuest = !userId;
+    if (isGuest) {
+      const count = getGuestGenCount();
+      if (count >= 3) {
+        setGenError(
+          "Guests are limited to 3 AI generations. Please sign up to continue.",
+        );
+        return;
+      }
     }
     if (!prompt.trim()) {
       setGenError("Please enter a prompt first.");
@@ -99,7 +124,7 @@ export default function AIBuilderPanel({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-User-Id": String(userId),
+          ...(userId ? { "X-User-Id": String(userId) } : {}),
         },
         body: JSON.stringify({ prompt: fullPrompt, productId: product?.id }),
       });
@@ -111,6 +136,9 @@ export default function AIBuilderPanel({
         return;
       }
       if (!res.ok) throw new Error(data.message || "Generation failed");
+
+      // if guest, increment local guest counter (successful generation)
+      if (isGuest) incrementGuestGenCount();
 
       setImgLoading(true);
       // Store display prompt (without rules) for UI and original user input for intent

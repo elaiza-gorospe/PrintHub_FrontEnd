@@ -312,15 +312,13 @@ function ProductDetail() {
               >
                 SPECIFICATIONS
               </button>
-              {isLoggedIn && (
-                <button
-                  type="button"
-                  className={activeTab === "aibuilder" ? "active" : ""}
-                  onClick={() => setActiveTab("aibuilder")}
-                >
-                  AI BUILDER
-                </button>
-              )}
+              <button
+                type="button"
+                className={activeTab === "aibuilder" ? "active" : ""}
+                onClick={() => setActiveTab("aibuilder")}
+              >
+                AI BUILDER
+              </button>
             </div>
 
             {activeTab === "product" && (
@@ -367,7 +365,7 @@ function ProductDetail() {
               </div>
             )}
 
-            {activeTab === "aibuilder" && isLoggedIn && (
+            {activeTab === "aibuilder" && (
               <div className="pd-tab-content pd-tab-builder-inline">
                 <AIBuilderPanel
                   product={product}
