@@ -877,21 +877,29 @@ function AdminOrders() {
                         {item.customizations &&
                           Object.entries(item.customizations)
                             .filter(([k]) => k !== "design")
-                            .map(([k, v]) => (
-                              <p
-                                key={k}
-                                style={{
-                                  margin: "2px 0 0",
-                                  fontSize: 11,
-                                  color: "#667085",
-                                }}
-                              >
-                                <strong>{k}:</strong>{" "}
-                                {typeof v === "object"
-                                  ? JSON.stringify(v)
-                                  : String(v)}
-                              </p>
-                            ))}
+                            .map(([k, v]) => {
+                              // Format key for display (e.g., inquiry_id → Inquiry ID)
+                              const displayKey = k
+                                .replace(/_/g, " ")
+                                .replace(/\b\w/g, (char) => char.toUpperCase());
+                              // Skip empty values
+                              if (!v) return null;
+                              return (
+                                <p
+                                  key={k}
+                                  style={{
+                                    margin: "2px 0 0",
+                                    fontSize: 11,
+                                    color: "#667085",
+                                  }}
+                                >
+                                  <strong>{displayKey}:</strong>{" "}
+                                  {typeof v === "object"
+                                    ? JSON.stringify(v)
+                                    : String(v)}
+                                </p>
+                              );
+                            })}
                         <p
                           style={{
                             margin: "4px 0 0",

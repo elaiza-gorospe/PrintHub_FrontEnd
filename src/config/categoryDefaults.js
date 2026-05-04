@@ -372,6 +372,64 @@ export const CATEGORY_DEFAULTS = {
     ai_prompt_rules:
       "Generate a professional notebook cover design. Cover must feature the brand logo prominently. Use clean layout with title area. Spine width must be accounted for in the layout. Back cover: include website, tagline, or barcode placeholder. Colors must be consistent with brand identity. Embossing/foil areas must be marked as separate spot layers. Bleed: 0.125in. Resolution: 300dpi minimum.",
   },
+
+  "T-Shirt": {
+    print_type: "screen-print",
+    material: "100% Cotton - 150gsm",
+    color_options: [
+      "Full Color (CMYK) - Direct-to-Garment",
+      "Full Color (Plastisol) - Screen Print",
+      "Single Color - Screen Print",
+      "Multi-Color - Screen Print",
+    ],
+    size_options: ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"],
+    material_options: [
+      "100% Cotton - 150gsm",
+      "100% Cotton - 180gsm",
+      "Cotton/Poly Blend - 160gsm",
+      "100% Polyester - 140gsm",
+      "Organic Cotton - 150gsm",
+    ],
+    side_options: [
+      "Front Chest",
+      "Back",
+      "Front & Back",
+      "Sleeve",
+      "Full Body Wrap",
+    ],
+    finishing_options: [
+      "None",
+      "Heat Transfer",
+      "Embroidery",
+      "Puff Print",
+      "Foil",
+      "Rhinestone",
+      "Glow-in-the-Dark",
+      "Metallic Print",
+    ],
+    processing_options: [
+      "Standard (5-7 days)",
+      "Rush (3-4 days)",
+      "Express (1-2 days)",
+    ],
+    delivery_options: DELIVERY_OPTIONS,
+    quantity_options: [
+      "5 pcs|₱500.00",
+      "10 pcs|₱450.00",
+      "25 pcs|₱420.00",
+      "50 pcs|₱400.00",
+      "100 pcs|₱380.00",
+      "250 pcs|₱350.00",
+      "500 pcs|₱320.00",
+    ],
+    shipping_options: [
+      "Pick Up|Free",
+      "Metro Delivery|₱150.00",
+      "Provincial|₱300.00",
+    ],
+    ai_prompt_rules:
+      "Generate a vibrant T-shirt design optimized for screen printing or DTG. For screen print: limit to 4-6 colors for cost efficiency. Design must work on the specified print area (chest, back, sleeve, or full). Include color specifications in CMYK or PMS if multi-color. Avoid small fine details that won't transfer well. Design should scale well across all sizes. Safe margin: 0.25in from print edges. For DTG: can use full color spectrum without limitations. Include a mockup guide indicating where the design sits on the garment. Resolution: 300dpi minimum.",
+  },
 };
 
 export const CATEGORY_NAMES = Object.keys(CATEGORY_DEFAULTS);
