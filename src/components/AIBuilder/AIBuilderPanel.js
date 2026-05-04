@@ -29,8 +29,8 @@ export default function AIBuilderPanel({
   activeDesign,
   ai_prompt_rules,
 }) {
-  // ── mode: always "generate" (upload mode hidden) ─────────────────
-  const [mode] = useState("generate");
+  // ── mode: "generate" | "upload" (upload tab re-enabled)
+  const [mode, setMode] = useState("generate");
 
   // ── generate state ──────────────────────────────────────────────
   const [prompt, setPrompt] = useState("");
@@ -308,6 +308,21 @@ export default function AIBuilderPanel({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  // ── Use uploaded image directly (no generation) ─────────────────
+  const handleUseUploaded = () => {
+    if (!uploadedMeta) return;
+
+    setResultMeta({
+      ...uploadedMeta,
+      prompt: uploadedMeta.description || null,
+      userPrompt: uploadedMeta.description || uploadedMeta.prompt || null,
+      source: "upload",
+    });
+    setShowEditor(true);
+    setUploadedMeta(null);
+    setImgLoading(false);
+  };
+
   // ── Use this design ─────────────────────────────────────────────
   const handleUseDesign = () => {
     if (!resultMeta) return;
@@ -366,12 +381,14 @@ export default function AIBuilderPanel({
           <button
             type="button"
             className={`aib-mode-tab ${mode === "generate" ? "active" : ""}`}
+            onClick={() => setMode("generate")}
           >
             Generate with AI
           </button>
           <button
             type="button"
             className={`aib-mode-tab ${mode === "upload" ? "active" : ""}`}
+            onClick={() => setMode("upload")}
           >
             Upload Image
           </button>
@@ -529,6 +546,16 @@ export default function AIBuilderPanel({
               )}
 
               <div className="aib-upload-actions">
+                <button
+                  type="button"
+                  className="aib-btn-use"
+                  onClick={handleUseUploaded}
+                  disabled={uploadGenerating}
+                >
+                  <FaCheckCircle style={{ marginRight: 6 }} />
+                  Use Uploaded
+                </button>
+
                 <button
                   type="button"
                   className="aib-btn-generate"
