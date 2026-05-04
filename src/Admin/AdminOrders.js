@@ -312,7 +312,7 @@ function AdminOrders() {
                         display: "flex",
                         gap: "6px",
                         flexWrap: "wrap",
-                        justifyContent: "center",
+                        justifyContent: "left",
                       }}
                     >
                       {/* View Details button */}
@@ -329,7 +329,7 @@ function AdminOrders() {
                           cursor: "pointer",
                           fontSize: "11px",
                           display: "flex",
-                          alignItems: "center",
+                          alignItems: "left",
                           gap: "3px",
                         }}
                       >
@@ -376,7 +376,7 @@ function AdminOrders() {
                             cursor: "pointer",
                             fontSize: "11px",
                             display: "flex",
-                            alignItems: "center",
+                            alignItems: "left",
                             gap: "3px",
                           }}
                         >
@@ -400,7 +400,7 @@ function AdminOrders() {
                             cursor: "pointer",
                             fontSize: "11px",
                             display: "flex",
-                            alignItems: "center",
+                            alignItems: "left",
                             gap: "3px",
                           }}
                         >
@@ -424,7 +424,7 @@ function AdminOrders() {
                             cursor: "pointer",
                             fontSize: "11px",
                             display: "flex",
-                            alignItems: "center",
+                            alignItems: "left",
                             gap: "3px",
                           }}
                         >
@@ -448,7 +448,7 @@ function AdminOrders() {
                             cursor: "pointer",
                             fontSize: "11px",
                             display: "flex",
-                            alignItems: "center",
+                            alignItems: "left",
                             gap: "3px",
                           }}
                         >
