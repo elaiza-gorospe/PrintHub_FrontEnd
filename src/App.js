@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -31,33 +31,7 @@ import UserPaymentReturn from "./Customer/User-payment-return";
 import UserInquiries from "./Customer/User-inquiries";
 import UserPasswordSecurityPage from "./Customer/User-password-security";
 import ProductDetail from "./Customer/Product-detail";
-
-const products = [
-  {
-    id: 1,
-    title: "Business Cards",
-    desc: "Make first impressions last with premium business cards.",
-    cta: "SHOP BUSINESS CARDS >>",
-  },
-  {
-    id: 2,
-    title: "Stickers & Labels",
-    desc: "Accentuate your products with unique labels and stickers.",
-    cta: "SHOP STICKERS & LABELS >>",
-  },
-  {
-    id: 3,
-    title: "Product Hang Tags",
-    desc: "Add more information about your products with hang tags.",
-    cta: "SHOP HANG TAGS >>",
-  },
-  {
-    id: 4,
-    title: "Note Cards",
-    desc: "Thank-you cards are always welcome. Gain trust with customers.",
-    cta: "SHOP THANK YOU CARDS >>",
-  },
-];
+import { buildApiUrl } from "./config/api";
 
 // ✅ PROTECTED ROUTE - Only admins can access
 function ProtectedAdminRoute({ children }) {
@@ -246,6 +220,10 @@ function NavbarComponent() {
 /* ---------- HOME ---------- */
 function HomePage() {
   const location = useLocation();
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [productsError, setProductsError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (location.state?.scrollTo) {
@@ -253,6 +231,33 @@ function HomePage() {
       if (el) el.scrollIntoView({ behavior: "smooth" });
     }
   }, [location]);
+
+  // Fetch home product list (minimal cards)
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoadingProducts(true);
+        const res = await fetch(buildApiUrl("/api/products?limit=8"));
+        if (!res.ok) throw new Error("Failed to load products");
+        const data = await res.json();
+        const list = (data.products || data).map((p) => ({
+          id: p.id,
+          name: p.name || p.title || "Untitled",
+          images: p.images || [],
+          price: p.price,
+          stock: p.stock,
+        }));
+        setProducts(list);
+        setProductsError(null);
+      } catch (err) {
+        setProductsError(err.message || "Failed to load products");
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   return (
     <div className="App">
@@ -328,36 +333,67 @@ function HomePage() {
               marginTop: "30px",
             }}
           >
-            {products.map((item) => (
-              <div
-                key={item.id}
+            {loadingProducts ? (
+              <p style={{ padding: "20px", textAlign: "center" }}>
+                Loading products...
+              </p>
+            ) : productsError ? (
+              <p
                 style={{
-                  background: "#fff",
-                  padding: "30px 20px",
-                  borderRadius: "10px",
-                  boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+                  padding: "20px",
+                  textAlign: "center",
+                  color: "#e74c3c",
                 }}
               >
-                <h3 style={{ color: "#0f352a", marginBottom: "10px" }}>
-                  {item.title}
-                </h3>
-
-                <p style={{ fontSize: "14px", marginBottom: "20px" }}>
-                  {item.desc}
-                </p>
-
-                <span
-                  style={{
-                    color: "#a37e2d",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    fontSize: "13px",
-                  }}
-                >
-                  {item.cta}
-                </span>
-              </div>
-            ))}
+                {productsError}
+              </p>
+            ) : (
+              products.map((item) => {
+                const fallbackImage =
+                  "https://via.placeholder.com/300x200?text=No+Image";
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => navigate(`/product/${item.id}`)}
+                    style={{
+                      background: "#fff",
+                      padding: "20px",
+                      borderRadius: "10px",
+                      boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+                      textAlign: "left",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: 160,
+                        overflow: "hidden",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "#f8fafc",
+                        borderRadius: 8,
+                        marginBottom: 12,
+                      }}
+                    >
+                      <img
+                        src={item.images?.[0] || fallbackImage}
+                        alt={item.name}
+                        style={{ maxWidth: "100%", maxHeight: "100%" }}
+                        onError={(e) => {
+                          e.target.src = fallbackImage;
+                        }}
+                      />
+                    </div>
+                    <div style={{ color: "#0f352a", fontWeight: 600 }}>
+                      {item.name}
+                    </div>
+                  </button>
+                );
+              })
+            )}
           </div>
         </section>
 
