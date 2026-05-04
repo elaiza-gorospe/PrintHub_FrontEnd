@@ -17,8 +17,8 @@
 }
 
 .ucart-back {
-  background: #135e30;
-  color: #fff;
+  background: rgba(27, 63, 110, 0.1);
+  color: #1b3f6e;
   border: none;
   border-radius: 10px;
   padding: 10px 14px;
@@ -31,7 +31,8 @@
 }
 
 .ucart-back:hover {
-  background: #0f4a27;
+  background: #3466a3;
+  color: #fff;
 }
 
 .ucart-title {
@@ -71,7 +72,7 @@
 
 .ucart-section-title {
   margin: 0 0 12px;
-  color: #135e30;
+  color: #1b3f6e;
   font-size: 18px;
   font-weight: 900;
 }
@@ -115,7 +116,7 @@
 .ucart-price {
   margin-top: 6px;
   font-weight: 800;
-  color: #135e30;
+  color: #1b3f6e;
 }
 
 /* Controls */
@@ -191,14 +192,14 @@
   justify-content: space-between;
   font-size: 16px;
   font-weight: 900;
-  color: #135e30;
+  color: #1b3f6e;
   margin-bottom: 12px;
 }
 
 .ucart-checkout {
   width: 100%;
   border: none;
-  background: #135e30;
+  background: #1b3f6e;
   color: #fff;
   border-radius: 10px;
   padding: 12px;
@@ -208,7 +209,7 @@
 }
 
 .ucart-checkout:hover {
-  background: #0f4a27;
+  background: #3466a3;
 }
 
 .ucart-continue {
@@ -220,7 +221,7 @@
   min-height: 44px;
   font-weight: 800;
   background: #e6f3ea;
-  color: #135e30;
+  color: #1b3f6e;
   border: 1px solid #b8dbc6;
 }
 

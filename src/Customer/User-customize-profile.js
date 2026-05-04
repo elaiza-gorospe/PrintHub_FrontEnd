@@ -271,6 +271,10 @@ function UserCustomizeProfile() {
               style={{ display: "none" }}
             />
 
+            <div className="ucp-avatar-overlay" aria-hidden>
+              ✏️ Edit
+            </div>
+
             {avatarUploading && (
               <div className="ucp-avatar-loading">Uploading...</div>
             )}

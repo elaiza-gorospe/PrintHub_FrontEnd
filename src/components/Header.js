@@ -186,17 +186,6 @@ function Header() {
                       type="button"
                       onClick={() => {
                         setIsProfileOpen(false);
-                        navigate("/user-account-settings");
-                      }}
-                    >
-                      <FaCog /> <span>Account settings</span>
-                    </button>
-
-                    <button
-                      className="uh-dd-item"
-                      type="button"
-                      onClick={() => {
-                        setIsProfileOpen(false);
                         navigate("/user-customize-profile");
                       }}
                     >

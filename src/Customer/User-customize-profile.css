@@ -85,6 +85,7 @@ svg {
   color: #fff;
   flex-shrink: 0;
   cursor: pointer;
+  position: relative;
 }
 
 .ucp-profile-avatar img {
@@ -97,11 +98,38 @@ svg {
 
 .ucp-avatar-loading {
   position: absolute;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   color: #fff;
   padding: 6px 8px;
   border-radius: 6px;
   font-size: 12px;
+}
+
+/* Edit overlay shown on hover/focus */
+.ucp-avatar-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 13px;
+  border-radius: 50%;
+  opacity: 0;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+  transform: translateY(6px);
+  pointer-events: none;
+}
+
+.ucp-profile-avatar:hover .ucp-avatar-overlay,
+.ucp-profile-avatar:focus .ucp-avatar-overlay,
+.ucp-profile-avatar:focus-within .ucp-avatar-overlay {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .ucp-profile-summary {
