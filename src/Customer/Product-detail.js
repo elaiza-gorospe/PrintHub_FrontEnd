@@ -200,6 +200,8 @@ function ProductDetail() {
   };
 
   const scrollToQuote = () => {
+    // Select the Contact Us / custom size option when user requests a quote
+    setCustomSizeSelected(true);
     quoteRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
