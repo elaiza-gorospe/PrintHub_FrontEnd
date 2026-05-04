@@ -656,6 +656,7 @@ export default function AIBuilderPanel({
             </button>
             <div className="aib-3d-wrapper">
               <AIBuilder3DPreview
+                designImage={resultMeta.url}
                 prompt={
                   resultMeta.userPrompt ||
                   resultMeta.prompt ||

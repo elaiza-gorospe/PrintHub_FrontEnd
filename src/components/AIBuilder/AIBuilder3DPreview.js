@@ -1,58 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { buildApiUrl } from "../../config/api";
 import "./AIBuilder.css";
 
 export default function AIBuilder3DPreview({ designImage, prompt }) {
   const mountRef = useRef(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [model3D, setModel3D] = useState(null);
 
-  // Generate 3D model from prompt via backend Shap-E
+  // Create 3D scene with design image as a texture on a cube
   useEffect(() => {
-    if (!prompt) return;
+    if (!designImage || !prompt || !mountRef.current) return undefined;
 
-    setLoading(true);
     setError("");
-    setModel3D(null);
-
-    const generateModel = async () => {
-      try {
-        const response = await fetch(buildApiUrl("/api/builder/generate-3d"), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ prompt: prompt.trim() }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.message || `Server error: ${response.statusText}`,
-          );
-        }
-
-        const blob = await response.blob();
-        const glbUrl = URL.createObjectURL(blob);
-        setModel3D(glbUrl);
-      } catch (err) {
-        setError(err.message || "Failed to generate 3D model");
-        console.error("3D generation error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    generateModel();
-  }, [prompt]);
-
-  // Render 3D model in three.js
-  useEffect(() => {
-    if (!model3D || !mountRef.current) return undefined;
 
     const container = mountRef.current;
     const width = container.clientWidth;
@@ -80,29 +40,28 @@ export default function AIBuilder3DPreview({ designImage, prompt }) {
     controls.autoRotate = true;
     controls.autoRotateSpeed = 4;
 
-    const loader = new GLTFLoader();
-    let model = null;
+    // Create a textured cube with the design image
+    const textureLoader = new THREE.TextureLoader();
+    let cube = null;
 
-    loader.load(
-      model3D,
-      (gltf) => {
-        model = gltf.scene;
-        scene.add(model);
-
-        // Auto-scale model to fit in view
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 2 / maxDim;
-        model.scale.multiplyScalar(scale);
-        model.position.sub(
-          box.getCenter(new THREE.Vector3()).multiplyScalar(scale),
-        );
+    textureLoader.load(
+      designImage,
+      (texture) => {
+        const geometry = new THREE.BoxGeometry(2, 2, 2);
+        const material = new THREE.MeshStandardMaterial({
+          map: texture,
+          roughness: 0.5,
+          metalness: 0.2,
+        });
+        cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+        setLoading(false);
       },
       undefined,
       (err) => {
-        console.warn("GLTFLoader failed:", err);
-        setError("Failed to load 3D model");
+        console.warn("Texture load failed:", err);
+        setError("Failed to load design image");
+        setLoading(false);
       },
     );
 
@@ -128,25 +87,22 @@ export default function AIBuilder3DPreview({ designImage, prompt }) {
       window.removeEventListener("resize", handleResize);
       if (rafId) cancelAnimationFrame(rafId);
       controls.dispose();
-      if (model) {
-        model.traverse((child) => {
-          if (child.geometry) child.geometry.dispose();
-          if (child.material) {
-            if (Array.isArray(child.material)) {
-              child.material.forEach((m) => m.dispose());
-            } else {
-              child.material.dispose();
-            }
+      if (cube) {
+        cube.geometry.dispose();
+        if (cube.material) {
+          if (Array.isArray(cube.material)) {
+            cube.material.forEach((m) => m.dispose());
+          } else {
+            cube.material.dispose();
           }
-        });
+        }
       }
-      if (model3D) URL.revokeObjectURL(model3D);
       renderer.dispose();
       if (renderer.domElement && renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement);
       }
     };
-  }, [model3D]);
+  }, [designImage, prompt]);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
@@ -177,7 +133,7 @@ export default function AIBuilder3DPreview({ designImage, prompt }) {
             }}
           />
           <div style={{ fontSize: "13px", color: "#455073" }}>
-            Generating 3D model…
+            Loading 3D preview…
           </div>
         </div>
       )}
