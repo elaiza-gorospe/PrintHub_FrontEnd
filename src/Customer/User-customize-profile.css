@@ -93,7 +93,7 @@ svg {
 
 .ucp-profile-name {
   margin: 0;
-  color: #135e30;
+  color: #444;
   font-size: clamp(18px, 2.8vw, 26px);
   line-height: 1.2;
   word-break: break-word;
