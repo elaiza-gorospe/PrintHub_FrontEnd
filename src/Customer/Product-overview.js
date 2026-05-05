@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./Product-overview.css";
 import Header from "../components/Header";
 import { buildApiUrl } from "../config/api";
-import LoginRequiredModal from "../components/LoginRequiredModal"; // ✅ added
+import LoginRequiredModal from "../components/LoginRequiredModal.js"; // explicit extension to help resolver
 
 function ProductOverview() {
   const navigate = useNavigate();
@@ -43,7 +43,8 @@ function ProductOverview() {
   const filtered = category
     ? products.filter((p) => (p.print_type || "other") === category)
     : products;
-  const fallbackImage = "[via.placeholder.com](https://via.placeholder.com/300x200?text=No+Image)";
+  const fallbackImage =
+    "[via.placeholder.com](https://via.placeholder.com/300x200?text=No+Image)";
 
   // ✅ Handle view/buy click
   const handleViewProduct = (id) => {

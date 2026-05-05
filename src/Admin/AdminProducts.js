@@ -14,7 +14,11 @@ import "./Admin-dashboard.css";
 import { buildApiUrl } from "../config/api";
 import { CATEGORY_DEFAULTS, CATEGORY_NAMES } from "../config/categoryDefaults";
 
-function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
+function AdminProducts({
+  refreshTrigger = 0,
+  onAddProduct = null,
+  lowStockFilter = null,
+}) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -65,13 +69,22 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(buildApiUrl("/api/products?limit=100"));
+        // If lowStockFilter prop is provided, use admin low-stock endpoint
+        const useLowStock =
+          lowStockFilter && lowStockFilter.filter === "low_stock";
+        const threshold = (lowStockFilter && lowStockFilter.threshold) || 10;
+        const url = useLowStock
+          ? buildApiUrl(`/api/admin/low-stock?threshold=${threshold}&limit=100`)
+          : buildApiUrl("/api/products?limit=100");
+
+        const response = await fetch(url);
         if (!response.ok) throw new Error("Failed to fetch products");
 
         const data = await response.json();
 
         // Transform API data to match UI format
-        const transformedProducts = (data.products || data).map((product) => ({
+        const apiProducts = data.products || data;
+        const transformedProducts = (apiProducts || []).map((product) => ({
           sku: product.sku || `PRD-${product.id}`,
           name: product.name,
           category:
@@ -108,7 +121,7 @@ function AdminProducts({ refreshTrigger = 0, onAddProduct = null }) {
     // Refresh products every 30 seconds
     const interval = setInterval(fetchProducts, 30000);
     return () => clearInterval(interval);
-  }, [refreshTrigger, localRefreshKey]);
+  }, [refreshTrigger, localRefreshKey, lowStockFilter]);
 
   // Filter products based on search query and category
   const filteredProducts = useMemo(() => {
