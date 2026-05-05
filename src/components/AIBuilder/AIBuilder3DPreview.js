@@ -1,13 +1,18 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import "./AIBuilder.css";
 
-export default function AIBuilder3DPreview({ designImage }) {
+export default function AIBuilder3DPreview({ designImage, prompt }) {
   const mountRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  // Create 3D scene with design image as a texture on a cube
   useEffect(() => {
-    if (!designImage || !mountRef.current) return undefined;
+    if (!designImage || !prompt || !mountRef.current) return undefined;
+
+    setError("");
 
     const container = mountRef.current;
     const width = container.clientWidth;
@@ -19,50 +24,44 @@ export default function AIBuilder3DPreview({ designImage }) {
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f2f5);
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 2.5);
+    camera.position.set(0, 0, 3);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+    const ambient = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambient);
-    const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
     dir.position.set(5, 10, 7.5);
     scene.add(dir);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.07;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 4;
 
-    const loader = new THREE.TextureLoader();
+    // Create a textured cube with the design image
+    const textureLoader = new THREE.TextureLoader();
+    let cube = null;
 
-    // Use a plane with the design as texture
-    const geometry = new THREE.PlaneGeometry(1.6, 1.6);
-    let material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-    let mesh = null;
-
-    let activeTexture = null;
-    loader.load(
+    textureLoader.load(
       designImage,
-      (tex) => {
-        activeTexture = tex;
-        // Avoid referencing sRGBEncoding directly to prevent bundler named-export errors
-        tex.flipY = true;
-        material = new THREE.MeshStandardMaterial({
-          map: tex,
-          side: THREE.DoubleSide,
+      (texture) => {
+        const geometry = new THREE.BoxGeometry(2, 2, 2);
+        const material = new THREE.MeshStandardMaterial({
+          map: texture,
+          roughness: 0.5,
+          metalness: 0.2,
         });
-        mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
-        // scale to fit aspect of texture
-        const imageAspect =
-          tex.image && tex.image.width && tex.image.height
-            ? tex.image.width / tex.image.height
-            : 1;
-        mesh.scale.set(imageAspect, 1, 1);
+        cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+        setLoading(false);
       },
       undefined,
       (err) => {
-        // ignore texture load errors
-        console.warn("AIBuilder3DPreview texture load failed", err);
+        console.warn("Texture load failed:", err);
+        setError("Failed to load design image");
+        setLoading(false);
       },
     );
 
@@ -88,27 +87,89 @@ export default function AIBuilder3DPreview({ designImage }) {
       window.removeEventListener("resize", handleResize);
       if (rafId) cancelAnimationFrame(rafId);
       controls.dispose();
-      if (mesh) {
-        mesh.geometry.dispose();
-        if (Array.isArray(mesh.material)) {
-          mesh.material.forEach((m) => m.dispose());
-        } else if (mesh.material) {
-          mesh.material.dispose();
+      if (cube) {
+        cube.geometry.dispose();
+        if (cube.material) {
+          if (Array.isArray(cube.material)) {
+            cube.material.forEach((m) => m.dispose());
+          } else {
+            cube.material.dispose();
+          }
         }
       }
-      if (activeTexture) activeTexture.dispose();
       renderer.dispose();
       if (renderer.domElement && renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement);
       }
     };
-  }, [designImage]);
+  }, [designImage, prompt]);
 
   return (
-    <div
-      className="aib-3d-canvas"
-      ref={mountRef}
-      style={{ width: "100%", height: "100%" }}
-    />
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+      {loading && (
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            textAlign: "center",
+            zIndex: 10,
+            background: "rgba(255, 255, 255, 0.9)",
+            padding: "20px 30px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          }}
+        >
+          <div
+            style={{
+              width: "32px",
+              height: "32px",
+              margin: "0 auto 12px",
+              border: "3px solid #ddd",
+              borderTop: "3px solid #455073",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+            }}
+          />
+          <div style={{ fontSize: "13px", color: "#455073" }}>
+            Loading 3D preview…
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            textAlign: "center",
+            zIndex: 10,
+            background: "rgba(255, 255, 255, 0.95)",
+            padding: "20px 30px",
+            borderRadius: "8px",
+            color: "#c0392b",
+            fontSize: "13px",
+            maxWidth: "300px",
+          }}
+        >
+          {error}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+
+      <div
+        className="aib-3d-canvas"
+        ref={mountRef}
+        style={{ width: "100%", height: "100%" }}
+      />
+    </div>
   );
 }

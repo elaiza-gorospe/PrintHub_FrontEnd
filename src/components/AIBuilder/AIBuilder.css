@@ -33,9 +33,11 @@
   text-transform: uppercase;
 }
 
-/* Mode tabs */
 .aib-mode-tabs {
-  display: none;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
 }
 
 .aib-mode-tab {
