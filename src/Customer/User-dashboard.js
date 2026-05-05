@@ -6,11 +6,12 @@ function CustomerDashboard() {
     const navigate = useNavigate();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [activeItem, setActiveItem] = useState('dashboard');
-
-    // ✅ added (mobile sidebar state)
     const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [showSearchResults, setShowSearchResults] = useState(false);
 
-    // ✅ added (swipe tracking)
+    // swipe tracking
     let touchStartX = 0;
     let touchEndX = 0;
 
@@ -24,11 +25,40 @@ function CustomerDashboard() {
         {id: 'settings', label: 'Settings', path: '/admin/settings'},
     ];
 
+    // Search function
+    const handleSearch = (query) => {
+        setSearchQuery(query);
+        
+        if (query.trim() === '') {
+            setSearchResults([]);
+            setShowSearchResults(false);
+            return;
+        }
+
+        // Search through menu items
+        const results = menuItems.filter(item => 
+            item.label.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        setSearchResults(results);
+        setShowSearchResults(true);
+    };
+
+    const handleSearchResultClick = (result) => {
+        setActiveItem(result.id);
+        if (result.path) {
+            navigate(result.path);
+        }
+        setSearchQuery('');
+        setShowSearchResults(false);
+        setIsMobileOpen(false);
+    };
+
     const handleMenuItemClick = (item) => {
         setActiveItem(item.id);
         if (item.path) {
             navigate(item.path);
-            setIsMobileOpen(false); // ✅ close on mobile
+            setIsMobileOpen(false);
         }
     };
 
@@ -57,7 +87,7 @@ function CustomerDashboard() {
         alert('You have been logged out successfully!');
     };
 
-    // ✅ swipe handlers
+    // swipe handlers
     const handleTouchStart = (e) => {
         touchStartX = e.changedTouches[0].screenX;
     };
@@ -68,10 +98,10 @@ function CustomerDashboard() {
 
     const handleTouchEnd = () => {
         if (touchStartX - touchEndX > 50) {
-            setIsMobileOpen(false); // swipe left → close
+            setIsMobileOpen(false);
         }
         if (touchEndX - touchStartX > 50) {
-            setIsMobileOpen(true); // swipe right → open
+            setIsMobileOpen(true);
         }
     };
 
@@ -142,7 +172,7 @@ function CustomerDashboard() {
                 </div>
             </div>
 
-            {/* ✅ dark overlay */}
+            {/* dark overlay */}
             {isMobileOpen && (
                 <div
                     className="sidebar-overlay"
@@ -154,7 +184,7 @@ function CustomerDashboard() {
             <main className="dashboard-content">
 
                 <header className="dashboard-header">
-                    {/* ✅ mobile menu button */}
+                    {/* mobile menu button */}
                     <button
                         className="mobile-menu-btn"
                         onClick={() => setIsMobileOpen(true)}
@@ -165,6 +195,68 @@ function CustomerDashboard() {
                     <div className="header-left">
                         <h1>Dashboard</h1>
                         <p className="subtitle">Welcome back, Admin!</p>
+                    </div>
+
+                    {/* Search Bar */}
+                    <div className="search-container" style={{ position: 'relative', marginLeft: 'auto', marginRight: '20px' }}>
+                        <input
+                            type="text"
+                            className="search-input"
+                            placeholder="Search menu items..."
+                            value={searchQuery}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            onFocus={() => searchQuery.trim() && setShowSearchResults(true)}
+                            style={{
+                                padding: '8px 12px',
+                                borderRadius: '6px',
+                                border: '1px solid #ddd',
+                                width: '250px',
+                                fontSize: '14px'
+                            }}
+                        />
+                        
+                        {/* Search Results Dropdown */}
+                        {showSearchResults && (
+                            <div className="search-results" style={{
+                                position: 'absolute',
+                                top: '100%',
+                                right: 0,
+                                left: 0,
+                                backgroundColor: 'white',
+                                border: '1px solid #ddd',
+                                borderRadius: '6px',
+                                marginTop: '5px',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                zIndex: 1000,
+                                maxHeight: '300px',
+                                overflowY: 'auto'
+                            }}>
+                                {searchResults.length > 0 ? (
+                                    searchResults.map(result => (
+                                        <div
+                                            key={result.id}
+                                            className="search-result-item"
+                                            onClick={() => handleSearchResultClick(result)}
+                                            style={{
+                                                padding: '10px 12px',
+                                                cursor: 'pointer',
+                                                borderBottom: '1px solid #f0f0f0',
+                                                transition: 'background-color 0.2s'
+                                            }}
+                                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+                                            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                        >
+                                            <div style={{ fontWeight: '500' }}>{result.label}</div>
+                                            <div style={{ fontSize: '12px', color: '#666' }}>Navigate to {result.label}</div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div style={{ padding: '10px 12px', color: '#999', textAlign: 'center' }}>
+                                        No results found for "{searchQuery}"
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="header-right">
@@ -200,37 +292,12 @@ function CustomerDashboard() {
 
                         <div className="recent-activity">
                             <h2>Recent Activity</h2>
-                            {/* <div className="activity-list">
-                                <div className="activity-item">
-                                    <div className="activity-content">
-                                        <p><strong>New order #12345</strong> has been placed</p>
-                                        <span className="activity-time">10 minutes ago</span>
-                                    </div>
-                                </div>
-                            </div> */}
                         </div>
-
-                        {/* <div className="quick-actions">
-                            <h2>Quick Actions</h2>
-                            <div className="actions-grid">
-                                <button className="action-btn" onClick={() => navigate('/admin/products/add')}>
-                                    Add New Product
-                                </button>
-                                <button className="action-btn" onClick={() => navigate('/admin/analytics')}>
-                                    View Analytics
-                                </button>
-                                <button className="action-btn" onClick={() => navigate('/admin/settings')}>
-                                    System Settings
-                                </button>
-                                <button className="action-btn" onClick={() => navigate('/admin/users')}>
-                                    Manage Users
-                                </button>
-                            </div>
-                        </div> */}
                     </div>
                 </div>
             </main>
         </div>
     );
 }
+
 export default CustomerDashboard;
