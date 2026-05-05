@@ -79,6 +79,10 @@ function AdminDashboard() {
     totalUsers: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
+  // Low stock state
+  const [lowStock, setLowStock] = useState({ products: [], pagination: {} });
+  const [lowStockLoading, setLowStockLoading] = useState(true);
+  const [lowStockFilter, setLowStockFilter] = useState(null);
 
   // ✅ close mobile sidebar if resized to desktop
   useEffect(() => {
@@ -87,6 +91,36 @@ function AdminDashboard() {
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Fetch low-stock products for dashboard
+  useEffect(() => {
+    const fetchLowStock = async () => {
+      try {
+        setLowStockLoading(true);
+        const threshold = 10; // default threshold
+        const limit = 5; // show top 5 on dashboard
+        const res = await fetch(
+          buildApiUrl(
+            `/api/admin/low-stock?threshold=${threshold}&limit=${limit}`,
+          ),
+        );
+        if (!res.ok) throw new Error("Failed to fetch low-stock");
+        const data = await res.json();
+        setLowStock({
+          products: data.products || [],
+          pagination: data.pagination || {},
+        });
+      } catch (err) {
+        console.error("Error fetching low-stock:", err);
+      } finally {
+        setLowStockLoading(false);
+      }
+    };
+
+    fetchLowStock();
+    const lsInterval = setInterval(fetchLowStock, 30000);
+    return () => clearInterval(lsInterval);
   }, []);
 
   // ✅ NEW: Fetch dashboard stats from API
@@ -1368,6 +1402,62 @@ function AdminDashboard() {
                   <div className="stat-foot">System operational</div>
                 </div>
               </div>
+
+              <div className="data-table-card" style={{ marginTop: 12 }}>
+                <div className="data-table-head">
+                  <h3>Low Stock</h3>
+                  <div>
+                    <button
+                      type="button"
+                      className="row-btn"
+                      onClick={() => {
+                        setLowStockFilter({
+                          filter: "low_stock",
+                          threshold: 10,
+                        });
+                        setActiveItem("products");
+                      }}
+                    >
+                      View all
+                    </button>
+                  </div>
+                </div>
+
+                <div className="table-scroll">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>SKU</th>
+                        <th className="right">Stock</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lowStockLoading ? (
+                        <tr>
+                          <td className="empty-row" colSpan={3}>
+                            Loading...
+                          </td>
+                        </tr>
+                      ) : lowStock.products.length === 0 ? (
+                        <tr>
+                          <td className="empty-row" colSpan={3}>
+                            No low-stock items
+                          </td>
+                        </tr>
+                      ) : (
+                        lowStock.products.map((p) => (
+                          <tr key={p.id}>
+                            <td>{p.name}</td>
+                            <td>{p.sku}</td>
+                            <td className="right">{p.stock}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </>
           )}
 
@@ -1387,6 +1477,7 @@ function AdminDashboard() {
             <AdminProducts
               refreshTrigger={refreshProductsKey}
               onAddProduct={handleAddProduct}
+              lowStockFilter={lowStockFilter}
             />
           )}
 
