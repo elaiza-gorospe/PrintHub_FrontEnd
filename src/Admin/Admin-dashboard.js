@@ -1450,7 +1450,7 @@ function AdminDashboard() {
                           <tr key={p.id}>
                             <td>{p.name}</td>
                             <td>{p.sku}</td>
-                            <td className="right">{p.stock}</td>
+                            <td className="left">{p.stock}</td>
                           </tr>
                         ))
                       )}
