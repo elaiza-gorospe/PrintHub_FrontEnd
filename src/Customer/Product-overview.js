@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./Product-overview.css";
 import Header from "../components/Header";
 import { buildApiUrl } from "../config/api";
+import LoginRequiredModal from "../components/LoginRequiredModal"; // ✅ added
 
 function ProductOverview() {
   const navigate = useNavigate();
@@ -10,6 +11,10 @@ function ProductOverview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [category, setCategory] = useState("");
+  const [showLoginModal, setShowLoginModal] = useState(false); // ✅ modal state
+
+  // ✅ Check if user is logged in
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -38,7 +43,16 @@ function ProductOverview() {
   const filtered = category
     ? products.filter((p) => (p.print_type || "other") === category)
     : products;
-  const fallbackImage = "https://via.placeholder.com/300x200?text=No+Image";
+  const fallbackImage = "[via.placeholder.com](https://via.placeholder.com/300x200?text=No+Image)";
+
+  // ✅ Handle view/buy click
+  const handleViewProduct = (id) => {
+    if (!user) {
+      setShowLoginModal(true); // guest → show popup
+    } else {
+      navigate(`/product/${id}`);
+    }
+  };
 
   return (
     <>
@@ -86,7 +100,7 @@ function ProductOverview() {
               key={p.id}
               type="button"
               className="po-card"
-              onClick={() => navigate(`/product/${p.id}`)}
+              onClick={() => handleViewProduct(p.id)} // ✅ updated click
             >
               <div className="po-img">
                 <img
@@ -102,6 +116,29 @@ function ProductOverview() {
           ))}
         </div>
       </div>
+
+      {/* ✅ Login required popup */}
+      {showLoginModal && (
+        <LoginRequiredModal
+          onClose={() => setShowLoginModal(false)}
+          onLogin={() => {
+            // ✅ Clear guest cart before redirecting
+            localStorage.removeItem("cart");
+            localStorage.removeItem("cartItems");
+            localStorage.removeItem("userCart");
+            setShowLoginModal(false);
+            navigate("/user-login");
+          }}
+          onRegister={() => {
+            // ✅ Clear guest cart before redirecting
+            localStorage.removeItem("cart");
+            localStorage.removeItem("cartItems");
+            localStorage.removeItem("userCart");
+            setShowLoginModal(false);
+            navigate("/user-register");
+          }}
+        />
+      )}
     </>
   );
 }
