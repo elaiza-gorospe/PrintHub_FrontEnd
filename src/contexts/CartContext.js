@@ -203,13 +203,18 @@ export function CartProvider({ children }) {
 
   // Update quantity
   const updateQuantity = (itemId, newQty) => {
-    if (newQty < 1) {
+    // Sanitize input: accept integers only
+    const parsed = parseInt(newQty, 10);
+    const finalQty = isNaN(parsed) ? 1 : Math.floor(parsed);
+
+    if (finalQty < 1) {
       removeFromCart(itemId);
       return;
     }
+
     setCartItems((prevItems) =>
       prevItems.map((item) =>
-        item.id === itemId ? { ...item, qty: newQty } : item,
+        item.id === itemId ? { ...item, qty: finalQty } : item,
       ),
     );
   };

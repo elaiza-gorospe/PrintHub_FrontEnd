@@ -154,6 +154,12 @@
   padding: 0 12px;
   font-weight: 800;
   color: #133b24;
+  /* keep input narrow — about 12% of the control area, with sensible limits */
+  min-width: 36px;
+  max-width: 50px;
+  text-align: center;
+  border: none;
+  background: transparent;
 }
 
 .ucart-remove {

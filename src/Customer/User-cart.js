@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./User-cart.css";
 import {
@@ -17,6 +17,22 @@ function UserCartPage() {
   const navigate = useNavigate();
   const [showCheckout, setShowCheckout] = useState(false);
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
+
+  // Local edit state for quantity inputs (keeps typing from immediately mutating global cart)
+  const [editQtyMap, setEditQtyMap] = useState({});
+
+  // Initialize local qty map when cart items change
+  useEffect(() => {
+    const next = {};
+    cartItems.forEach((it) => {
+      next[it.id] =
+        typeof editQtyMap[it.id] !== "undefined"
+          ? editQtyMap[it.id]
+          : String(it.qty);
+    });
+    setEditQtyMap((prev) => ({ ...next, ...prev }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartItems]);
 
   // Get user ID from localStorage (set during login)
   const userId = parseInt(localStorage.getItem("userId")) || null;
@@ -227,16 +243,66 @@ function UserCartPage() {
                       className="ucart-qty-btn"
                       type="button"
                       title="Decrease"
-                      onClick={() => updateQty(item.id, item.qty - 1)}
+                      onClick={() => {
+                        const newQty = Math.max(1, item.qty - 1);
+                        updateQty(item.id, newQty);
+                        setEditQtyMap((m) => ({
+                          ...m,
+                          [item.id]: String(newQty),
+                        }));
+                      }}
                     >
                       <FaMinus />
                     </button>
-                    <span className="ucart-qty-num">{item.qty}</span>
+
+                    <input
+                      className="ucart-qty-num"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={editQtyMap[item.id] ?? String(item.qty)}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        // allow empty string while typing
+                        setEditQtyMap((m) => ({ ...m, [item.id]: v }));
+                      }}
+                      onBlur={() => {
+                        const raw = editQtyMap[item.id];
+                        const parsed = parseInt(String(raw), 10);
+                        const final =
+                          isNaN(parsed) || parsed < 1 ? 1 : Math.floor(parsed);
+                        updateQty(item.id, final);
+                        setEditQtyMap((m) => ({
+                          ...m,
+                          [item.id]: String(final),
+                        }));
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.currentTarget.blur();
+                        }
+                        if (e.key === "Escape") {
+                          // revert to current item.qty
+                          setEditQtyMap((m) => ({
+                            ...m,
+                            [item.id]: String(item.qty),
+                          }));
+                        }
+                      }}
+                    />
+
                     <button
                       className="ucart-qty-btn"
                       type="button"
                       title="Increase"
-                      onClick={() => updateQty(item.id, item.qty + 1)}
+                      onClick={() => {
+                        const newQty = item.qty + 1;
+                        updateQty(item.id, newQty);
+                        setEditQtyMap((m) => ({
+                          ...m,
+                          [item.id]: String(newQty),
+                        }));
+                      }}
                     >
                       <FaPlus />
                     </button>
