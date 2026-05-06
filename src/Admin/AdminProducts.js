@@ -25,6 +25,7 @@ function AdminProducts({
   const [productsQuery, setProductsQuery] = useState("");
   const [productsCategory, setProductsCategory] = useState("all");
   const [localRefreshKey, setLocalRefreshKey] = useState(0); // ✅ Local refresh trigger
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   // ✅ NEW: Edit product states
   const [showEditModal, setShowEditModal] = useState(false);
@@ -40,6 +41,8 @@ function AdminProducts({
     ai_prompt_rules: "",
     status: "active",
     images: [],
+    quantity_mode: "dropdown",
+    quantity_count: "",
     color_options: [],
     size_options: [],
     material_options: [],
@@ -154,6 +157,56 @@ function AdminProducts({
     setProductsCategory("all");
   };
 
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllVisible = (checked) => {
+    if (checked) {
+      setSelectedIds(new Set(filteredProducts.map((p) => p.dbId)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const bulkSetDropdown = async () => {
+    if (selectedIds.size === 0) return alert("No products selected");
+    if (!window.confirm(`Set ${selectedIds.size} product(s) to dropdown mode?`))
+      return;
+    try {
+      const promises = Array.from(selectedIds).map((id) =>
+        fetch(buildApiUrl(`/api/products/${id}`), {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quantity_mode: "dropdown" }),
+        }),
+      );
+
+      const results = await Promise.all(promises);
+      const failed = [];
+      for (let i = 0; i < results.length; i++) {
+        if (!results[i].ok) failed.push(Array.from(selectedIds)[i]);
+      }
+
+      if (failed.length > 0) {
+        alert(`Failed to update ${failed.length} product(s).`);
+      } else {
+        alert("Updated selected products to dropdown mode.");
+      }
+
+      setSelectedIds(new Set());
+      setLocalRefreshKey((k) => k + 1);
+    } catch (err) {
+      console.error(err);
+      alert("Bulk update failed");
+    }
+  };
+
   // ✅ NEW: Open edit modal with selected product
   const handleEditProduct = async (product) => {
     setSelectedProduct(product);
@@ -189,6 +242,12 @@ function AdminProducts({
       processing_options: fullProduct.processing_options || [],
       delivery_options: fullProduct.delivery_options || [],
       quantity_options: fullProduct.quantity_options || [],
+      quantity_mode: fullProduct.quantity_mode || "dropdown",
+      quantity_count:
+        fullProduct.quantity_count !== undefined &&
+        fullProduct.quantity_count !== null
+          ? String(fullProduct.quantity_count)
+          : "",
       shipping_options: fullProduct.shipping_options || [],
     });
     setTagInputs({
@@ -253,6 +312,11 @@ function AdminProducts({
             active: editForm.status === "active",
             images: editForm.images,
             color_options: editForm.color_options,
+            quantity_mode: editForm.quantity_mode,
+            quantity_count:
+              editForm.quantity_count === ""
+                ? null
+                : parseInt(editForm.quantity_count),
             size_options: editForm.size_options,
             material_options: editForm.material_options,
             side_options: editForm.side_options,
@@ -566,6 +630,24 @@ function AdminProducts({
           >
             <FaFilter />
           </button>
+
+          <button
+            type="button"
+            onClick={bulkSetDropdown}
+            style={{
+              marginLeft: 8,
+              padding: "6px 10px",
+              background: "#1b3f6e",
+              color: "#fff",
+              border: "none",
+              borderRadius: 6,
+              cursor: "pointer",
+              fontSize: 13,
+            }}
+            title="Set selected products to dropdown quantity mode"
+          >
+            Set selected → Dropdown
+          </button>
         </div>
       </div>
 
@@ -574,6 +656,16 @@ function AdminProducts({
         <table className="dashpage-table">
           <thead>
             <tr>
+              <th>
+                <input
+                  type="checkbox"
+                  checked={
+                    filteredProducts.length > 0 &&
+                    selectedIds.size === filteredProducts.length
+                  }
+                  onChange={(e) => selectAllVisible(e.target.checked)}
+                />
+              </th>
               <th>Image</th>
               <th>SKU</th>
               <th>Product</th>
@@ -588,6 +680,13 @@ function AdminProducts({
           <tbody>
             {filteredProducts.map((p) => (
               <tr key={p.dbId}>
+                <td style={{ textAlign: "center" }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(p.dbId)}
+                    onChange={() => toggleSelect(p.dbId)}
+                  />
+                </td>
                 <td data-label="Image">
                   {p.images?.[0] ? (
                     <img
@@ -713,7 +812,7 @@ function AdminProducts({
 
             {filteredProducts.length === 0 && (
               <tr>
-                <td colSpan="7" className="dashpage-empty">
+                <td colSpan="9" className="dashpage-empty">
                   No products found.
                 </td>
               </tr>
@@ -1202,6 +1301,94 @@ function AdminProducts({
                 Quote form options — define selectable choices for each field
               </p>
 
+              <div style={{ marginBottom: "12px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "4px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                  }}
+                >
+                  Quantity Input Mode
+                </label>
+                <select
+                  value={editForm.quantity_mode}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, quantity_mode: e.target.value })
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                  }}
+                >
+                  <option value="dropdown">
+                    Dropdown (predefined options)
+                  </option>
+                  <option value="text">Text input (custom quantity)</option>
+                </select>
+                {editForm.quantity_mode === "text" && (
+                  <div style={{ marginTop: "8px" }}>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "4px",
+                        fontSize: "13px",
+                        fontWeight: "600",
+                      }}
+                    >
+                      Quantity threshold (auto-quote when exceeded)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={editForm.quantity_count}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          quantity_count: e.target.value,
+                        })
+                      }
+                      placeholder="e.g., 50"
+                      style={{
+                        width: "100%",
+                        padding: "8px 10px",
+                        border: "1px solid #d1d5db",
+                        borderRadius: "6px",
+                        fontSize: "14px",
+                      }}
+                    />
+                    <p style={{ fontSize: 12, color: "#6b7280", marginTop: 6 }}>
+                      If customer enters a quantity greater than this value, the
+                      product page will auto-select the Contact/Quote option.
+                    </p>
+                  </div>
+                )}
+              </div>
+              {editForm.quantity_mode === "dropdown" ? (
+                <TagEditor field="quantity_options" label="Quantity Options" />
+              ) : (
+                <div
+                  style={{ fontSize: 12, color: "#6b7280", marginBottom: 8 }}
+                >
+                  Quantity options are hidden when Quantity Input Mode is set to
+                  text.
+                </div>
+              )}
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: "#9ca3af",
+                  marginTop: "-8px",
+                  marginBottom: "12px",
+                }}
+              >
+                format: label|price — e.g. 100 pcs (1 box)|₱1,270.50
+              </p>
+
               <TagEditor field="color_options" label="Color Options" />
               <TagEditor field="size_options" label="Size Options" />
               <TagEditor field="material_options" label="Material Options" />
@@ -1215,17 +1402,7 @@ function AdminProducts({
                 label="Processing Options"
               />
               <TagEditor field="delivery_options" label="Delivery Options" />
-              <TagEditor field="quantity_options" label="Quantity Options" />
-              <p
-                style={{
-                  fontSize: "11px",
-                  color: "#9ca3af",
-                  marginTop: "-8px",
-                  marginBottom: "12px",
-                }}
-              >
-                format: label|price — e.g. 100 pcs (1 box)|₱1,270.50
-              </p>
+
               <TagEditor field="shipping_options" label="Shipping Options" />
               <p
                 style={{

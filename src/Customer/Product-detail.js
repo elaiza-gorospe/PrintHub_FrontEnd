@@ -25,6 +25,7 @@ function mapApiProduct(data) {
     image: data.images?.[0] || "",
     description: data.description || "",
     gallery: data.images?.length > 0 ? data.images : [],
+    price: data.price,
     sizes: data.size_options || [],
     materials: data.material_options || [],
     sides: data.side_options || [],
@@ -34,6 +35,8 @@ function mapApiProduct(data) {
     quantities: parseOptions(data.quantity_options),
     shipping: parseOptions(data.shipping_options),
     ai_prompt_rules: data.ai_prompt_rules || null,
+    quantity_mode: data.quantity_mode || "dropdown",
+    quantity_count: data.quantity_count || null,
   };
 }
 
@@ -75,6 +78,7 @@ function ProductDetail() {
   const [selectedQty, setSelectedQty] = useState(
     product?.quantities?.[0] || null,
   );
+  const [customQty, setCustomQty] = useState("");
   const [selectedShipping, setSelectedShipping] = useState(
     product?.shipping?.[0] || null,
   );
@@ -122,6 +126,7 @@ function ProductDetail() {
     setSelectedSide(product.sides?.[0] || "");
     setSelectedFinish(product.finishing?.[0] || "");
     setSelectedQty(product.quantities?.[0] || null);
+    setCustomQty("");
     setSelectedShipping(product.shipping?.[0] || null);
     setCustomSizeSelected(false);
 
@@ -515,23 +520,69 @@ function ProductDetail() {
 
               <section className="pd-section">
                 <h2>5. Select quantity</h2>
-                {product.quantities.map((qty) => (
-                  <label
-                    key={qty.label}
-                    className={`pd-line-option pd-price-option ${
-                      selectedQty?.label === qty.label ? "selected" : ""
-                    }`}
+                {product.quantity_mode === "text" ? (
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
                   >
                     <input
-                      type="radio"
-                      name="quantity"
-                      checked={selectedQty?.label === qty.label}
-                      onChange={() => setSelectedQty(qty)}
+                      type="number"
+                      min={1}
+                      value={customQty}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setCustomQty(v);
+                        const n = parseInt(v) || 0;
+                        if (n <= 0) return;
+                        // If threshold is set and exceeded -> auto-select contact/quote
+                        if (
+                          product.quantity_count &&
+                          n > product.quantity_count
+                        ) {
+                          setCustomSizeSelected(true);
+                          scrollToQuote();
+                        } else {
+                          // synthesize a selectedQty object so summary and add-to-cart work
+                          setSelectedQty({
+                            label: `${n} pcs`,
+                            price: formatPrice((product.price || 0) * n),
+                            quantityNumber: n,
+                          });
+                          setCustomSizeSelected(false);
+                        }
+                      }}
+                      placeholder="Enter quantity (e.g., 10)"
+                      style={{
+                        padding: "8px 10px",
+                        borderRadius: 6,
+                        border: "1px solid #d1d5db",
+                      }}
                     />
-                    <span>{qty.label}</span>
-                    <strong>{qty.price}</strong>
-                  </label>
-                ))}
+                    {product.quantity_count ? (
+                      <div style={{ fontSize: 12, color: "#6b7280" }}>
+                        Quantities greater than {product.quantity_count} will be
+                        handled via Quote/Contact.
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  product.quantities.map((qty) => (
+                    <label
+                      key={qty.label}
+                      className={`pd-line-option pd-price-option ${
+                        selectedQty?.label === qty.label ? "selected" : ""
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="quantity"
+                        checked={selectedQty?.label === qty.label}
+                        onChange={() => setSelectedQty(qty)}
+                      />
+                      <span>{qty.label}</span>
+                      <strong>{qty.price}</strong>
+                    </label>
+                  ))
+                )}
               </section>
 
               <section className="pd-section">
