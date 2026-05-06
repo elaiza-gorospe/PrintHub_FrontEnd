@@ -1369,7 +1369,22 @@ function AdminProducts({
                 )}
               </div>
               {editForm.quantity_mode === "dropdown" ? (
-                <TagEditor field="quantity_options" label="Quantity Options" />
+                <div>
+                  <TagEditor
+                    field="quantity_options"
+                    label="Quantity Options"
+                  />
+                  <p
+                    style={{
+                      fontSize: "11px",
+                      color: "#9ca3af",
+                      marginTop: "-8px",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    format: label|price — e.g. 100 pcs (1 box)|₱1,270.50
+                  </p>
+                </div>
               ) : (
                 <div
                   style={{ fontSize: 12, color: "#6b7280", marginBottom: 8 }}
@@ -1378,16 +1393,6 @@ function AdminProducts({
                   text.
                 </div>
               )}
-              <p
-                style={{
-                  fontSize: "11px",
-                  color: "#9ca3af",
-                  marginTop: "-8px",
-                  marginBottom: "12px",
-                }}
-              >
-                format: label|price — e.g. 100 pcs (1 box)|₱1,270.50
-              </p>
 
               <TagEditor field="color_options" label="Color Options" />
               <TagEditor field="size_options" label="Size Options" />

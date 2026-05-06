@@ -677,7 +677,13 @@ function ProductDetail() {
                 <div className="pd-quote-row">
                   <label htmlFor="quantity">Quantity:</label>
                   {product.quantity_mode === "text" ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                      }}
+                    >
                       <input
                         id="quantity"
                         name="quantity"
