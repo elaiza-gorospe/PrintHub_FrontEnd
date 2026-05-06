@@ -66,6 +66,10 @@ function AdminProducts({
   });
   const [editImageUploading, setEditImageUploading] = useState(false);
   const [editImageError, setEditImageError] = useState("");
+  const [showAddStockModal, setShowAddStockModal] = useState(false);
+  const [addStockProduct, setAddStockProduct] = useState(null);
+  const [addStockAmount, setAddStockAmount] = useState(0);
+  const [addStockOptionsText, setAddStockOptionsText] = useState("");
 
   // Fetch products from API
   useEffect(() => {
@@ -379,7 +383,7 @@ function AdminProducts({
     }));
   };
 
-  const TagEditor = ({ field, label }) => (
+  const TagEditor = ({ field, label, editable = true }) => (
     <div style={{ marginBottom: "12px" }}>
       <label
         style={{
@@ -415,64 +419,114 @@ function AdminProducts({
             }}
           >
             {tag}
-            <button
-              type="button"
-              onClick={() => removeTag(field, i)}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "#666",
-                fontSize: "14px",
-                lineHeight: 1,
-                padding: "0 2px",
-              }}
-            >
-              &times;
-            </button>
+            {editable && (
+              <button
+                type="button"
+                onClick={() => removeTag(field, i)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#666",
+                  fontSize: "14px",
+                  lineHeight: 1,
+                  padding: "0 2px",
+                }}
+              >
+                &times;
+              </button>
+            )}
           </span>
         ))}
       </div>
-      <div style={{ display: "flex", gap: "6px" }}>
-        <input
-          type="text"
-          value={tagInputs[field]}
-          onChange={(e) =>
-            setTagInputs((prev) => ({ ...prev, [field]: e.target.value }))
-          }
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              addTag(field);
+      {editable && (
+        <div style={{ display: "flex", gap: "6px" }}>
+          <input
+            type="text"
+            value={tagInputs[field]}
+            onChange={(e) =>
+              setTagInputs((prev) => ({ ...prev, [field]: e.target.value }))
             }
-          }}
-          placeholder={`Add ${label.toLowerCase()} option...`}
-          style={{
-            flex: 1,
-            padding: "6px 10px",
-            border: "1px solid #d1d5db",
-            borderRadius: "6px",
-            fontSize: "13px",
-          }}
-        />
-        <button
-          type="button"
-          onClick={() => addTag(field)}
-          style={{
-            padding: "6px 12px",
-            background: "#1b3f6e",
-            color: "#fff",
-            border: "none",
-            borderRadius: "6px",
-            fontSize: "13px",
-            cursor: "pointer",
-          }}
-        >
-          Add
-        </button>
-      </div>
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addTag(field);
+              }
+            }}
+            placeholder={`Add ${label.toLowerCase()} option...`}
+            style={{
+              flex: 1,
+              padding: "6px 10px",
+              border: "1px solid #d1d5db",
+              borderRadius: "6px",
+              fontSize: "13px",
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => addTag(field)}
+            style={{
+              padding: "6px 12px",
+              background: "#1b3f6e",
+              color: "#fff",
+              border: "none",
+              borderRadius: "6px",
+              fontSize: "13px",
+              cursor: "pointer",
+            }}
+          >
+            Add
+          </button>
+        </div>
+      )}
     </div>
   );
+
+  const openAddStock = async (product) => {
+    try {
+      const res = await fetch(buildApiUrl(`/api/products/${product.dbId}`));
+      if (!res.ok) throw new Error("Failed to fetch product");
+      const full = await res.json();
+      setAddStockProduct(full);
+      setAddStockAmount(0);
+      setAddStockOptionsText((full.quantity_options || []).join("\n"));
+      setShowAddStockModal(true);
+    } catch (e) {
+      console.error(e);
+      alert("Failed to open Add Stock modal");
+    }
+  };
+
+  const submitAddStock = async () => {
+    if (!addStockProduct) return;
+    const add = parseInt(addStockAmount) || 0;
+    if (add <= 0) return alert("Enter an amount greater than 0");
+
+    const opts = addStockOptionsText
+      .split(/\r?\n/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    try {
+      const res = await fetch(
+        buildApiUrl(`/api/products/${addStockProduct.id}/add-stock`),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ add, quantity_options: opts }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Add stock failed");
+      setShowAddStockModal(false);
+      setAddStockProduct(null);
+      setLocalRefreshKey((k) => k + 1);
+      alert("Stock updated successfully");
+    } catch (e) {
+      console.error(e);
+      alert(e.message || "Failed to add stock");
+    }
+  };
 
   // Upload image for Edit Product modal
   const handleEditImageUpload = async (e) => {
@@ -805,6 +859,26 @@ function AdminProducts({
                       <FaTrash size={12} />
                       Delete
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => openAddStock(p)}
+                      title="Add stock / edit quantity options"
+                      style={{
+                        marginLeft: 6,
+                        background: "#f59e0b",
+                        color: "#fff",
+                        border: "none",
+                        padding: "6px 10px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      Add Stock
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -1000,6 +1074,7 @@ function AdminProducts({
                     onChange={(e) =>
                       setEditForm({ ...editForm, stock: e.target.value })
                     }
+                    disabled={true}
                     placeholder="0"
                     style={{
                       width: "100%",
@@ -1373,6 +1448,7 @@ function AdminProducts({
                   <TagEditor
                     field="quantity_options"
                     label="Quantity Options"
+                    editable={false}
                   />
                   <p
                     style={{
@@ -1384,6 +1460,26 @@ function AdminProducts({
                   >
                     format: label|price — e.g. 100 pcs (1 box)|₱1,270.50
                   </p>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openAddStock(
+                        selectedProduct || { dbId: selectedProduct?.dbId },
+                      )
+                    }
+                    style={{
+                      padding: "6px 10px",
+                      background: "#047857",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                      fontSize: 13,
+                      marginBottom: 12,
+                    }}
+                  >
+                    Add Stock / Edit Quantity Options
+                  </button>
                 </div>
               ) : (
                 <div
@@ -1442,6 +1538,97 @@ function AdminProducts({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {showAddStockModal && addStockProduct && (
+        <div
+          className="ad-logout-overlay"
+          onMouseDown={() => setShowAddStockModal(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="ad-logout-modal"
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{ maxHeight: "80vh", overflowY: "auto", maxWidth: "480px" }}
+          >
+            <h3 className="ad-logout-title">
+              Add Stock — {addStockProduct.name}
+            </h3>
+
+            <div style={{ marginBottom: 12 }}>
+              <label
+                style={{ display: "block", fontWeight: 600, marginBottom: 6 }}
+              >
+                Current Stock
+              </label>
+              <div style={{ fontSize: 16, marginBottom: 8 }}>
+                {addStockProduct.stock}
+              </div>
+
+              <label
+                style={{ display: "block", fontWeight: 600, marginBottom: 6 }}
+              >
+                Amount to Add
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={addStockAmount}
+                onChange={(e) => setAddStockAmount(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: 6,
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <label
+                style={{ display: "block", fontWeight: 600, marginBottom: 6 }}
+              >
+                Quantity Options (one per line)
+              </label>
+              <textarea
+                value={addStockOptionsText}
+                onChange={(e) => setAddStockOptionsText(e.target.value)}
+                rows={6}
+                placeholder={`Enter one option per line\ne.g. 100 pcs (1 box)|₱1,270.50`}
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: 6,
+                }}
+              />
+              <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 6 }}>
+                Editing quantity options here will replace the product's
+                existing quantity options.
+              </p>
+            </div>
+
+            <div
+              style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}
+            >
+              <button
+                type="button"
+                className="ad-logout-btn ghost"
+                onClick={() => setShowAddStockModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="ad-logout-btn"
+                style={{ background: "#1b3f6e", color: "#fff", border: "none" }}
+                onClick={submitAddStock}
+              >
+                Add Stock
+              </button>
+            </div>
           </div>
         </div>
       )}
