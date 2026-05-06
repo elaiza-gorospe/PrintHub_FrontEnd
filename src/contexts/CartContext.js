@@ -28,8 +28,20 @@ const initializeCart = () => {
         item.customizations?.design?.generatedImageUrl ||
         null;
 
+      // If this cart item was created under the old behavior where qty
+      // was set to the numeric pieces (e.g., qty=5 for a "5 pcs" option),
+      // normalize it so that qty represents number of packs (default 1)
+      // and keep the original label in customizations.quantity.
+      const migrated = { ...item };
+      const qtyLabel = item.customizations?.quantity;
+      const match = qtyLabel ? String(qtyLabel).match(/(\d+)/) : null;
+      const labelNumber = match ? parseInt(match[1], 10) : null;
+      if (labelNumber && item.qty && item.qty === labelNumber) {
+        migrated.qty = 1;
+      }
+
       return {
-        ...item,
+        ...migrated,
         productImage: existingProductImage,
         customizations: {
           ...item.customizations,
@@ -129,6 +141,12 @@ export function CartProvider({ children }) {
     setCartItems((prevItems) => {
       const qtyValue = extractQuantityValue(quantity?.label);
 
+      // Interpretation: quantity option label indicates pieces per pack (e.g. "5 pcs").
+      // Cart `qty` should represent number of packs selected (default 1), while
+      // the label is preserved in customizations. This ensures the cart counter
+      // shows "1" for a 5-piece pack rather than 5.
+      const packQty = 1;
+
       // Items with a design are always distinct — never merge them
       if (!design) {
         // Check if item with same customizations already exists (no design)
@@ -147,19 +165,19 @@ export function CartProvider({ children }) {
         if (existingItem) {
           return prevItems.map((item) =>
             item.id === existingItem.id
-              ? { ...item, qty: item.qty + qtyValue }
+              ? { ...item, qty: item.qty + packQty }
               : item,
           );
         }
       }
 
-      // Add new item with quantity extracted from quantity label
+      // Add new item with quantity = 1 pack (pack size kept in customizations)
       const newItem = {
         id: Date.now(),
         productId,
         title,
         price: price,
-        qty: qtyValue,
+        qty: packQty,
         productImage: productImage || (images && images[0]) || null,
         customizations: {
           size,

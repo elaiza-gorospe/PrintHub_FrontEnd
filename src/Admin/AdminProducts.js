@@ -1570,7 +1570,7 @@ function AdminProducts({
               <label
                 style={{ display: "block", fontWeight: 600, marginBottom: 6 }}
               >
-                Amount to Add
+                Stock to Add
               </label>
               <input
                 type="number"
