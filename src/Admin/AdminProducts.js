@@ -1401,7 +1401,7 @@ function AdminProducts({
                   }}
                 >
                   <option value="dropdown">
-                    Dropdown (predefined options)
+                    Radio (predefined options)
                   </option>
                   <option value="text">Text input (custom quantity)</option>
                 </select>
