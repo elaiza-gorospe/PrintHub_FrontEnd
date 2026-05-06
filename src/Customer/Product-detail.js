@@ -134,7 +134,10 @@ function ProductDetail() {
       subject: `Request a quote for ${product.title}`,
       name: "",
       email: "",
-      quantity: product.quantities?.[0]?.label || "",
+      quantity:
+        product.quantity_mode === "text"
+          ? ""
+          : product.quantities?.[0]?.label || "",
       size: product.sizes?.[0] || "",
       color: product.colors?.[0] || "",
       material: product.materials?.[0] || "",
@@ -147,6 +150,18 @@ function ProductDetail() {
 
     setIsVerified(false);
   }, [product]);
+
+  // Keep quote form quantity in sync with the selected quantity control
+  useEffect(() => {
+    if (!product) return;
+    if (product.quantity_mode === "text") {
+      // For text mode, prefer the numeric customQty
+      setQuoteForm((prev) => ({ ...prev, quantity: customQty || "" }));
+    } else {
+      // For dropdown mode, mirror the selectedQty label
+      setQuoteForm((prev) => ({ ...prev, quantity: selectedQty?.label || "" }));
+    }
+  }, [selectedQty, customQty, product?.quantity_mode]);
 
   const handleQuoteChange = (e) => {
     const { name, value } = e.target;
@@ -661,18 +676,38 @@ function ProductDetail() {
 
                 <div className="pd-quote-row">
                   <label htmlFor="quantity">Quantity:</label>
-                  <select
-                    id="quantity"
-                    name="quantity"
-                    value={quoteForm.quantity}
-                    onChange={handleQuoteChange}
-                  >
-                    {product.quantities.map((q) => (
-                      <option key={q.label} value={q.label}>
-                        {q.label}
-                      </option>
-                    ))}
-                  </select>
+                  {product.quantity_mode === "text" ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <input
+                        id="quantity"
+                        name="quantity"
+                        type="number"
+                        min={1}
+                        value={quoteForm.quantity}
+                        onChange={handleQuoteChange}
+                        placeholder="Enter quantity"
+                      />
+                      {product.quantity_count ? (
+                        <div style={{ fontSize: 12, color: "#6b7280" }}>
+                          Quantities greater than {product.quantity_count} will
+                          be handled via Quote/Contact.
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <select
+                      id="quantity"
+                      name="quantity"
+                      value={quoteForm.quantity}
+                      onChange={handleQuoteChange}
+                    >
+                      {product.quantities.map((q) => (
+                        <option key={q.label} value={q.label}>
+                          {q.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 <div className="pd-quote-row">
