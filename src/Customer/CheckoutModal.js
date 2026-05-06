@@ -70,6 +70,11 @@ function CheckoutModal({
         quantity: item.qty,
         unitPrice: extractNumericPrice(item.price),
         customizations: item.customizations || {},
+        imageUrl:
+          item.customizations?.design?.generatedImageUrl ||
+          item.productImage ||
+          item.images?.[0] ||
+          null,
       }));
 
       // Calculate order total: sum of all item prices (including qty) + shipping

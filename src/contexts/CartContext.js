@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import { extractNumericPrice } from "../utils/priceUtils";
+import { buildApiUrl } from "../config/api";
 
 const CartContext = createContext();
 
@@ -14,13 +15,28 @@ const initializeCart = () => {
     const cart = JSON.parse(stored);
 
     // Migrate old cart items: ensure shippingPrice is numeric
-    return cart.map((item) => ({
-      ...item,
-      customizations: {
-        ...item.customizations,
-        shippingPrice: extractNumericPrice(item.customizations?.shippingPrice),
-      },
-    }));
+    return cart.map((item) => {
+      const shippingPrice = extractNumericPrice(
+        item.customizations?.shippingPrice,
+      );
+
+      // Attempt to populate a product image fallback for older cart items
+      const existingProductImage =
+        item.productImage ||
+        (item.product && item.product.images && item.product.images[0]) ||
+        (item.images && item.images[0]) ||
+        item.customizations?.design?.generatedImageUrl ||
+        null;
+
+      return {
+        ...item,
+        productImage: existingProductImage,
+        customizations: {
+          ...item.customizations,
+          shippingPrice,
+        },
+      };
+    });
   } catch (e) {
     console.error("Failed to parse cart from localStorage:", e);
     return [];
@@ -29,6 +45,56 @@ const initializeCart = () => {
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState(initializeCart());
+
+  // Enrich existing cart items with product images when missing
+  React.useEffect(() => {
+    const missing = cartItems.filter((it) => !it.productImage && it.productId);
+    if (missing.length === 0) return;
+
+    // fetch details for unique productIds only
+    const ids = [...new Set(missing.map((i) => i.productId))];
+
+    let cancelled = false;
+
+    const fetchImages = async () => {
+      try {
+        const fetched = {};
+        await Promise.all(
+          ids.map(async (pid) => {
+            try {
+              const res = await fetch(buildApiUrl(`/api/products/${pid}`));
+              if (!res.ok) return;
+              const data = await res.json();
+              // API may return product or { product }
+              const prod = data.product || data;
+              fetched[pid] =
+                (prod.images && prod.images[0]) || prod.image || null;
+            } catch (e) {
+              // ignore per-item errors
+            }
+          }),
+        );
+
+        if (cancelled) return;
+
+        setCartItems((prev) =>
+          prev.map((it) =>
+            !it.productImage && fetched[it.productId]
+              ? { ...it, productImage: fetched[it.productId] }
+              : it,
+          ),
+        );
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    fetchImages();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
@@ -49,6 +115,8 @@ export function CartProvider({ children }) {
       quantity,
       shipping,
       design,
+      images,
+      productImage,
     } = product;
 
     // Extract numeric quantity from label (e.g., "500 pcs" -> 500, "1000" -> 1000)
@@ -92,6 +160,7 @@ export function CartProvider({ children }) {
         title,
         price: price,
         qty: qtyValue,
+        productImage: productImage || (images && images[0]) || null,
         customizations: {
           size,
           material,

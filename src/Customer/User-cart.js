@@ -144,10 +144,20 @@ function UserCartPage() {
             {cartItems.map((item) => (
               <div key={item.id} className="ucart-item">
                 <div className="ucart-thumb">
-                  {item.customizations?.design?.generatedImageUrl ? (
+                  {item.customizations?.design?.generatedImageUrl ||
+                  item.productImage ||
+                  item.images?.[0] ||
+                  item.product?.images?.[0] ||
+                  item.customizations?.design?.sourceAssetUrls?.[0] ? (
                     <img
-                      src={item.customizations.design.generatedImageUrl}
-                      alt="AI design"
+                      src={
+                        item.customizations?.design?.generatedImageUrl ||
+                        item.productImage ||
+                        item.images?.[0] ||
+                        item.product?.images?.[0] ||
+                        item.customizations?.design?.sourceAssetUrls?.[0]
+                      }
+                      alt={item.title || "Product image"}
                       style={{
                         width: "100%",
                         height: "100%",

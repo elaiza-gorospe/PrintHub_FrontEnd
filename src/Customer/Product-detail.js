@@ -226,6 +226,7 @@ function ProductDetail() {
       quantity: selectedQty,
       shipping: selectedShipping,
       design: activeDesign || null,
+      images: product.images,
     });
 
     setSuccessMessage("✓ Added to cart!");
