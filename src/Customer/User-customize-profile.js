@@ -14,6 +14,8 @@ function UserCustomizeProfile() {
     address: "",
   });
 
+  const [isEditing, setIsEditing] = useState(false);
+
   const [initialForm, setInitialForm] = useState({
     name: "",
     birthday: "",
@@ -107,6 +109,12 @@ function UserCustomizeProfile() {
     const birthday = String(form.birthday || "").trim();
 
     if (!name) return "Name is required.";
+
+    const nameParts = name.split(/\s+/);
+    if (nameParts.length < 2) {
+      return "Please provide both first name and surname.";
+    }
+
     if (!/^[A-Za-z.\-\s]+$/.test(name)) {
       return "Name must not contain numbers or special characters.";
     }
@@ -165,6 +173,7 @@ function UserCustomizeProfile() {
 
       showToast("success", "Profile updated!");
       setInitialForm({ ...form });
+      setIsEditing(false);
     } catch (err) {
       console.error(err);
       setError(err.message || "Error updating profile");
@@ -173,6 +182,7 @@ function UserCustomizeProfile() {
   };
 
   const handleAvatarClick = () => {
+    if (!isEditing) return;
     const inp = document.getElementById("ucp-avatar-input");
     if (inp) inp.click();
   };
@@ -236,181 +246,202 @@ function UserCustomizeProfile() {
 
   const handleDiscard = () => {
     setShowDiscardModal(false);
+    setIsEditing(false);
     setForm(initialForm);
   };
 
   const handleBackOrCancel = () => {
-    if (isDirty) {
+    if (isEditing && isDirty) {
       setShowDiscardModal(true);
+    } else if (isEditing && !isDirty) {
+      setIsEditing(false);
+      setForm(initialForm);
     } else {
       navigate(-1);
     }
   };
 
   return (
-    <div className="ucp-adminlike-page">
-      <button className="ucp-back-button" onClick={handleBackOrCancel}>
-        ← Back
-      </button>
+  <div className="ucp-adminlike-page">
+    <button className="ucp-back-button" onClick={handleBackOrCancel}>
+      ← Back
+    </button>
 
-      <div className="ucp-profile-card">
-        <div className="ucp-profile-top">
+    <div className="ucp-profile-card">
+      <div className="ucp-profile-top">
+        <div className="ucp-profile-avatar-wrapper">
           <div
             className="ucp-profile-avatar"
             onClick={handleAvatarClick}
             role="button"
-            aria-label="Change avatar"
+            aria-label={isEditing ? "Change avatar" : ""}
+            style={{ cursor: isEditing ? "pointer" : "default" }}
           >
             {avatarPreview ? <img src={avatarPreview} alt="avatar" /> : "👤"}
 
-            <input
-              id="ucp-avatar-input"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              onChange={handleAvatarUpload}
-              style={{ display: "none" }}
-            />
-
-            <div className="ucp-avatar-overlay" aria-hidden>
-              ✏️ Edit
-            </div>
+            {isEditing && (
+              <>
+                <input
+                  id="ucp-avatar-input"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handleAvatarUpload}
+                  style={{ display: "none" }}
+                />
+                <div className="ucp-avatar-overlay" aria-hidden>
+                  ✏️ Edit
+                </div>
+              </>
+            )}
 
             {avatarUploading && (
               <div className="ucp-avatar-loading">Uploading...</div>
             )}
           </div>
-          <div>
-            <h2 className="ucp-profile-name">{form.name || "Your Name"}</h2>
-            <p className="ucp-profile-role">Customer</p>
-          </div>
         </div>
-
-        <div className="ucp-profile-actions">
-          <button className="ucp-cancel-button" onClick={handleBackOrCancel}>
-            Cancel
-          </button>
-
-          <button
-            className="ucp-save-button"
-            onClick={handleSave}
-            disabled={!isDirty}
-            style={!isDirty ? { opacity: 0.6 } : {}}
-          >
-            Save Changes
-          </button>
+        <div className="ucp-profile-info">
+          <h2 className="ucp-profile-name">{form.name || "Your Name"}</h2>
+          <p className="ucp-profile-role">Customer</p>
         </div>
-
-        {error && <div className="ucp-message ucp-message-error">{error}</div>}
-        {success && (
-          <div className="ucp-message ucp-message-success">{success}</div>
+        {!isEditing && (
+          <button className="ucp-edit-button" onClick={() => setIsEditing(true)}>
+            Edit Profile
+          </button>
         )}
+      </div>
 
-        <div className="ucp-profile-form">
-          <div className="ucp-form-row">
-            <label>Name</label>
-            <input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Enter your full name"
-            />
+      {!isEditing ? (
+        <>
+          <div className="ucp-profile-details">
+            <div className="ucp-detail-row">
+              <label>Name</label>
+              <span>{form.name || "—"}</span>
+            </div>
+            <div className="ucp-detail-row">
+              <label>Birthday</label>
+              <span>{form.birthday || "—"}</span>
+            </div>
+            <div className="ucp-detail-row">
+              <label>Gender</label>
+              <span>{form.gender || "—"}</span>
+            </div>
+            <div className="ucp-detail-row">
+              <label>Phone Number</label>
+              <span>{form.phone || "—"}</span>
+            </div>
+            <div className="ucp-detail-row">
+              <label>Address</label>
+              <span>{form.address || "—"}</span>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="ucp-profile-form">
+            <div className="ucp-form-row">
+              <label>Name</label>
+              <input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Enter your full name (first name and surname)"
+              />
+            </div>
+
+            <div className="ucp-form-row">
+              <label>Birthday</label>
+              <input
+                type="date"
+                value={form.birthday}
+                max="2011-12-31"
+                onChange={(e) => setForm({ ...form, birthday: e.target.value })}
+              />
+            </div>
+
+            <div className="ucp-form-row">
+              <label>Gender</label>
+              <select
+                value={form.gender}
+                onChange={(e) => setForm({ ...form, gender: e.target.value })}
+              >
+                <option value="">Select...</option>
+                <option>Female</option>
+                <option>Male</option>
+                <option>Prefer not to say</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div className="ucp-form-row">
+              <label>Phone Number</label>
+              <input
+                value={form.phone}
+                inputMode="numeric"
+                onChange={(e) => {
+                  let val = e.target.value.replace(/[^0-9+]/g, "");
+                  if (!val.startsWith("+63")) val = "+63";
+                  if (val.length > 13) return;
+                  setForm({ ...form, phone: val });
+                }}
+                placeholder="+63XXXXXXXXXX"
+              />
+            </div>
+
+            <div className="ucp-form-row ucp-form-row-textarea">
+              <label>Address</label>
+              <textarea
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                placeholder="House No., Street, Barangay, City, Province"
+              />
+            </div>
           </div>
 
-          <div className="ucp-form-row">
-            <label>Birthday</label>
-            <input
-              type="date"
-              value={form.birthday}
-              max="2011-12-31"
-              onChange={(e) => setForm({ ...form, birthday: e.target.value })}
-            />
+          <div className="ucp-profile-actions">
+            <button className="ucp-cancel-button" onClick={() => {
+              if (isDirty) {
+                setShowDiscardModal(true);
+              } else {
+                setIsEditing(false);
+                setForm(initialForm);
+              }
+            }}>
+              Cancel
+            </button>
+            <button className="ucp-save-button" onClick={handleSave}>
+              Save Changes
+            </button>
           </div>
+        </>
+      )}
 
-          <div className="ucp-form-row">
-            <label>Gender</label>
-            <select
-              value={form.gender}
-              onChange={(e) => setForm({ ...form, gender: e.target.value })}
-            >
-              <option value="">Select...</option>
-              <option>Female</option>
-              <option>Male</option>
-              <option>Prefer not to say</option>
-              <option>Other</option>
-            </select>
-          </div>
+      {error && <div className="ucp-message ucp-message-error">{error}</div>}
+      {success && <div className="ucp-message ucp-message-success">{success}</div>}
+    </div>
 
-          <div className="ucp-form-row">
-            <label>Phone Number</label>
-            <input
-              value={form.phone}
-              inputMode="numeric"
-              onChange={(e) => {
-                let val = e.target.value.replace(/[^0-9+]/g, "");
-                if (!val.startsWith("+63")) val = "+63";
-                if (val.length > 13) return;
-                setForm({ ...form, phone: val });
-              }}
-              placeholder="+63XXXXXXXXXX"
-            />
-          </div>
+    {toast.show && (
+      <div className={`ucp-toast ${toast.type === "error" ? "ucp-toast-error" : "ucp-toast-success"}`}>
+        {toast.message}
+      </div>
+    )}
 
-          <div className="ucp-form-row ucp-form-row-textarea">
-            <label>Address</label>
-            <textarea
-              value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
-              placeholder="House No., Street, Barangay, City, Province"
-            />
+    {showDiscardModal && (
+      <div className="ucp-discard-overlay" onClick={() => setShowDiscardModal(false)}>
+        <div className="ucp-discard-modal" onClick={(e) => e.stopPropagation()}>
+          <h3 className="ucp-discard-title">Discard changes?</h3>
+          <p className="ucp-discard-text">Your unsaved changes will be lost.</p>
+          <div className="ucp-discard-actions">
+            <button type="button" className="ucp-discard-cancel" onClick={() => setShowDiscardModal(false)}>
+              Stay
+            </button>
+            <button type="button" className="ucp-discard-confirm" onClick={handleDiscard}>
+              Discard
+            </button>
           </div>
         </div>
       </div>
-
-      {toast.show && (
-        <div
-          className={`ucp-toast ${
-            toast.type === "error" ? "ucp-toast-error" : "ucp-toast-success"
-          }`}
-        >
-          {toast.message}
-        </div>
-      )}
-
-      {showDiscardModal && (
-        <div
-          className="ucp-discard-overlay"
-          onClick={() => setShowDiscardModal(false)}
-        >
-          <div
-            className="ucp-discard-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="ucp-discard-title">Discard changes?</h3>
-            <p className="ucp-discard-text">
-              Your unsaved changes will be lost.
-            </p>
-
-            <div className="ucp-discard-actions">
-              <button
-                type="button"
-                className="ucp-discard-cancel"
-                onClick={() => setShowDiscardModal(false)}
-              >
-                Stay
-              </button>
-
-              <button
-                type="button"
-                className="ucp-discard-confirm"
-                onClick={handleDiscard}
-              >
-                Discard
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+    )}
+  </div>
+);
 }
 
 export default UserCustomizeProfile;
