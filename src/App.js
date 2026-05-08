@@ -36,7 +36,6 @@ import { buildApiUrl } from "./config/api";
 // Import Chatbot component
 import Chatbot from "./components/ChatBot";
 
-// ✅ PROTECTED ROUTE - Only admins can access
 function ProtectedAdminRoute({ children }) {
   const storedUser = (() => {
     try {
@@ -52,7 +51,8 @@ function ProtectedAdminRoute({ children }) {
 
   const role = storedUser?.role || "user";
 
-  if (!storedUser || role !== "admin") {
+  // Allow both admin AND staff
+  if (!storedUser || (role !== "admin" && role !== "staff")) {
     return <Navigate to="/" replace />;
   }
 

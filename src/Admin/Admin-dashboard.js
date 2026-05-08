@@ -169,45 +169,45 @@ function AdminDashboard() {
   }, []);
 
   const storedUser = useMemo(() => {
-  try {
-    return (
-      JSON.parse(localStorage.getItem("user")) ||
-      JSON.parse(localStorage.getItem("adminUser")) ||
-      null
-    );
-  } catch {
-    return null;
-  }
-}, []);
-
-// ✅ ADD THIS useEffect RIGHT AFTER the storedUser useMemo (before the sidebarUser useState)
-useEffect(() => {
-  // Fetch the full user profile from database to get avatar_url
-  const fetchUserProfile = async () => {
-    if (storedUser?.id && !storedUser?.avatar_url) {
-      try {
-        const res = await fetch(buildApiUrl(`/api/user-profile/${storedUser.id}`));
-        if (res.ok) {
-          const profile = await res.json();
-          const updatedUser = {
-            ...storedUser,
-            avatar_url: profile.avatar_url,
-          };
-          // Update localStorage
-          localStorage.setItem("user", JSON.stringify(updatedUser));
-          if (localStorage.getItem("adminUser")) {
-            localStorage.setItem("adminUser", JSON.stringify(updatedUser));
-          }
-          setSidebarUser(updatedUser);
-        }
-      } catch (err) {
-        console.error("Failed to fetch profile:", err);
-      }
+    try {
+      return (
+        JSON.parse(localStorage.getItem("user")) ||
+        JSON.parse(localStorage.getItem("adminUser")) ||
+        null
+      );
+    } catch {
+      return null;
     }
-  };
-  
-  fetchUserProfile();
-}, [storedUser?.id]);
+  }, []);
+
+  // ✅ ADD THIS useEffect RIGHT AFTER the storedUser useMemo (before the sidebarUser useState)
+  useEffect(() => {
+    // Fetch the full user profile from database to get avatar_url
+    const fetchUserProfile = async () => {
+      if (storedUser?.id && !storedUser?.avatar_url) {
+        try {
+          const res = await fetch(buildApiUrl(`/api/user-profile/${storedUser.id}`));
+          if (res.ok) {
+            const profile = await res.json();
+            const updatedUser = {
+              ...storedUser,
+              avatar_url: profile.avatar_url,
+            };
+            // Update localStorage
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+            if (localStorage.getItem("adminUser")) {
+              localStorage.setItem("adminUser", JSON.stringify(updatedUser));
+            }
+            setSidebarUser(updatedUser);
+          }
+        } catch (err) {
+          console.error("Failed to fetch profile:", err);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [storedUser?.id]);
 
   const [sidebarUser, setSidebarUser] = useState(storedUser);
   const [sidebarAvatarUploading, setSidebarAvatarUploading] = useState(false);
@@ -232,8 +232,8 @@ useEffect(() => {
 
   // ✅ ROLE-BASED ACCESS CONTROL: Only admins can access admin pages
   useEffect(() => {
-    if (!sidebarUser || role !== "admin") {
-      // Redirect non-admin users to home page
+    if (!sidebarUser || (role !== "admin" && role !== "staff")) {
+      // Redirect non-admin AND non-staff users to home page
       navigate("/");
       return;
     }
