@@ -27,8 +27,7 @@ function ProductOverview() {
         setProducts(list);
         // Set first category as default once loaded
         if (list.length > 0) {
-          const cats = [...new Set(list.map((p) => p.print_type || "other"))];
-          setCategory(cats[0]);
+          setCategory("All"); // ✅ Default to "All"
         }
       } catch (err) {
         setError(err.message);
@@ -40,9 +39,9 @@ function ProductOverview() {
   }, []);
 
   const categories = [...new Set(products.map((p) => p.print_type || "other"))];
-  const filtered = category
+  const filtered = category && category !== "All"
     ? products.filter((p) => (p.print_type || "other") === category)
-    : products;
+    : products; // ✅ Show all if category is "All"
   const fallbackImage =
     "[via.placeholder.com](https://via.placeholder.com/300x200?text=No+Image)";
 
@@ -76,6 +75,7 @@ function ProductOverview() {
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
+            <option value="All">All</option> {/* ✅ Added "All" option */}
             {categories.map((c) => (
               <option key={c} value={c}>
                 {c.charAt(0).toUpperCase() + c.slice(1)}
