@@ -246,7 +246,7 @@ function AdminProfile() {
     const inp = document.getElementById("admin-avatar-input");
     if (inp) inp.click();
   };
-  
+
   const handleAdminAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
     setAdminAvatarError("");
@@ -270,8 +270,7 @@ function AdminProfile() {
       const fd = new FormData();
       fd.append("file", file);
 
-      const stored =
-        localStorage.getItem("adminUser") || localStorage.getItem("user");
+      const stored = localStorage.getItem("adminUser") || localStorage.getItem("user");
       const userId = stored ? JSON.parse(stored).id : null;
 
       const res = await fetch(buildApiUrl("/api/user/avatar-upload"), {
@@ -285,7 +284,6 @@ function AdminProfile() {
 
       setAdminAvatarPreview(data.url || "");
 
-      // Save to profile (best-effort)
       if (userId) {
         try {
           await fetch(buildApiUrl(`/api/user-profile/${userId}`), {
@@ -294,23 +292,19 @@ function AdminProfile() {
             body: JSON.stringify({ avatar_url: data.url }),
           });
 
-          // ✅ Update localStorage with the new avatar_url
+          // Inside handleAdminAvatarUpload, after successful upload:
           if (stored) {
             const parsedStore = JSON.parse(stored);
-            parsedStore.avatar_url = data.url; 
-            
-            if (localStorage.getItem("adminUser")) {
-                localStorage.setItem("adminUser", JSON.stringify(parsedStore));
-            } else {
-                localStorage.setItem("user", JSON.stringify(parsedStore));
-            }
-            
-            // ✅ Dispatch a global event so the Sidebar knows to refresh
+            parsedStore.avatar_url = data.url;
+
+            localStorage.setItem("user", JSON.stringify(parsedStore));
+            localStorage.setItem("adminUser", JSON.stringify(parsedStore));
+
             window.dispatchEvent(new Event("profileUpdated"));
           }
 
         } catch (err) {
-          // ignore
+          console.error("Profile update error:", err);
         }
       }
     } catch (err) {

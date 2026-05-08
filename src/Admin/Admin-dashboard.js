@@ -169,16 +169,45 @@ function AdminDashboard() {
   }, []);
 
   const storedUser = useMemo(() => {
-    try {
-      return (
-        JSON.parse(localStorage.getItem("user")) ||
-        JSON.parse(localStorage.getItem("adminUser")) ||
-        null
-      );
-    } catch {
-      return null;
+  try {
+    return (
+      JSON.parse(localStorage.getItem("user")) ||
+      JSON.parse(localStorage.getItem("adminUser")) ||
+      null
+    );
+  } catch {
+    return null;
+  }
+}, []);
+
+// ✅ ADD THIS useEffect RIGHT AFTER the storedUser useMemo (before the sidebarUser useState)
+useEffect(() => {
+  // Fetch the full user profile from database to get avatar_url
+  const fetchUserProfile = async () => {
+    if (storedUser?.id && !storedUser?.avatar_url) {
+      try {
+        const res = await fetch(buildApiUrl(`/api/user-profile/${storedUser.id}`));
+        if (res.ok) {
+          const profile = await res.json();
+          const updatedUser = {
+            ...storedUser,
+            avatar_url: profile.avatar_url,
+          };
+          // Update localStorage
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+          if (localStorage.getItem("adminUser")) {
+            localStorage.setItem("adminUser", JSON.stringify(updatedUser));
+          }
+          setSidebarUser(updatedUser);
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+      }
     }
-  }, []);
+  };
+  
+  fetchUserProfile();
+}, [storedUser?.id]);
 
   const [sidebarUser, setSidebarUser] = useState(storedUser);
   const [sidebarAvatarUploading, setSidebarAvatarUploading] = useState(false);
@@ -187,10 +216,10 @@ function AdminDashboard() {
   // ✅ Listen for profile updates from Admin-profile.js
   useEffect(() => {
     const handleProfileUpdate = () => {
-      const updatedUser =
-        JSON.parse(localStorage.getItem("adminUser")) ||
-        JSON.parse(localStorage.getItem("user"));
-      if (updatedUser) {
+      // Reload user from localStorage after avatar change
+      const updatedUser = JSON.parse(localStorage.getItem("user")) ||
+        JSON.parse(localStorage.getItem("adminUser"));
+      if (updatedUser && updatedUser.id) {
         setSidebarUser(updatedUser);
       }
     };
@@ -1092,9 +1121,8 @@ function AdminDashboard() {
 
       {/* Sidebar */}
       <div
-        className={`sidebar ${isCollapsed ? "collapsed" : ""} ${
-          isMobileSidebarOpen ? "mobile-open" : ""
-        }`}
+        className={`sidebar ${isCollapsed ? "collapsed" : ""} ${isMobileSidebarOpen ? "mobile-open" : ""
+          }`}
       >
         <div className="sidebar-header">
           {!isCollapsed && <h2 className="sidebar-title">Admin Panel</h2>}
@@ -1112,15 +1140,15 @@ function AdminDashboard() {
           <div className="user-info">
             <div className="user-avatar">
               <div className="avatar-circle">
-              {sidebarUser?.avatar_url ? (
-                <img
-                  src={sidebarUser.avatar_url}
-                  alt="avatar"
-                />
-              ) : (
-                <div>AD</div>
-              )}
-            </div>
+                {sidebarUser?.avatar_url ? (
+                  <img
+                    src={sidebarUser.avatar_url}
+                    alt="avatar"
+                  />
+                ) : (
+                  <div>AD</div>
+                )}
+              </div>
             </div>
             <div className="user-details">
               <h4 className="user-name">
@@ -1140,15 +1168,15 @@ function AdminDashboard() {
         {isCollapsed && (
           <div className="user-collapsed">
             <div className="avatar-small">
-            {sidebarUser?.avatar_url ? (
-              <img
-                src={sidebarUser.avatar_url}
-                alt="avatar"
-              />
-            ) : (
-              <div>A</div>
-            )}
-          </div>
+              {sidebarUser?.avatar_url ? (
+                <img
+                  src={sidebarUser.avatar_url}
+                  alt="avatar"
+                />
+              ) : (
+                <div>A</div>
+              )}
+            </div>
           </div>
         )}
 
