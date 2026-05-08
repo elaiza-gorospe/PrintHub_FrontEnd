@@ -225,7 +225,7 @@ function AdminInquiries() {
             <option value="converted">Converted</option>
             <option value="closed">Closed</option>
           </select>
-          <button
+          {/* <button
             className="dashpage-filterbtn"
             type="button"
             onClick={() => {
@@ -235,7 +235,7 @@ function AdminInquiries() {
             title="Clear filters"
           >
             <FaFilter />
-          </button>
+          </button> */}
         </div>
       </div>
 

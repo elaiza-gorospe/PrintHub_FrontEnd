@@ -676,14 +676,14 @@ function AdminProducts({
             <option value="service">Service</option>
           </select>
 
-          <button
+          {/* <button
             className="dashpage-filterbtn"
             type="button"
             onClick={handleClearFilters}
             title="Clear filters"
           >
             <FaFilter />
-          </button>
+          </button> */}
 
           <button
             type="button"

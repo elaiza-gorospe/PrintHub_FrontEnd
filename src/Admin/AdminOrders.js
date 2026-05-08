@@ -252,14 +252,14 @@ function AdminOrders() {
             <option value="cancelled">Cancelled</option>
           </select>
 
-          <button
+          {/* <button
             className="dashpage-filterbtn"
             type="button"
             onClick={handleClearFilters}
             title="Clear filters"
           >
             <FaFilter />
-          </button>
+          </button> */}
         </div>
       </div>
 
