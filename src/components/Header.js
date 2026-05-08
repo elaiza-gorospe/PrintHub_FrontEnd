@@ -17,6 +17,7 @@ import "./Header.css";
 import { buildApiUrl } from "../config/api";
 
 function Header() {
+  const localAvatar = localStorage.getItem('userAvatar');
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -26,8 +27,15 @@ function Header() {
   const [user, setUser] = useState({
     name: "",
     email: "",
-    avatarUrl: "",
+    avatarUrl: localAvatar || "",
   });
+
+  useEffect(() => {
+    const savedAvatar = localStorage.getItem('userAvatar');
+    if (savedAvatar) {
+      setUser(prev => ({ ...prev, avatarUrl: savedAvatar }));
+    }
+  }, []);
 
   // Get logged-in user from localStorage
   const isLoggedIn = localStorage.getItem("user")
@@ -64,16 +72,31 @@ function Header() {
         const data = await res.json();
         if (!res.ok) throw new Error(data?.message || "Failed to load profile");
 
+        // Check localStorage first, then fallback to backend
+        const localAvatar = localStorage.getItem('userAvatar');
+
         setUser((prev) => ({
           ...prev,
           name: data.name || prev.name || u.firstName || "User",
           email: data.email || u.email || prev.email || "",
-          avatarUrl: prev.avatarUrl || "",
+          avatarUrl: localAvatar || data.avatar_url || prev.avatarUrl || "",
         }));
       })
       .catch((err) => {
         console.error(err);
       });
+  }, []);
+
+  // Listen for avatar changes
+  useEffect(() => {
+    const handleAvatarUpdate = (event) => {
+      if (event.detail?.avatarUrl) {
+        setUser(prev => ({ ...prev, avatarUrl: event.detail.avatarUrl }));
+      }
+    };
+
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+    return () => window.removeEventListener('avatarUpdated', handleAvatarUpdate);
   }, []);
 
   useEffect(() => {
@@ -149,7 +172,15 @@ function Header() {
                   setIsMobileMenuOpen(false);
                 }}
               >
-                <FaUserCircle />
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt="Profile"
+                    className="uh-profile-img"
+                  />
+                ) : (
+                  <FaUserCircle />
+                )}
               </button>
 
               {isProfileOpen && (
