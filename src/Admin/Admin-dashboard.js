@@ -184,6 +184,21 @@ function AdminDashboard() {
   const [sidebarAvatarUploading, setSidebarAvatarUploading] = useState(false);
   const [sidebarAvatarError, setSidebarAvatarError] = useState("");
 
+  // ✅ Listen for profile updates from Admin-profile.js
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      const updatedUser =
+        JSON.parse(localStorage.getItem("adminUser")) ||
+        JSON.parse(localStorage.getItem("user"));
+      if (updatedUser) {
+        setSidebarUser(updatedUser);
+      }
+    };
+
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+    return () => window.removeEventListener("profileUpdated", handleProfileUpdate);
+  }, []);
+
   const role = sidebarUser?.role || "user";
 
   // ✅ ROLE-BASED ACCESS CONTROL: Only admins can access admin pages
@@ -219,89 +234,6 @@ function AdminDashboard() {
 
     return base;
   }, [role]);
-
-  // Sidebar avatar upload handlers
-  const handleSidebarAvatarClick = () => {
-    const inp = document.getElementById("sidebar-avatar-input");
-    if (inp) inp.click();
-  };
-
-  const handleSidebarAvatarUpload = async (e) => {
-    const file = e.target.files?.[0];
-    setSidebarAvatarError("");
-    if (!file) return;
-
-    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    if (!allowed.includes(file.type)) {
-      setSidebarAvatarError("Only JPEG, PNG, WebP and GIF are allowed");
-      e.target.value = "";
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      setSidebarAvatarError("Image must be 2MB or smaller.");
-      e.target.value = "";
-      return;
-    }
-
-    setSidebarAvatarUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-
-      const userId = sidebarUser?.id;
-
-      const res = await fetch(buildApiUrl("/api/user/avatar-upload"), {
-        method: "POST",
-        body: fd,
-        headers: { "x-user-id": userId || "" },
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Upload failed");
-
-      // update localStorage and sidebar user
-      const upd = { ...(sidebarUser || {}), avatar_url: data.url };
-      setSidebarUser(upd);
-      try {
-        if (localStorage.getItem("adminUser")) {
-          const au = JSON.parse(localStorage.getItem("adminUser"));
-          localStorage.setItem(
-            "adminUser",
-            JSON.stringify({ ...au, avatar_url: data.url }),
-          );
-        }
-        if (localStorage.getItem("user")) {
-          const u = JSON.parse(localStorage.getItem("user"));
-          localStorage.setItem(
-            "user",
-            JSON.stringify({ ...u, avatar_url: data.url }),
-          );
-        }
-      } catch (err) {
-        // ignore localStorage errors
-      }
-
-      // Persist to profile endpoint (best-effort)
-      if (userId) {
-        try {
-          await fetch(buildApiUrl(`/api/user-profile/${userId}`), {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ avatar_url: data.url }),
-          });
-        } catch (err) {
-          // ignore
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      setSidebarAvatarError(err.message || "Upload failed");
-    } finally {
-      setSidebarAvatarUploading(false);
-      e.target.value = "";
-    }
-  };
 
   const handleMenuItemClick = (item) => {
     // Extra safety: staff can't open Manage Accounts even if forced
@@ -1176,35 +1108,19 @@ function AdminDashboard() {
           </button>
         </div>
 
-        {/* Hidden file input for sidebar avatar upload */}
-        <input
-          id="sidebar-avatar-input"
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          onChange={handleSidebarAvatarUpload}
-          style={{ display: "none" }}
-        />
-
         {!isCollapsed && (
           <div className="user-info">
             <div className="user-avatar">
               <div className="avatar-circle">
-                {sidebarUser?.avatar_url ? (
-                  <img
-                    src={sidebarUser.avatar_url}
-                    alt="avatar"
-                    onClick={handleSidebarAvatarClick}
-                    style={{ cursor: "pointer" }}
-                  />
-                ) : (
-                  <div
-                    onClick={handleSidebarAvatarClick}
-                    style={{ cursor: "pointer" }}
-                  >
-                    AD
-                  </div>
-                )}
-              </div>
+              {sidebarUser?.avatar_url ? (
+                <img
+                  src={sidebarUser.avatar_url}
+                  alt="avatar"
+                />
+              ) : (
+                <div>AD</div>
+              )}
+            </div>
             </div>
             <div className="user-details">
               <h4 className="user-name">
@@ -1224,22 +1140,15 @@ function AdminDashboard() {
         {isCollapsed && (
           <div className="user-collapsed">
             <div className="avatar-small">
-              {sidebarUser?.avatar_url ? (
-                <img
-                  src={sidebarUser.avatar_url}
-                  alt="avatar"
-                  onClick={handleSidebarAvatarClick}
-                  style={{ cursor: "pointer" }}
-                />
-              ) : (
-                <div
-                  onClick={handleSidebarAvatarClick}
-                  style={{ cursor: "pointer" }}
-                >
-                  A
-                </div>
-              )}
-            </div>
+            {sidebarUser?.avatar_url ? (
+              <img
+                src={sidebarUser.avatar_url}
+                alt="avatar"
+              />
+            ) : (
+              <div>A</div>
+            )}
+          </div>
           </div>
         )}
 

@@ -246,7 +246,7 @@ function AdminProfile() {
     const inp = document.getElementById("admin-avatar-input");
     if (inp) inp.click();
   };
-
+  
   const handleAdminAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
     setAdminAvatarError("");
@@ -293,6 +293,22 @@ function AdminProfile() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ avatar_url: data.url }),
           });
+
+          // ✅ Update localStorage with the new avatar_url
+          if (stored) {
+            const parsedStore = JSON.parse(stored);
+            parsedStore.avatar_url = data.url; 
+            
+            if (localStorage.getItem("adminUser")) {
+                localStorage.setItem("adminUser", JSON.stringify(parsedStore));
+            } else {
+                localStorage.setItem("user", JSON.stringify(parsedStore));
+            }
+            
+            // ✅ Dispatch a global event so the Sidebar knows to refresh
+            window.dispatchEvent(new Event("profileUpdated"));
+          }
+
         } catch (err) {
           // ignore
         }
