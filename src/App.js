@@ -33,6 +33,9 @@ import UserPasswordSecurityPage from "./Customer/User-password-security";
 import ProductDetail from "./Customer/Product-detail";
 import { buildApiUrl } from "./config/api";
 
+// Import Chatbot component
+import Chatbot from "./components/ChatBot";
+
 // ✅ PROTECTED ROUTE - Only admins can access
 function ProtectedAdminRoute({ children }) {
   const storedUser = (() => {
@@ -148,6 +151,8 @@ function App() {
           />
           <Route path="/product/:id" element={<ProductDetail />} />
         </Routes>
+        {/* Add Chatbot component here - it will appear on all pages */}
+        <Chatbot />
       </BrowserRouter>
     </CartProvider>
   );

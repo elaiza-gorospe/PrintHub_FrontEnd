@@ -175,12 +175,150 @@
   color: var(--text);
 }
 
+/* Smaller card options for size selection */
 .pd-card-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: 16px;
 }
 
+/* Smaller size card - maintains original design but smaller */
+.pd-option-card-small {
+  position: relative;
+  width: 130px;
+  min-height: 160px;
+  border: 1px solid #d8d8d8;
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text);
+  transition: all 0.2s ease;
+}
+
+.pd-option-card-small.selected {
+  border: 2px solid var(--orange);
+  background: #fff;
+}
+
+.pd-option-card-small:hover {
+  border-color: var(--orange);
+}
+
+.pd-option-card-small input {
+  display: none;
+}
+
+.pd-option-inner-small {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.pd-option-logo-small {
+  width: 60px;
+  height: 60px;
+  border: 2px solid var(--orange);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--orange);
+  font-size: 28px;
+  background: white;
+}
+
+.pd-option-title-small {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.pd-option-sub-small {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.pd-option-price-small {
+  font-size: 12px;
+  color: #10b981;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.pd-option-sub-strong-small {
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* Contact card */
+.pd-option-card-contact-small {
+  position: relative;
+  width: 150px;
+  min-height: 160px;
+  border: 1px solid #d8d8d8;
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text);
+  transition: all 0.2s ease;
+}
+
+.pd-option-card-contact-small.selected {
+  border: 2px solid var(--orange);
+  background: #fff;
+}
+
+.pd-option-card-contact-small:hover {
+  border-color: var(--orange);
+}
+
+.pd-option-logo-contact-small {
+  width: 60px;
+  height: 60px;
+  border: 2px solid var(--orange);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--orange);
+  font-size: 28px;
+  background: white;
+}
+
+/* Check badge for small cards */
+.pd-check-badge-small {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 28px;
+  height: 28px;
+  background: var(--orange);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-right-radius: 12px;
+  border-bottom-left-radius: 12px;
+  font-size: 14px;
+}
+
+/* Original card styles (keep for compatibility) */
 .pd-option-card {
   position: relative;
   width: 220px;
@@ -550,6 +688,34 @@
   }
 }
 
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pd-option-card-small {
+    width: 110px;
+    min-height: 140px;
+    padding: 12px 8px;
+  }
+  
+  .pd-option-card-contact-small {
+    width: 130px;
+    min-height: 140px;
+  }
+  
+  .pd-option-logo-small {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+  }
+  
+  .pd-option-title-small {
+    font-size: 12px;
+  }
+  
+  .pd-option-sub-small {
+    font-size: 14px;
+  }
+}
+
 @media (max-width: 1000px) {
   .pd-top {
     grid-template-columns: 1fr;
@@ -591,11 +757,6 @@
     min-height: 320px;
   }
 
-  .pd-option-card {
-    width: 100%;
-    min-height: 230px;
-  }
-
   .pd-quote-title {
     font-size: 30px;
   }
@@ -619,13 +780,14 @@
     width: 100%;
   }
 }
+
 #request::placeholder {
   color: #7e8b92;
   line-height: 1.7;
   white-space: pre-line;
 }
 
-/* ─── AI Builder tab / embedded area ───────────────────────────── */
+/* AI Builder tab / embedded area */
 .pd-tab-builder-inline {
   padding: 0;
 }
@@ -665,3 +827,15 @@
   line-height: 1;
 }
 
+.pd-option-price {
+  font-size: 12px;
+  color: #10b981;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.option-price {
+  margin-left: auto;
+  color: #10b981;
+  font-size: 14px;
+}
