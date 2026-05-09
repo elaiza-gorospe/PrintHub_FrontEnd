@@ -32,6 +32,7 @@ import UserInquiries from "./Customer/User-inquiries";
 import UserPasswordSecurityPage from "./Customer/User-password-security";
 import ProductDetail from "./Customer/Product-detail";
 import { buildApiUrl } from "./config/api";
+import { FaSearch } from "react-icons/fa";
 
 // Import Chatbot component
 import Chatbot from "./components/ChatBot";
@@ -158,10 +159,30 @@ function App() {
   );
 }
 
-/* ---------- NAVBAR ---------- */
+/* ---------- NAVBAR (with search bar from Header + dropdown) ---------- */
 function NavbarComponent() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [products, setProducts] = useState([]);
+
+  // Fetch products for search suggestions
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(buildApiUrl("/api/products?limit=100"));
+        if (!res.ok) throw new Error("Failed to load products");
+        const data = await res.json();
+        const list = data.products || data;
+        setProducts(list);
+      } catch (err) {
+        console.error("Failed to load products for search:", err);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
@@ -176,47 +197,102 @@ function NavbarComponent() {
     }
   };
 
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (query.trim().length > 0) {
+      const filtered = products.filter(product =>
+        product.name.toLowerCase().includes(query.toLowerCase()) ||
+        (product.print_type && product.print_type.toLowerCase().includes(query.toLowerCase()))
+      );
+      setSuggestions(filtered.slice(0, 8)); // Max 8 suggestions
+      setShowDropdown(true);
+    } else {
+      setSuggestions([]);
+      setShowDropdown(false);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setShowDropdown(false);
+      navigate(`/product-overview?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  const handleSuggestionClick = (productId) => {
+    setSearchQuery("");
+    setSuggestions([]);
+    setShowDropdown(false);
+    navigate(`/product/${productId}`);
+  };
+
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <div className="navbar-logo" onClick={() => navigate("/")}>
-          PMG
+    <nav className="uh-nav">
+      <div className="uh-logo" onClick={() => navigate("/")}>
+        <span className="uh-logo-text">PMG</span>
+        <span className="uh-logo-sub">PRINTING HOUSE</span>
+      </div>
+
+      <div className="uh-search-wrapper">
+        <div className="uh-search">
+          <input
+            type="text"
+            placeholder="Search products or services"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+            onFocus={() => searchQuery.trim() && suggestions.length > 0 && setShowDropdown(true)}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+          />
+          <button className="uh-search-btn" type="button" aria-label="Search" onClick={handleSearch}>
+            <FaSearch />
+          </button>
         </div>
 
-        <ul className="navbar-menu">
-          <li>
-            <button className="navlink-btn" onClick={() => navigate("/")}>
-              Home
-            </button>
-          </li>
+        {/* Dropdown suggestions */}
+        {showDropdown && suggestions.length > 0 && (
+          <div className="uh-search-dropdown">
+            {suggestions.map(product => (
+              <div
+                key={product.id}
+                className="uh-search-suggestion"
+                onClick={() => handleSuggestionClick(product.id)}
+              >
+                <div className="uh-suggestion-img">
+                  {product.images?.[0] ? (
+                    <img src={product.images[0]} alt={product.name} />
+                  ) : (
+                    <div className="uh-suggestion-placeholder">📄</div>
+                  )}
+                </div>
+                <div className="uh-suggestion-info">
+                  <div className="uh-suggestion-name">{product.name}</div>
+                  <div className="uh-suggestion-category">{product.print_type || "Product"}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-          <li>
-            <button
-              className="navlink-btn"
-              onClick={() => handleNavToSection("about")}
-            >
-              About
-            </button>
-          </li>
+      <div className="uh-actions">
+        <button className="uh-link uh-desktop-only" type="button" onClick={() => handleNavToSection("about")}>
+          About
+        </button>
+        <button className="uh-link uh-desktop-only" type="button" onClick={() => handleNavToSection("contact")}>
+          Contact
+        </button>
 
-          <li>
-            <button
-              className="navlink-btn"
-              onClick={() => handleNavToSection("contact")}
-            >
-              Contact
-            </button>
-          </li>
-
-          <li>
-            <button
-              className="navbar-login"
-              onClick={() => navigate("/user-login")}
-            >
-              Login
-            </button>
-          </li>
-        </ul>
+        <button
+          className="uh-login-btn"
+          type="button"
+          onClick={() => navigate("/user-login")}
+        >
+          Login
+        </button>
       </div>
     </nav>
   );
