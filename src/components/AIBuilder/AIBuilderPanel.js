@@ -123,7 +123,7 @@ export default function AIBuilderPanel({
       const productName = product?.title || "";
       // User-visible prompt (without design rules)
       const displayPrompt = productName
-        ? `A professional print design for ${productName}. ${prompt.trim()}. The design must be clearly suitable for ${productName}, high quality, print-ready.`
+        ? `A professional 3D model for ${productName}. ${prompt.trim()}. Must be clearly suitable for ${productName}, high quality, 3D printable.`
         : prompt.trim();
 
       // Full prompt with rules for API (hidden from frontend)
@@ -138,7 +138,11 @@ export default function AIBuilderPanel({
           "Content-Type": "application/json",
           ...(userId ? { "X-User-Id": String(userId) } : {}),
         },
-        body: JSON.stringify({ prompt: fullPrompt, productId: product?.id }),
+        body: JSON.stringify({
+          prompt: fullPrompt,
+          productId: product?.id,
+          quality: "standard",
+        }),
       });
 
       const data = await res.json();
@@ -251,26 +255,27 @@ export default function AIBuilderPanel({
     setUploadError("");
 
     try {
-      // User-visible prompt (without design rules)
-      const displayPrompt =
+      // User-visible description (without design rules)
+      const displayDescription =
         uploadedMeta.description || "Refine and enhance this design.";
 
-      // Full prompt with rules for API (hidden from frontend)
-      let fullPrompt = displayPrompt;
+      // Full description with rules for API (hidden from frontend)
+      let fullDescription = displayDescription;
       if (ai_prompt_rules && ai_prompt_rules.trim()) {
-        fullPrompt += `\n\n[Design Rules]: ${ai_prompt_rules}`;
+        fullDescription += `\n\n[Design Rules]: ${ai_prompt_rules}`;
       }
 
-      const res = await fetch(buildApiUrl("/api/builder/generate"), {
+      const res = await fetch(buildApiUrl("/api/builder/generate-from-image"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-User-Id": String(userId),
         },
         body: JSON.stringify({
-          prompt: fullPrompt,
+          imageUrl: uploadedMeta.url,
+          description: fullDescription,
+          quality: "standard",
           productId: product?.id,
-          sourceImageUrl: uploadedMeta.url,
         }),
       });
 
@@ -283,11 +288,11 @@ export default function AIBuilderPanel({
       if (!res.ok) throw new Error(data.message || "Generation failed");
 
       setImgLoading(true);
-      // Store display prompt (without rules) for UI and original user input for intent
+      // Store display description (without rules) for UI
       setResultMeta({
         ...data,
-        prompt: displayPrompt,
-        userPrompt: displayPrompt,
+        prompt: displayDescription,
+        userPrompt: displayDescription,
         source: "generated",
         sourceImageUrl: uploadedMeta.url,
       });
@@ -323,16 +328,19 @@ export default function AIBuilderPanel({
     setImgLoading(false);
   };
 
-  // ── Use this design ─────────────────────────────────────────────
+  // ── Use this 3D model ──────────────────────────────────────────
   const handleUseDesign = () => {
     if (!resultMeta) return;
     const designMeta = {
-      generatedImageUrl: resultMeta.url,
-      sourceAssetUrls: resultMeta.source === "upload" ? [resultMeta.url] : [],
+      generatedModelUrl: resultMeta.glbUrl || resultMeta.url,
+      sourceAssetUrls:
+        resultMeta.source === "upload"
+          ? [resultMeta.sourceImageUrl || resultMeta.url]
+          : [],
       prompt: resultMeta.prompt || null,
-      seed: resultMeta.seed || null,
       source: resultMeta.source,
       storagePath: resultMeta.path || null,
+      meshyTaskId: resultMeta.meshyTaskId || null,
       builderState: builderState || null,
       generatedAt: new Date().toISOString(),
     };
@@ -383,14 +391,14 @@ export default function AIBuilderPanel({
             className={`aib-mode-tab ${mode === "generate" ? "active" : ""}`}
             onClick={() => setMode("generate")}
           >
-            Generate with AI
+            Generate 3D Model
           </button>
           <button
             type="button"
             className={`aib-mode-tab ${mode === "upload" ? "active" : ""}`}
             onClick={() => setMode("upload")}
           >
-            Upload Image
+            Upload Reference Image
           </button>
         </div>
       )}
@@ -399,13 +407,13 @@ export default function AIBuilderPanel({
       {!showEditor && mode === "generate" && (
         <>
           <div className="aib-field">
-            <label htmlFor="aib-prompt">Describe your design</label>
+            <label htmlFor="aib-prompt">Describe your 3D model</label>
             <textarea
               id="aib-prompt"
               className="aib-textarea"
               rows={3}
               maxLength={1000}
-              placeholder={`e.g. "minimalist navy blue and gold design with logo" — ${product?.title ? `will be generated as a ${product.title}` : "product name added automatically"}`}
+              placeholder={`e.g. "geometric cube with smooth edges and gold accents" — ${product?.title ? `will be generated as a 3D model for ${product.title}` : "product name added automatically"}`}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
             />
@@ -464,14 +472,14 @@ export default function AIBuilderPanel({
               onClick={handleGenerate}
               disabled={generating || !prompt.trim()}
             >
-              {generating ? "Generating…" : "Generate"}
+              {generating ? "Generating 3D Model…" : "Generate Model"}
             </button>
           </div>
 
           {generating && (
             <div className="aib-status">
               <span className="aib-spinner" />
-              Generating your design with AI, please wait…
+              Generating your 3D model with AI, please wait…
             </div>
           )}
           {cooldownMsg && <div className="aib-cooldown">{cooldownMsg}</div>}
@@ -484,14 +492,14 @@ export default function AIBuilderPanel({
         <>
           <div className="aib-field">
             <label htmlFor="aib-upload-desc">
-              Describe your design (optional)
+              Describe how to generate from image (optional)
             </label>
             <textarea
               id="aib-upload-desc"
               className="aib-textarea"
               rows={3}
               maxLength={1000}
-              placeholder="e.g. 'Add gold accents and adjust colors to match our brand' — design rules will be applied automatically"
+              placeholder="e.g. 'Convert this to a 3D model with smooth surfaces and add metallic finish' — design rules will be applied automatically"
               value={uploadDescription}
               onChange={(e) => setUploadDescription(e.target.value)}
             />
@@ -509,7 +517,7 @@ export default function AIBuilderPanel({
             <div className="aib-upload-icon">
               <FaCloudUploadAlt />
             </div>
-            <p>Click to upload your image or logo</p>
+            <p>Click to upload a reference image</p>
             <p>JPEG, PNG, WebP, GIF — up to 10 MB</p>
           </div>
           <input
@@ -548,21 +556,11 @@ export default function AIBuilderPanel({
               <div className="aib-upload-actions">
                 <button
                   type="button"
-                  className="aib-btn-use"
-                  onClick={handleUseUploaded}
-                  disabled={uploadGenerating}
-                >
-                  <FaCheckCircle style={{ marginRight: 6 }} />
-                  Use Uploaded
-                </button>
-
-                <button
-                  type="button"
                   className="aib-btn-generate"
                   onClick={handleGenerateFromUpload}
                   disabled={uploadGenerating}
                 >
-                  {uploadGenerating ? "Generating…" : "Generate Design"}
+                  {uploadGenerating ? "Generating…" : "Generate 3D Model"}
                 </button>
                 <button
                   type="button"
@@ -577,7 +575,7 @@ export default function AIBuilderPanel({
               {uploadGenerating && (
                 <div className="aib-status">
                   <span className="aib-spinner" />
-                  Generating design from your image…
+                  Generating 3D model from your image…
                 </div>
               )}
             </>
@@ -585,27 +583,29 @@ export default function AIBuilderPanel({
         </>
       )}
 
-      {/* ── Result + Editor ── */}
+      {/* ── Result + 3D Preview ── */}
       {showEditor && resultMeta && (
         <>
           {resultMeta.prompt && (
             <div className="aib-editor-info">
-              <div className="aib-info-label">Design Intent:</div>
+              <div className="aib-info-label">Model Description:</div>
               <div className="aib-info-text">
                 {getDisplayPrompt(resultMeta.userPrompt || resultMeta.prompt)}
               </div>
             </div>
           )}
 
-          <AIBuilderEditor
-            productImage={productImage}
-            designImage={resultMeta.url}
-            designSource={resultMeta.source}
-            initialState={builderState}
-            onChange={setBuilderState}
-            imgLoading={imgLoading}
-            onImgLoad={() => setImgLoading(false)}
-          />
+          {/* Show 3D preview directly since models can't be edited */}
+          <div style={{ minHeight: 300, marginBottom: 16 }}>
+            <AIBuilder3DPreview
+              designImage={resultMeta.glbUrl || resultMeta.url}
+              prompt={
+                resultMeta.userPrompt ||
+                resultMeta.prompt ||
+                "Generated 3D model"
+              }
+            />
+          </div>
 
           <div className="aib-result-actions">
             <button
@@ -615,7 +615,7 @@ export default function AIBuilderPanel({
               disabled={imgLoading}
             >
               <FaCheckCircle style={{ marginRight: 6 }} />
-              Use this design
+              Use this 3D model
             </button>
             <button
               type="button"
@@ -624,7 +624,7 @@ export default function AIBuilderPanel({
               disabled={imgLoading}
             >
               <FaCube style={{ marginRight: 6 }} />
-              3D Preview
+              View 3D
             </button>
             <button
               type="button"
@@ -656,11 +656,11 @@ export default function AIBuilderPanel({
             </button>
             <div className="aib-3d-wrapper">
               <AIBuilder3DPreview
-                designImage={resultMeta.url}
+                designImage={resultMeta.glbUrl || resultMeta.url}
                 prompt={
                   resultMeta.userPrompt ||
                   resultMeta.prompt ||
-                  "Professional 3D product design"
+                  "Generated 3D model"
                 }
               />
             </div>
