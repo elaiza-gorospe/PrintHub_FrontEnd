@@ -23,6 +23,10 @@ function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { cartItems } = useCart();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [products, setProducts] = useState([]);
 
   const [user, setUser] = useState({
     name: "",
@@ -31,11 +35,58 @@ function Header() {
   });
 
   useEffect(() => {
+      const fetchProducts = async () => {
+        try {
+          const res = await fetch(buildApiUrl("/api/products?limit=100"));
+          if (!res.ok) throw new Error("Failed to load products");
+          const data = await res.json();
+          const list = data.products || data;
+          setProducts(list);
+        } catch (err) {
+          console.error("Failed to load products for search:", err);
+        }
+      };
+      fetchProducts();
+    }, []);
+
+  useEffect(() => {
     const savedAvatar = localStorage.getItem('userAvatar');
     if (savedAvatar) {
       setUser(prev => ({ ...prev, avatarUrl: savedAvatar }));
     }
   }, []);
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (query.trim().length > 0) {
+      const filtered = products.filter(product =>
+        product.name.toLowerCase().includes(query.toLowerCase()) ||
+        (product.print_type && product.print_type.toLowerCase().includes(query.toLowerCase()))
+      );
+      setSuggestions(filtered.slice(0, 8)); // Max 8 suggestions
+      setShowDropdown(true);
+    } else {
+      setSuggestions([]);
+      setShowDropdown(false);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setShowDropdown(false);
+      navigate(`/product-overview?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  const handleSuggestionClick = (productId) => {
+    setSearchQuery("");
+    setSuggestions([]);
+    setShowDropdown(false);
+    navigate(`/product/${productId}`);
+  };
 
   // Get logged-in user from localStorage
   const isLoggedIn = localStorage.getItem("user")
@@ -126,11 +177,46 @@ function Header() {
         <span className="uh-logo-sub">PRINTING HOUSE</span>
       </div>
 
-      <div className="uh-search">
-        <input type="text" placeholder="Search products or services" />
-        <button className="uh-search-btn" type="button" aria-label="Search">
-          <FaSearch />
-        </button>
+      <div className="uh-search-wrapper">
+        <div className="uh-search">
+          <input
+            type="text"
+            placeholder="Search products or services"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+            onFocus={() => searchQuery.trim() && suggestions.length > 0 && setShowDropdown(true)}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+          />
+          <button className="uh-search-btn" type="button" aria-label="Search" onClick={handleSearch}>
+            <FaSearch />
+          </button>
+        </div>
+
+        {/* Dropdown suggestions */}
+        {showDropdown && suggestions.length > 0 && (
+          <div className="uh-search-dropdown">
+            {suggestions.map(product => (
+              <div
+                key={product.id}
+                className="uh-search-suggestion"
+                onClick={() => handleSuggestionClick(product.id)}
+              >
+                <div className="uh-suggestion-img">
+                  {product.images?.[0] ? (
+                    <img src={product.images[0]} alt={product.name} />
+                  ) : (
+                    <div className="uh-suggestion-placeholder">📄</div>
+                  )}
+                </div>
+                <div className="uh-suggestion-info">
+                  <div className="uh-suggestion-name">{product.name}</div>
+                  <div className="uh-suggestion-category">{product.print_type || "Product"}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="uh-actions">
