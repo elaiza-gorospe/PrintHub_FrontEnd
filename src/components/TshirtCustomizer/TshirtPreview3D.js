@@ -17,9 +17,15 @@ export default function TshirtPreview3D({ modelPath, shirtColor = "#ffffff" }) {
   const mountRef = useRef(null);
   const modelRef = useRef(null);
   const rendererRef = useRef(null);
+  const shirtColorRef = useRef(shirtColor);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [zoom, setZoom] = useState(100);
+
+  // Keep color ref fresh
+  useEffect(() => {
+    shirtColorRef.current = shirtColor;
+  }, [shirtColor]);
 
   // ── Set up scene once ─────────────────────────────────────────────
   useEffect(() => {
@@ -44,11 +50,13 @@ export default function TshirtPreview3D({ modelPath, shirtColor = "#ffffff" }) {
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     camera.position.set(0, 0, 3);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 1.2);
+    const ambient = new THREE.AmbientLight(0xffffff, 1.5);
     scene.add(ambient);
-    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+    const dir = new THREE.DirectionalLight(0xffffff, 1.0);
     dir.position.set(5, 10, 7.5);
     scene.add(dir);
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
+    scene.add(hemi);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -65,16 +73,20 @@ export default function TshirtPreview3D({ modelPath, shirtColor = "#ffffff" }) {
         scene.add(model);
 
         // Apply initial color
-        applyColor(model, shirtColor);
+        applyColor(model, shirtColorRef.current);
 
-        // Auto-fit camera
+        // Auto-fit camera to model
         const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
         const fov = camera.fov * (Math.PI / 180);
-        const cameraZ = (maxDim / 2 / Math.tan(fov / 2)) * 1.5;
-        camera.position.z = cameraZ;
-        controls.target.copy(box.getCenter(new THREE.Vector3()));
+        const dist = (maxDim / 2 / Math.tan(fov / 2)) * 1.8;
+        camera.position.set(center.x, center.y, center.z + dist);
+        camera.near = dist / 100;
+        camera.far = dist * 100;
+        camera.updateProjectionMatrix();
+        controls.target.copy(center);
         controls.update();
 
         setLoading(false);
@@ -202,12 +214,7 @@ function applyColor(model, hexColor) {
         ? node.material
         : [node.material];
       materials.forEach((mat) => {
-        if (
-          mat &&
-          (mat.isMeshStandardMaterial ||
-            mat.isMeshPhongMaterial ||
-            mat.isMeshBasicMaterial)
-        ) {
+        if (mat) {
           mat.color.set(color);
           mat.needsUpdate = true;
         }
