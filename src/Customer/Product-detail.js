@@ -337,13 +337,13 @@ function ProductDetail() {
               >
                 SPECIFICATIONS
               </button>
-              <button
+              {/* <button
                 type="button"
                 className={activeTab === "aibuilder" ? "active" : ""}
                 onClick={() => setActiveTab("aibuilder")}
               >
                 AI BUILDER
-              </button>
+              </button> */}
               {product.print_zones?.length > 0 && (
                 <button
                   type="button"
