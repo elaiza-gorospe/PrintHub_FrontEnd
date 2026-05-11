@@ -314,7 +314,7 @@
 /* LOGIN BUTTON */
 .uh-login-btn {
   border: none;
-  background: #0f352a;
+  background: #455073;
   color: white;
   padding: 8px 16px;
   border-radius: 6px;
@@ -324,7 +324,7 @@
 }
 
 .uh-login-btn:hover {
-  background: #0a241d;
+  background: #1f2332;
 }
 
 /* RESPONSIVE */

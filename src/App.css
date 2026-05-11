@@ -196,7 +196,7 @@ body {
 
 /* ---------- LOGIN BUTTON ---------- */
 .navbar-login {
-  background-color: #455073;
+  background-color: #4d5f6b;
   color: #fff !important;
   padding: 10px 20px !important;
   border-radius: 6px;
@@ -207,7 +207,7 @@ body {
 }
 
 .navbar-login:hover {
-  background-color: #a37e2d;
+  background-color: #7792a4;
   color: #ffffff !important;
 }
 
@@ -244,7 +244,7 @@ body {
 }
 
 .content-section h2 {
-  color: #0f352a;
+  color: #4d5f6b;
   font-size: 32px;
   margin-bottom: 20px;
 }

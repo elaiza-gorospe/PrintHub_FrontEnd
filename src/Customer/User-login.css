@@ -185,6 +185,7 @@
 }
 
 .login-button:hover {
+  background: #9063be;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
   transform: translateY(-2px);
 }

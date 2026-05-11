@@ -98,7 +98,7 @@
 
 .registration-header h1 {
   font-size: 28px;
-  color: #0f3429;
+  color: #482b65;
   margin: 0 0 8px 0;
   font-weight: 600;
 }
@@ -180,7 +180,7 @@
   display: flex;
   align-items: flex-start;
   cursor: pointer;
-  color: #0f3429;
+  color: #482b65;
   font-size: 13px;
   margin-top: 15px;
 }
@@ -195,7 +195,7 @@
 }
 
 .checkbox-label a {
-  color: #0f3429;
+  color: #482b65;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s ease;
@@ -208,7 +208,7 @@
 .register-button {
   width: 100%;
   padding: 12px;
-  background: #0f3429;
+  background: #482b65;
   color: white;
   border: none;
   border-radius: 6px;
@@ -220,6 +220,7 @@
 }
 
 .register-button:hover {
+  background: #764ba2;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
   transform: translateY(-2px);
 }
@@ -235,7 +236,7 @@
 }
 
 .registration-footer a {
-  color: #0f3429;
+  color: #482b65;
   text-decoration: none;
   font-weight: 600;
   cursor: pointer;
@@ -360,7 +361,7 @@
 .legal-modal-header h2 {
   margin: 0;
   font-size: 18px;
-  color: #0f3429;
+  color: #482b65;
 }
 
 .legal-modal-close {
@@ -384,7 +385,7 @@
 .legal-modal-body h3 {
   margin: 14px 0 6px;
   font-size: 14px;
-  color: #0f3429;
+  color: #482b65;
 }
 
 .legal-modal-body p {
@@ -415,7 +416,7 @@
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  background: #0f3429;
+  background: #482b65;
   color: #fff;
   font-weight: 600;
 }
