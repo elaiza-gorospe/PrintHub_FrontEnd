@@ -1,81 +1,136 @@
-/**
- * TshirtPreview3D
- * THREE.js viewer that loads a GLB t-shirt model and applies a color tint
- * to all MeshStandardMaterial meshes.
- *
- * Props:
- *   modelPath  {string}  – URL of the GLB file, e.g. "/models/tshirt.glb"
- *   shirtColor {string}  – hex color string, e.g. "#ffffff"
- */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import "./TshirtCustomizer.css";
 
-export default function TshirtPreview3D({ modelPath, shirtColor = "#ffffff" }) {
+// Zone plane config: offsets as fraction of bounding-box size, plus Y rotation
+const ZONE_PLANE = {
+  front: { ox: 0, oy: 0.05, oz: 1, ry: 0, sw: 0.4, sh: 0.35 },
+  back: { ox: 0, oy: 0.05, oz: -1, ry: Math.PI, sw: 0.4, sh: 0.35 },
+  left_sleeve: { ox: 0.38, oy: 0.2, oz: 0.2, ry: -0.5, sw: 0.2, sh: 0.2 },
+  right_sleeve: { ox: -0.38, oy: 0.2, oz: 0.2, ry: 0.5, sw: 0.2, sh: 0.2 },
+};
+
+export default function TshirtPreview3D({
+  modelPath,
+  shirtColor = "#ffffff",
+  zoneDesigns = {},
+}) {
   const mountRef = useRef(null);
   const modelRef = useRef(null);
   const rendererRef = useRef(null);
   const shirtColorRef = useRef(shirtColor);
-  const [loading, setLoading] = useState(true);
+  const designsRef = useRef(zoneDesigns);
+  const meshesRef = useRef([]);
+  const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
   const [zoom, setZoom] = useState(100);
 
-  // Keep color ref fresh
   useEffect(() => {
     shirtColorRef.current = shirtColor;
   }, [shirtColor]);
+  useEffect(() => {
+    designsRef.current = zoneDesigns;
+  }, [zoneDesigns]);
+
+  // ── Rebuild design planes (called when model loads OR designs change) ──
+  const rebuildPlanes = useCallback(() => {
+    const model = modelRef.current;
+    if (!model) return;
+
+    // Dispose old planes
+    meshesRef.current.forEach((m) => {
+      model.remove(m);
+      m.geometry.dispose();
+      if (m.material.map) m.material.map.dispose();
+      m.material.dispose();
+    });
+    meshesRef.current = [];
+
+    // Compute bounding box; convert world-space center to model-local space
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const wCenter = box.getCenter(new THREE.Vector3());
+    const lCenter = model.worldToLocal(wCenter.clone());
+
+    Object.entries(designsRef.current).forEach(([zoneId, design]) => {
+      if (!design?.imageUrl) return;
+      const cfg = ZONE_PLANE[zoneId];
+      if (!cfg) return;
+
+      new THREE.TextureLoader().load(design.imageUrl, (tex) => {
+        if (!modelRef.current) return;
+        tex.colorSpace = THREE.SRGBColorSpace;
+
+        const pw = size.x * cfg.sw;
+        const ph = size.y * cfg.sh;
+        const geo = new THREE.PlaneGeometry(pw, ph);
+        const mat = new THREE.MeshBasicMaterial({
+          map: tex,
+          transparent: true,
+          depthTest: true,
+          depthWrite: false,
+          polygonOffset: true,
+          polygonOffsetFactor: -4,
+          polygonOffsetUnits: -4,
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(
+          lCenter.x + cfg.ox * size.x,
+          lCenter.y + cfg.oy * size.y,
+          lCenter.z + cfg.oz * (size.z * 0.5 + 0.005),
+        );
+        mesh.rotation.y = cfg.ry;
+        modelRef.current.add(mesh);
+        meshesRef.current.push(mesh);
+      });
+    });
+  }, []);
 
   // ── Set up scene once ─────────────────────────────────────────────
   useEffect(() => {
     if (!mountRef.current || !modelPath) return;
 
-    setLoading(true);
+    setReady(false);
     setError("");
 
     const container = mountRef.current;
-    const width = container.offsetWidth || container.clientWidth || 260;
-    const height = container.offsetHeight || container.clientHeight || 280;
+    const w0 = container.offsetWidth || 260;
+    const h0 = container.offsetHeight || 340;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(window.devicePixelRatio || 1);
-    renderer.setSize(width, height);
+    renderer.setSize(w0, h0);
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x1e2433);
 
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(45, w0 / h0, 0.1, 1000);
     camera.position.set(0, 0, 3);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 1.5);
-    scene.add(ambient);
+    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
     const dir = new THREE.DirectionalLight(0xffffff, 1.0);
     dir.position.set(5, 10, 7.5);
     scene.add(dir);
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
-    scene.add(hemi);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.8));
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.07;
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 3;
+    controls.autoRotateSpeed = 2.5;
 
-    const loader = new GLTFLoader();
-    loader.load(
+    new GLTFLoader().load(
       modelPath,
       (gltf) => {
         const model = gltf.scene;
         modelRef.current = model;
         scene.add(model);
-
-        // Apply initial color
         applyColor(model, shirtColorRef.current);
 
-        // Auto-fit camera to model
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
@@ -89,7 +144,7 @@ export default function TshirtPreview3D({ modelPath, shirtColor = "#ffffff" }) {
         controls.target.copy(center);
         controls.update();
 
-        setLoading(false);
+        setReady(true); // triggers rebuildPlanes
       },
       undefined,
       (err) => {
@@ -97,11 +152,10 @@ export default function TshirtPreview3D({ modelPath, shirtColor = "#ffffff" }) {
         setError(
           "Failed to load 3D model. Place tshirt.glb in public/models/.",
         );
-        setLoading(false);
       },
     );
 
-    let rafId = null;
+    let rafId;
     const animate = () => {
       rafId = requestAnimationFrame(animate);
       controls.update();
@@ -109,39 +163,39 @@ export default function TshirtPreview3D({ modelPath, shirtColor = "#ffffff" }) {
     };
     animate();
 
-    const handleResize = () => {
-      const w = container.offsetWidth || container.clientWidth || 260;
-      const h = container.offsetHeight || container.clientHeight || 280;
+    const onResize = () => {
+      const w = container.offsetWidth || 260;
+      const h = container.offsetHeight || 340;
       renderer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
     };
-    window.addEventListener("resize", handleResize);
-
-    // Also observe container size changes (handles flex/grid layout settling)
-    const ro = new ResizeObserver(handleResize);
+    window.addEventListener("resize", onResize);
+    const ro = new ResizeObserver(onResize);
     ro.observe(container);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("resize", onResize);
       ro.disconnect();
-      if (rafId) cancelAnimationFrame(rafId);
+      cancelAnimationFrame(rafId);
       controls.dispose();
       renderer.dispose();
-      if (container.contains(renderer.domElement)) {
+      if (container.contains(renderer.domElement))
         container.removeChild(renderer.domElement);
-      }
+      meshesRef.current.forEach((m) => {
+        m.geometry.dispose();
+        if (m.material.map) m.material.map.dispose();
+        m.material.dispose();
+      });
+      meshesRef.current = [];
       if (modelRef.current) {
         modelRef.current.traverse((node) => {
           if (node.isMesh) {
             node.geometry?.dispose();
-            if (node.material) {
-              if (Array.isArray(node.material)) {
-                node.material.forEach((m) => m.dispose());
-              } else {
-                node.material.dispose();
-              }
-            }
+            (Array.isArray(node.material)
+              ? node.material
+              : [node.material]
+            ).forEach((m) => m?.dispose());
           }
         });
         modelRef.current = null;
@@ -150,19 +204,20 @@ export default function TshirtPreview3D({ modelPath, shirtColor = "#ffffff" }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modelPath]);
 
-  // ── Re-apply color when shirtColor changes ────────────────────────
+  // ── Recolor shirt when shirtColor changes ─────────────────────────
   useEffect(() => {
-    if (modelRef.current) {
-      applyColor(modelRef.current, shirtColor);
-      // Force re-render by flagging renderer needs update
-      if (rendererRef.current) rendererRef.current.needsUpdate = true;
-    }
+    if (modelRef.current) applyColor(modelRef.current, shirtColor);
   }, [shirtColor]);
+
+  // ── Rebuild planes when model is ready OR when designs change ─────
+  useEffect(() => {
+    if (ready) rebuildPlanes();
+  }, [ready, zoneDesigns, rebuildPlanes]);
 
   return (
     <div>
       <div className="tsc-preview-3d" ref={mountRef}>
-        {loading && (
+        {!ready && !error && (
           <div className="tsc-preview-loading">
             <span
               className="tsc-spinner"
@@ -174,7 +229,7 @@ export default function TshirtPreview3D({ modelPath, shirtColor = "#ffffff" }) {
             <span>Loading 3D preview…</span>
           </div>
         )}
-        {!loading && error && <div className="tsc-preview-error">{error}</div>}
+        {error && <div className="tsc-preview-error">{error}</div>}
       </div>
 
       {/* Zoom controls */}

@@ -362,35 +362,41 @@ export default function TshirtCustomizerPanel({
           </div>
         </div>
 
-        {/* ── Center: Zone canvas ────────────────────────────────── */}
-        <TshirtZoneCanvas
-          zones={zones}
-          zoneDesigns={zoneDesigns}
-          activeZone={activeZone}
-          onZoneSelect={setActiveZone}
-          onZoneDesignChange={handleZoneDesignChange}
-        />
+        {/* ── Main column: zones above 3D preview ───────────────── */}
+        <div className="tsc-main-col">
+          <TshirtZoneCanvas
+            zones={zones}
+            zoneDesigns={zoneDesigns}
+            activeZone={activeZone}
+            onZoneSelect={setActiveZone}
+            onZoneDesignChange={handleZoneDesignChange}
+          />
 
-        {/* ── Right: 3D preview + color ──────────────────────────── */}
-        <div className="tsc-preview-panel">
-          <TshirtPreview3D modelPath={TSHIRT_GLB} shirtColor={shirtColor} />
+          {/* 3D preview + color */}
+          <div className="tsc-preview-panel">
+            <TshirtPreview3D
+              modelPath={TSHIRT_GLB}
+              shirtColor={shirtColor}
+              zoneDesigns={zoneDesigns}
+            />
 
-          {/* Color picker */}
-          <div className="tsc-color-section">
-            <div className="tsc-color-label">COLOR</div>
-            <div className="tsc-color-row">
-              <input
-                type="range"
-                className="tsc-color-slider"
-                min={0}
-                max={360}
-                value={hue}
-                onChange={(e) => setHue(Number(e.target.value))}
-              />
-              <div
-                className="tsc-color-swatch"
-                style={{ background: shirtColor }}
-              />
+            {/* Color picker */}
+            <div className="tsc-color-section">
+              <div className="tsc-color-label">COLOR</div>
+              <div className="tsc-color-row">
+                <input
+                  type="range"
+                  className="tsc-color-slider"
+                  min={0}
+                  max={360}
+                  value={hue}
+                  onChange={(e) => setHue(Number(e.target.value))}
+                />
+                <div
+                  className="tsc-color-swatch"
+                  style={{ background: shirtColor }}
+                />
+              </div>
             </div>
           </div>
         </div>
