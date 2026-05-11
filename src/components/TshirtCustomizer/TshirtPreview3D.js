@@ -59,32 +59,34 @@ export default function TshirtPreview3D({
       const cfg = ZONE_PLANE[zoneId];
       if (!cfg) return;
 
-      new THREE.TextureLoader().load(design.imageUrl, (tex) => {
-        if (!modelRef.current) return;
-        tex.colorSpace = THREE.SRGBColorSpace;
+      new THREE.TextureLoader()
+        .setCrossOrigin("anonymous")
+        .load(design.imageUrl, (tex) => {
+          if (!modelRef.current) return;
+          tex.colorSpace = THREE.SRGBColorSpace;
 
-        const pw = size.x * cfg.sw;
-        const ph = size.y * cfg.sh;
-        const geo = new THREE.PlaneGeometry(pw, ph);
-        const mat = new THREE.MeshBasicMaterial({
-          map: tex,
-          transparent: true,
-          depthTest: true,
-          depthWrite: false,
-          polygonOffset: true,
-          polygonOffsetFactor: -4,
-          polygonOffsetUnits: -4,
+          const pw = size.x * cfg.sw;
+          const ph = size.y * cfg.sh;
+          const geo = new THREE.PlaneGeometry(pw, ph);
+          const mat = new THREE.MeshBasicMaterial({
+            map: tex,
+            transparent: true,
+            depthTest: true,
+            depthWrite: false,
+            polygonOffset: true,
+            polygonOffsetFactor: -4,
+            polygonOffsetUnits: -4,
+          });
+          const mesh = new THREE.Mesh(geo, mat);
+          mesh.position.set(
+            lCenter.x + cfg.ox * size.x,
+            lCenter.y + cfg.oy * size.y,
+            lCenter.z + cfg.oz * (size.z * 0.5 + 0.005),
+          );
+          mesh.rotation.y = cfg.ry;
+          modelRef.current.add(mesh);
+          meshesRef.current.push(mesh);
         });
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(
-          lCenter.x + cfg.ox * size.x,
-          lCenter.y + cfg.oy * size.y,
-          lCenter.z + cfg.oz * (size.z * 0.5 + 0.005),
-        );
-        mesh.rotation.y = cfg.ry;
-        modelRef.current.add(mesh);
-        meshesRef.current.push(mesh);
-      });
     });
   }, []);
 

@@ -14,6 +14,13 @@ import "./Admin-dashboard.css";
 import { buildApiUrl } from "../config/api";
 import { CATEGORY_DEFAULTS, CATEGORY_NAMES } from "../config/categoryDefaults";
 
+const CATEGORY_ZONES = {
+  tshirt: ["front", "back", "left_sleeve", "right_sleeve"],
+  mug: ["front"],
+  calling_card: ["front", "back"],
+  other: [],
+};
+
 function AdminProducts({
   refreshTrigger = 0,
   onAddProduct = null,
@@ -46,19 +53,18 @@ function AdminProducts({
     color_options: [],
     size_options: [],
     material_options: [],
-    side_options: [],
     finishing_options: [],
     processing_options: [],
     delivery_options: [],
     quantity_options: [],
     shipping_options: [],
     print_zones: [],
+    category: "other",
   });
   const [tagInputs, setTagInputs] = useState({
     color_options: "",
     size_options: "",
     material_options: "",
-    side_options: "",
     finishing_options: "",
     processing_options: "",
     delivery_options: "",
@@ -242,7 +248,6 @@ function AdminProducts({
       color_options: fullProduct.color_options || [],
       size_options: fullProduct.size_options || [],
       material_options: fullProduct.material_options || [],
-      side_options: fullProduct.side_options || [],
       finishing_options: fullProduct.finishing_options || [],
       processing_options: fullProduct.processing_options || [],
       delivery_options: fullProduct.delivery_options || [],
@@ -255,12 +260,12 @@ function AdminProducts({
           : "",
       shipping_options: fullProduct.shipping_options || [],
       print_zones: fullProduct.print_zones || [],
+      category: fullProduct.category || "other",
     });
     setTagInputs({
       color_options: "",
       size_options: "",
       material_options: "",
-      side_options: "",
       finishing_options: "",
       processing_options: "",
       delivery_options: "",
@@ -325,15 +330,13 @@ function AdminProducts({
                 : parseInt(editForm.quantity_count),
             size_options: editForm.size_options,
             material_options: editForm.material_options,
-            side_options: editForm.side_options,
             finishing_options: editForm.finishing_options,
             processing_options: editForm.processing_options,
             delivery_options: editForm.delivery_options,
             quantity_options: editForm.quantity_options,
             shipping_options: editForm.shipping_options,
-            print_zones: editForm.side_options.map((s) =>
-              s.trim().toLowerCase().replace(/\s+/g, "_"),
-            ),
+            category: editForm.category,
+            print_zones: CATEGORY_ZONES[editForm.category] || [],
           }),
         },
       );
@@ -379,7 +382,6 @@ function AdminProducts({
       color_options: [...(defaults.color_options || [])],
       size_options: [...(defaults.size_options || [])],
       material_options: [...(defaults.material_options || [])],
-      side_options: [...(defaults.side_options || [])],
       finishing_options: [...(defaults.finishing_options || [])],
       processing_options: [...(defaults.processing_options || [])],
       delivery_options: [...(defaults.delivery_options || [])],
@@ -1142,6 +1144,46 @@ function AdminProducts({
                       fontWeight: "600",
                     }}
                   >
+                    Product Category
+                  </label>
+                  <select
+                    value={editForm.category}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, category: e.target.value })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "8px 10px",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "6px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <option value="tshirt">T-Shirt</option>
+                    <option value="mug">Mug</option>
+                    <option value="calling_card">Calling Card</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "12px",
+                  marginBottom: "12px",
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                    }}
+                  >
                     Material
                   </label>
                   <input
@@ -1266,7 +1308,7 @@ function AdminProducts({
                 />
               </div>
 
-              {/* Print Zones are derived from Printing (Sides) Options on save */}
+              {/* Print zones are derived automatically from Product Category on save */}
 
               <hr
                 style={{
@@ -1500,10 +1542,6 @@ function AdminProducts({
               <TagEditor field="color_options" label="Color Options" />
               <TagEditor field="size_options" label="Size Options" />
               <TagEditor field="material_options" label="Material Options" />
-              <TagEditor
-                field="side_options"
-                label="Printing (Sides) Options"
-              />
               <TagEditor field="finishing_options" label="Finishing Options" />
               <TagEditor
                 field="processing_options"
