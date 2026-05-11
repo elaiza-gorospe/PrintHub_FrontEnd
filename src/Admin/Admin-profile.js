@@ -416,7 +416,7 @@ function AdminProfile() {
             onClick={handleEdit}
             disabled={isEditing}
           >
-            ✏ Edit
+            Edit
           </button>
 
           <button
@@ -424,11 +424,11 @@ function AdminProfile() {
             onClick={handleSave}
             disabled={!isEditing}
           >
-            ✓ Save
+            Save
           </button>
 
           <button className="secondary-action" onClick={openChangePassword}>
-            🔑 Change Password
+            Change Password
           </button>
         </div>
       </div>

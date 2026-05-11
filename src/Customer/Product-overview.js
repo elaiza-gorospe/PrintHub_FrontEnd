@@ -38,10 +38,36 @@ function ProductOverview() {
     fetchProducts();
   }, []);
 
-  const categories = [...new Set(products.map((p) => p.print_type || "other"))];
-  const filtered = category && category !== "All"
-    ? products.filter((p) => (p.print_type || "other") === category)
-    : products; // ✅ Show all if category is "All"
+  const categoryMapping = {
+    Clothing: ["T-Shirt"],
+    Business: [
+      "Note Cards",
+      "Brochure",
+      "Flyer",
+      "Business Card",
+      "Hang Tags",
+      "Poster",
+      "Notebook",
+      "Tarpaulin",
+    ],
+    Labels: ["Hang Tags", "stickers"],
+  };
+
+  const categories = Object.keys(categoryMapping);
+
+  const filtered =
+    category && category !== "All"
+      ? products.filter((p) => {
+          const printType = p.print_type || "";
+          const name = p.name || "";
+          return categoryMapping[category]?.some(
+            (item) =>
+              printType.toLowerCase().includes(item.toLowerCase()) ||
+              name.toLowerCase().includes(item.toLowerCase())
+          );
+        })
+      : products; // ✅ Show all if category is "All"
+
   const fallbackImage =
     "[via.placeholder.com](https://via.placeholder.com/300x200?text=No+Image)";
 
