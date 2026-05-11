@@ -146,8 +146,7 @@ export default function TshirtCustomizerPanel({
       return;
     }
 
-    const userId = getUserId();
-    const isGuest = !userId;
+    const isGuest = !getUserId();
     if (isGuest && getGuestGenCount() >= GUEST_LIMIT) {
       setGenError(
         "Guests are limited to 3 AI generations. Please sign up to continue.",
@@ -162,30 +161,28 @@ export default function TshirtCustomizerPanel({
       const zoneName = activeZone ? activeZone.replace(/_/g, " ") : "t-shirt";
       const fullPrompt = `${prompt.trim()}, for the ${zoneName} of a t-shirt, flat graphic design, transparent background, high quality`;
 
-      const res = await fetch(buildApiUrl("/api/builder/generate"), {
+      const userId = getUserId();
+      const res = await fetch(buildApiUrl("/api/builder/generate-image"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(userId ? { "X-User-Id": String(userId) } : {}),
         },
-        body: JSON.stringify({
-          prompt: fullPrompt,
-          productId: product?.id,
-          quality: "standard",
-        }),
+        body: JSON.stringify({ prompt: fullPrompt, imageSize: "square_hd" }),
       });
       const data = await res.json();
-
       if (res.status === 429) {
         setGenError(data.message || "Please wait before generating again.");
         return;
       }
       if (!res.ok) throw new Error(data.message || "Generation failed");
 
+      const imageUrl = data.imageUrl || data.url;
+      if (!imageUrl) throw new Error("No image returned. Please try again.");
+
       if (isGuest) incrementGuestGenCount();
 
       const id = `gen-${Date.now()}`;
-      const imageUrl = data.url || data.glbUrl;
       setGallery((prev) => [
         ...prev,
         { id, url: imageUrl, label: prompt.trim().slice(0, 30) },
