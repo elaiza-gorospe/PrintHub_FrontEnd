@@ -8,6 +8,7 @@ import { extractNumericPrice, formatPrice } from "../utils/priceUtils";
 import Header from "../components/Header";
 import { buildApiUrl } from "../config/api";
 import AIBuilderPanel from "../components/AIBuilder/AIBuilderPanel";
+import TshirtCustomizerPanel from "../components/TshirtCustomizer/TshirtCustomizerPanel";
 
 /** Map a raw API product to the shape the component expects */
 function mapApiProduct(data) {
@@ -35,6 +36,7 @@ function mapApiProduct(data) {
     quantities: parseOptions(data.quantity_options),
     shipping: parseOptions(data.shipping_options),
     ai_prompt_rules: data.ai_prompt_rules || null,
+    print_zones: data.print_zones || [],
     quantity_mode: data.quantity_mode || "dropdown",
     quantity_count: data.quantity_count || null,
   };
@@ -342,6 +344,15 @@ function ProductDetail() {
               >
                 AI BUILDER
               </button>
+              {product.print_zones?.length > 0 && (
+                <button
+                  type="button"
+                  className={activeTab === "customize" ? "active" : ""}
+                  onClick={() => setActiveTab("customize")}
+                >
+                  CUSTOMIZE
+                </button>
+              )}
             </div>
 
             {activeTab === "product" && (
@@ -398,6 +409,17 @@ function ProductDetail() {
                   onDesignReady={(meta) => {
                     setActiveDesign(meta);
                   }}
+                  onClear={() => setActiveDesign(null)}
+                />
+              </div>
+            )}
+
+            {activeTab === "customize" && (
+              <div className="pd-tab-content pd-tab-builder-inline">
+                <TshirtCustomizerPanel
+                  product={product}
+                  activeDesign={activeDesign}
+                  onDesignReady={(meta) => setActiveDesign(meta)}
                   onClear={() => setActiveDesign(null)}
                 />
               </div>

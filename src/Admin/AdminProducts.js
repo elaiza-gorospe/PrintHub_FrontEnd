@@ -52,6 +52,7 @@ function AdminProducts({
     delivery_options: [],
     quantity_options: [],
     shipping_options: [],
+    print_zones: [],
   });
   const [tagInputs, setTagInputs] = useState({
     color_options: "",
@@ -253,6 +254,7 @@ function AdminProducts({
           ? String(fullProduct.quantity_count)
           : "",
       shipping_options: fullProduct.shipping_options || [],
+      print_zones: fullProduct.print_zones || [],
     });
     setTagInputs({
       color_options: "",
@@ -329,6 +331,9 @@ function AdminProducts({
             delivery_options: editForm.delivery_options,
             quantity_options: editForm.quantity_options,
             shipping_options: editForm.shipping_options,
+            print_zones: editForm.side_options.map((s) =>
+              s.trim().toLowerCase().replace(/\s+/g, "_"),
+            ),
           }),
         },
       );
@@ -1260,6 +1265,8 @@ function AdminProducts({
                   }}
                 />
               </div>
+
+              {/* Print Zones are derived from Printing (Sides) Options on save */}
 
               <hr
                 style={{
