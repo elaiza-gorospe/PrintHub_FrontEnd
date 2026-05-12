@@ -130,6 +130,7 @@ export default function TshirtPreview3D({
       (gltf) => {
         const model = gltf.scene;
         modelRef.current = model;
+        model.rotation.y = 5; // face front on load
         scene.add(model);
         applyColor(model, shirtColorRef.current);
 
@@ -267,14 +268,16 @@ function applyColor(model, hexColor) {
   const color = new THREE.Color(hexColor);
   model.traverse((node) => {
     if (node.isMesh) {
-      const materials = Array.isArray(node.material)
-        ? node.material
-        : [node.material];
-      materials.forEach((mat) => {
-        if (mat) {
-          mat.color.set(color);
-          mat.needsUpdate = true;
-        }
+      // Strip vertex colors from geometry so they can't override the material color
+      if (node.geometry.hasAttribute("color")) {
+        node.geometry.deleteAttribute("color");
+      }
+      // Replace material entirely with a fresh one
+      node.material = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.8,
+        metalness: 0.0,
+        vertexColors: false,
       });
     }
   });

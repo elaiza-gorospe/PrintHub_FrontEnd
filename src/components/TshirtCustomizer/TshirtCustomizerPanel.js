@@ -78,9 +78,9 @@ export default function TshirtCustomizerPanel({
   const [zoneDesigns, setZoneDesigns] = useState({});
   const [activeZone, setActiveZone] = useState(zones[0] || null);
 
-  // shirt color via hue slider (0-360)
-  const [hue, setHue] = useState(210);
-  const shirtColor = hueToHex(hue);
+  // shirt color — starts white; hue slider updates it
+  const [shirtColor, setShirtColor] = useState("#ffffff");
+  const [sliderHue, setSliderHue] = useState(0);
 
   // upload state
   const [uploading, setUploading] = useState(false);
@@ -386,8 +386,12 @@ export default function TshirtCustomizerPanel({
                   className="tsc-color-slider"
                   min={0}
                   max={360}
-                  value={hue}
-                  onChange={(e) => setHue(Number(e.target.value))}
+                  value={sliderHue}
+                  onChange={(e) => {
+                    const h = Number(e.target.value);
+                    setSliderHue(h);
+                    setShirtColor(hueToHex(h));
+                  }}
                 />
                 <div
                   className="tsc-color-swatch"
@@ -418,7 +422,8 @@ export default function TshirtCustomizerPanel({
               setGallery([]);
               setSelectedGalleryId(null);
               setActiveZone(zones[0] || null);
-              setHue(0);
+              setShirtColor("#ffffff");
+              setSliderHue(0);
               setPrompt("");
               onClear?.();
             }}
