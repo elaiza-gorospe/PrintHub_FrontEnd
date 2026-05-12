@@ -122,7 +122,7 @@ export default function TshirtPreview3D({
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.07;
-    controls.autoRotate = true;
+    controls.autoRotate = false;
     controls.autoRotateSpeed = 2.5;
 
     new GLTFLoader().load(
