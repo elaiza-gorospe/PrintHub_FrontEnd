@@ -172,19 +172,33 @@ function UserOrders() {
                                   title="Product"
                                 />
                               )}
-                              {design?.generatedImageUrl && (
-                                <div className="uo-item-design-wrap">
-                                  <img
-                                    src={design.generatedImageUrl}
-                                    alt="AI Design"
-                                    className="uo-item-thumb uo-item-thumb-design"
-                                    title="AI Design"
-                                  />
-                                  <span className="uo-design-badge">
-                                    AI Design
-                                  </span>
-                                </div>
-                              )}
+                              {(() => {
+                                const zoneImgs = Object.values(
+                                  design?.zones || {},
+                                )
+                                  .filter((z) => z?.imageUrl)
+                                  .map((z) => z.imageUrl);
+                                const imgs = zoneImgs.length
+                                  ? zoneImgs
+                                  : design?.generatedImageUrl
+                                    ? [design.generatedImageUrl]
+                                    : [];
+                                return imgs.map((src, i) => (
+                                  <div key={i} className="uo-item-design-wrap">
+                                    <img
+                                      src={src}
+                                      alt={`AI Design zone ${i + 1}`}
+                                      className="uo-item-thumb uo-item-thumb-design"
+                                      title={`AI Design zone ${i + 1}`}
+                                    />
+                                    {i === 0 && (
+                                      <span className="uo-design-badge">
+                                        AI Design
+                                      </span>
+                                    )}
+                                  </div>
+                                ));
+                              })()}
                             </div>
                             <div className="uo-item-details">
                               <p className="uo-item-name">{productName}</p>

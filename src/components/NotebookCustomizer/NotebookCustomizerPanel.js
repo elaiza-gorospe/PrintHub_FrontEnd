@@ -203,6 +203,18 @@ export default function NotebookCustomizerPanel({
     setZoneDesigns((prev) => ({ ...prev, [zoneId]: layer }));
   };
 
+  // ── Zone select: place selected gallery image if one is highlighted ─
+  const handleZoneSelect = (zoneId) => {
+    setActiveZone(zoneId);
+    if (!selectedGalleryId) return;
+    const item = gallery.find((g) => g.id === selectedGalleryId);
+    if (!item) return;
+    setZoneDesigns((prev) => ({
+      ...prev,
+      [zoneId]: { imageUrl: item.url, x: 10, y: 10, w: 80, h: 80 },
+    }));
+  };
+
   const hasAnyDesign = Object.values(zoneDesigns).some(Boolean);
 
   const handleUseDesign = () => {
@@ -352,7 +364,7 @@ export default function NotebookCustomizerPanel({
             zones={zones}
             zoneDesigns={zoneDesigns}
             activeZone={activeZone}
-            onZoneSelect={setActiveZone}
+            onZoneSelect={handleZoneSelect}
             onZoneDesignChange={handleZoneDesignChange}
           />
 

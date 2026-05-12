@@ -160,28 +160,41 @@ function UserCartPage() {
             {cartItems.map((item) => (
               <div key={item.id} className="ucart-item">
                 <div className="ucart-thumb">
-                  {item.customizations?.design?.generatedImageUrl ||
-                  item.productImage ||
-                  item.images?.[0] ||
-                  item.product?.images?.[0] ||
-                  item.customizations?.design?.sourceAssetUrls?.[0] ? (
-                    <img
-                      src={
-                        item.customizations?.design?.generatedImageUrl ||
-                        item.productImage ||
-                        item.images?.[0] ||
-                        item.product?.images?.[0] ||
-                        item.customizations?.design?.sourceAssetUrls?.[0]
-                      }
-                      alt={item.title || "Product image"}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        borderRadius: 4,
-                      }}
-                    />
-                  ) : null}
+                  {(() => {
+                    const zoneImgs = Object.values(
+                      item.customizations?.design?.zones || {},
+                    )
+                      .filter((z) => z?.imageUrl)
+                      .map((z) => z.imageUrl);
+                    const fallback =
+                      item.customizations?.design?.generatedImageUrl ||
+                      item.productImage ||
+                      item.images?.[0] ||
+                      item.product?.images?.[0] ||
+                      item.customizations?.design?.sourceAssetUrls?.[0];
+                    const imgs = zoneImgs.length
+                      ? zoneImgs
+                      : fallback
+                        ? [fallback]
+                        : [];
+                    if (!imgs.length) return null;
+                    return imgs.map((src, i) => (
+                      <img
+                        key={i}
+                        src={src}
+                        alt={item.title || "Design"}
+                        style={{
+                          width:
+                            imgs.length > 1
+                              ? `${Math.floor(100 / imgs.length)}%`
+                              : "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: 4,
+                        }}
+                      />
+                    ));
+                  })()}
                 </div>
 
                 <div className="ucart-info">

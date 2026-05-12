@@ -947,11 +947,26 @@ function ProductDetail() {
                   )}
                   {activeDesign && (
                     <div className="pd-design-attached">
-                      <img
-                        src={activeDesign.generatedImageUrl}
-                        alt="design preview"
-                        className="pd-design-thumb"
-                      />
+                      {Object.values(activeDesign.zones || {})
+                        .filter((z) => z?.imageUrl)
+                        .map((z, i) => (
+                          <img
+                            key={i}
+                            src={z.imageUrl}
+                            alt={`design zone ${i + 1}`}
+                            className="pd-design-thumb"
+                          />
+                        ))}
+                      {!Object.values(activeDesign.zones || {}).some(
+                        (z) => z?.imageUrl,
+                      ) &&
+                        activeDesign.generatedImageUrl && (
+                          <img
+                            src={activeDesign.generatedImageUrl}
+                            alt="design preview"
+                            className="pd-design-thumb"
+                          />
+                        )}
                       <span>AI design attached</span>
                       <button
                         type="button"
