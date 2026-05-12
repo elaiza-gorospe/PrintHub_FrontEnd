@@ -9,6 +9,7 @@ import Header from "../components/Header";
 import { buildApiUrl } from "../config/api";
 import AIBuilderPanel from "../components/AIBuilder/AIBuilderPanel";
 import TshirtCustomizerPanel from "../components/TshirtCustomizer/TshirtCustomizerPanel";
+import NotebookCustomizerPanel from "../components/NotebookCustomizer/NotebookCustomizerPanel";
 
 /** Map a raw API product to the shape the component expects */
 function mapApiProduct(data) {
@@ -37,6 +38,7 @@ function mapApiProduct(data) {
     shipping: parseOptions(data.shipping_options),
     ai_prompt_rules: data.ai_prompt_rules || null,
     print_zones: data.print_zones || [],
+    dbCategory: data.category || "other",
     quantity_mode: data.quantity_mode || "dropdown",
     quantity_count: data.quantity_count || null,
   };
@@ -416,12 +418,21 @@ function ProductDetail() {
 
             {activeTab === "customize" && (
               <div className="pd-tab-content pd-tab-builder-inline">
-                <TshirtCustomizerPanel
-                  product={product}
-                  activeDesign={activeDesign}
-                  onDesignReady={(meta) => setActiveDesign(meta)}
-                  onClear={() => setActiveDesign(null)}
-                />
+                {product.dbCategory === "notebook" ? (
+                  <NotebookCustomizerPanel
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
+                ) : (
+                  <TshirtCustomizerPanel
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
+                )}
               </div>
             )}
           </div>
