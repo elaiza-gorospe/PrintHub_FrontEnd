@@ -17,8 +17,7 @@ import {
   FaCube,
 } from "react-icons/fa";
 import { buildApiUrl } from "../../config/api";
-import AIBuilderEditor from "./AIBuilderEditor";
-import AIBuilder3DPreview from "./AIBuilder3DPreview";
+import TshirtPreview3D from "../TshirtCustomizer/TshirtPreview3D";
 import "./AIBuilder.css";
 
 export default function AIBuilderPanel({
@@ -47,11 +46,9 @@ export default function AIBuilderPanel({
   const fileInputRef = useRef(null);
 
   // ── result / editor state ───────────────────────────────────────
-  // resultMeta: { url, width, height, seed, prompt, stored, path } | null
+  // resultMeta: { imageUrl, url, width, height, prompt, stored, path } | null
   const [resultMeta, setResultMeta] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
-  const [builderState, setBuilderState] = useState(null); // from AIBuilderEditor
-  const [imgLoading, setImgLoading] = useState(false); // true while Pollinations image loads
   const [show3D, setShow3D] = useState(false);
   const navigate = useNavigate();
 
@@ -123,7 +120,7 @@ export default function AIBuilderPanel({
       const productName = product?.title || "";
       // User-visible prompt (without design rules)
       const displayPrompt = productName
-        ? `A professional 3D model for ${productName}. ${prompt.trim()}. Must be clearly suitable for ${productName}, high quality, 3D printable.`
+        ? `A flat graphic design image for ${productName}. ${prompt.trim()}. Suitable for printing on ${productName}, transparent background, high quality.`
         : prompt.trim();
 
       // Full prompt with rules for API (hidden from frontend)
@@ -132,7 +129,7 @@ export default function AIBuilderPanel({
         fullPrompt += `\n\n[Design Rules]: ${ai_prompt_rules}`;
       }
 
-      const res = await fetch(buildApiUrl("/api/builder/generate"), {
+      const res = await fetch(buildApiUrl("/api/builder/generate-image"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -140,8 +137,7 @@ export default function AIBuilderPanel({
         },
         body: JSON.stringify({
           prompt: fullPrompt,
-          productId: product?.id,
-          quality: "standard",
+          imageSize: "square_hd",
         }),
       });
 
@@ -156,7 +152,6 @@ export default function AIBuilderPanel({
       // if guest, increment local guest counter (successful generation)
       if (isGuest) incrementGuestGenCount();
 
-      setImgLoading(true);
       // Store display prompt (without rules) for UI and original user input for intent
       setResultMeta({
         ...data,
@@ -265,17 +260,15 @@ export default function AIBuilderPanel({
         fullDescription += `\n\n[Design Rules]: ${ai_prompt_rules}`;
       }
 
-      const res = await fetch(buildApiUrl("/api/builder/generate-from-image"), {
+      const res = await fetch(buildApiUrl("/api/builder/generate-image"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-User-Id": String(userId),
         },
         body: JSON.stringify({
-          imageUrl: uploadedMeta.url,
-          description: fullDescription,
-          quality: "standard",
-          productId: product?.id,
+          prompt: fullDescription,
+          imageSize: "square_hd",
         }),
       });
 
@@ -287,14 +280,12 @@ export default function AIBuilderPanel({
       }
       if (!res.ok) throw new Error(data.message || "Generation failed");
 
-      setImgLoading(true);
       // Store display description (without rules) for UI
       setResultMeta({
         ...data,
         prompt: displayDescription,
         userPrompt: displayDescription,
         source: "generated",
-        sourceImageUrl: uploadedMeta.url,
       });
       setShowEditor(true);
       setUploadedMeta(null);
@@ -325,37 +316,28 @@ export default function AIBuilderPanel({
     });
     setShowEditor(true);
     setUploadedMeta(null);
-    setImgLoading(false);
   };
 
-  // ── Use this 3D model ──────────────────────────────────────────
+  // ── Use this design ──────────────────────────────────────────
   const handleUseDesign = () => {
     if (!resultMeta) return;
     const designMeta = {
-      generatedModelUrl: resultMeta.glbUrl || resultMeta.url,
-      sourceAssetUrls:
-        resultMeta.source === "upload"
-          ? [resultMeta.sourceImageUrl || resultMeta.url]
-          : [],
+      generatedImageUrl: resultMeta.imageUrl || resultMeta.url,
       prompt: resultMeta.prompt || null,
       source: resultMeta.source,
       storagePath: resultMeta.path || null,
-      meshyTaskId: resultMeta.meshyTaskId || null,
-      builderState: builderState || null,
       generatedAt: new Date().toISOString(),
     };
     onDesignReady(designMeta);
     // Close editor but stay in AI Builder tab to show applied design
     setShowEditor(false);
     setResultMeta(null);
-    setBuilderState(null);
   };
 
   // ── Discard result ──────────────────────────────────────────────
   const handleDiscard = () => {
     setResultMeta(null);
     setShowEditor(false);
-    setBuilderState(null);
     setUploadDescription("");
   };
 
@@ -556,11 +538,20 @@ export default function AIBuilderPanel({
               <div className="aib-upload-actions">
                 <button
                   type="button"
+                  className="aib-btn-use"
+                  onClick={handleUseUploaded}
+                  disabled={uploadGenerating}
+                >
+                  <FaCheckCircle style={{ marginRight: 6 }} />
+                  Use This Image
+                </button>
+                <button
+                  type="button"
                   className="aib-btn-generate"
                   onClick={handleGenerateFromUpload}
                   disabled={uploadGenerating}
                 >
-                  {uploadGenerating ? "Generating…" : "Generate 3D Model"}
+                  {uploadGenerating ? "Generating…" : "Generate AI Image"}
                 </button>
                 <button
                   type="button"
@@ -575,7 +566,7 @@ export default function AIBuilderPanel({
               {uploadGenerating && (
                 <div className="aib-status">
                   <span className="aib-spinner" />
-                  Generating 3D model from your image…
+                  Generating AI image from your reference…
                 </div>
               )}
             </>
@@ -595,15 +586,13 @@ export default function AIBuilderPanel({
             </div>
           )}
 
-          {/* Show 3D preview directly since models can't be edited */}
+          {/* Show design applied to the product 3D model */}
           <div style={{ minHeight: 300, marginBottom: 16 }}>
-            <AIBuilder3DPreview
-              designImage={resultMeta.glbUrl || resultMeta.url}
-              prompt={
-                resultMeta.userPrompt ||
-                resultMeta.prompt ||
-                "Generated 3D model"
-              }
+            <TshirtPreview3D
+              modelPath="/models/tshirt.glb"
+              zoneDesigns={{
+                front: { imageUrl: resultMeta.imageUrl || resultMeta.url },
+              }}
             />
           </div>
 
@@ -612,16 +601,14 @@ export default function AIBuilderPanel({
               type="button"
               className="aib-btn-use"
               onClick={handleUseDesign}
-              disabled={imgLoading}
             >
               <FaCheckCircle style={{ marginRight: 6 }} />
-              Use this 3D model
+              Use this design
             </button>
             <button
               type="button"
               className="aib-btn-3d"
               onClick={() => setShow3D(true)}
-              disabled={imgLoading}
             >
               <FaCube style={{ marginRight: 6 }} />
               View 3D
@@ -655,13 +642,11 @@ export default function AIBuilderPanel({
               Close
             </button>
             <div className="aib-3d-wrapper">
-              <AIBuilder3DPreview
-                designImage={resultMeta.glbUrl || resultMeta.url}
-                prompt={
-                  resultMeta.userPrompt ||
-                  resultMeta.prompt ||
-                  "Generated 3D model"
-                }
+              <TshirtPreview3D
+                modelPath="/models/tshirt.glb"
+                zoneDesigns={{
+                  front: { imageUrl: resultMeta.imageUrl || resultMeta.url },
+                }}
               />
             </div>
           </div>

@@ -7,7 +7,7 @@ import "./TshirtCustomizer.css";
 // Zone plane config: offsets as fraction of bounding-box size, plus Y rotation
 const ZONE_PLANE = {
   front: { ox: 0, oy: 0.05, oz: 1, ry: 0, sw: 0.4, sh: 0.35 },
-  back: { ox: 0, oy: 0.05, oz: -1, ry: Math.PI, sw: 0.4, sh: 0.35 },
+  back: { ox: -0.21, oy: -0.023, oz: -1, ry: -2, sw: 0.4, sh: 0.35 },
   left_sleeve: { ox: 0.38, oy: 0.2, oz: 0.2, ry: -0.5, sw: 0.2, sh: 0.2 },
   right_sleeve: { ox: -0.38, oy: 0.2, oz: 0.2, ry: 0.5, sw: 0.2, sh: 0.2 },
 };

@@ -15,7 +15,7 @@ import {
 } from "react-icons/fa";
 import "./Admin-dashboard.css";
 import { buildApiUrl } from "../config/api";
-import AIBuilder3DPreview from "../components/AIBuilder/AIBuilder3DPreview";
+import TshirtPreview3D from "../components/TshirtCustomizer/TshirtPreview3D";
 
 function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -1162,7 +1162,10 @@ function AdminOrders() {
                 height: "100%",
               }}
             >
-              <AIBuilder3DPreview designImage={ai3DPreviewModal.imageUrl} />
+              <TshirtPreview3D
+                modelPath="/models/tshirt.glb"
+                zoneDesigns={{ front: { imageUrl: ai3DPreviewModal.imageUrl } }}
+              />
             </div>
 
             {/* Modal Footer */}
