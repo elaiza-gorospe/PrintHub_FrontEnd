@@ -178,22 +178,47 @@ function UserCartPage() {
                         ? [fallback]
                         : [];
                     if (!imgs.length) return null;
-                    return imgs.map((src, i) => (
-                      <img
-                        key={i}
-                        src={src}
-                        alt={item.title || "Design"}
+                    if (imgs.length === 1) {
+                      return (
+                        <img
+                          src={imgs[0]}
+                          alt={item.title || "Design"}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: 10,
+                          }}
+                        />
+                      );
+                    }
+                    return (
+                      <div
                         style={{
-                          width:
-                            imgs.length > 1
-                              ? `${Math.floor(100 / imgs.length)}%`
-                              : "100%",
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gridTemplateRows: "1fr 1fr",
+                          width: "100%",
                           height: "100%",
-                          objectFit: "cover",
-                          borderRadius: 4,
+                          borderRadius: 10,
+                          overflow: "hidden",
+                          gap: 1,
                         }}
-                      />
-                    ));
+                      >
+                        {imgs.slice(0, 4).map((src, i) => (
+                          <img
+                            key={i}
+                            src={src}
+                            alt={`zone ${i + 1}`}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ))}
+                      </div>
+                    );
                   })()}
                 </div>
 

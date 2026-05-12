@@ -634,7 +634,8 @@
 .pd-design-attached {
   display: flex;
   align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-top: 14px;
   padding: 8px 12px;
   background: #eef7f0;
@@ -643,6 +644,11 @@
   font-size: 13px;
   color: #2d6a4f;
   font-weight: 600;
+}
+
+.pd-design-attached span {
+  flex: 1;
+  min-width: 80px;
 }
 
 .pd-design-thumb {
@@ -664,4 +670,3 @@
   padding: 0 4px;
   line-height: 1;
 }
-
