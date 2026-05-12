@@ -27,7 +27,7 @@ export default function NotebookPreview3D({ modelPath, zoneDesigns = {} }) {
   }, [zoneDesigns]);
 
   // ── Rebuild design planes ─────────────────────────────────────────
-  const rebuildPlanes = useCallback(() => {
+  const rebuildPlanes = useCallback((designs) => {
     const model = modelRef.current;
     if (!model) return;
 
@@ -45,7 +45,7 @@ export default function NotebookPreview3D({ modelPath, zoneDesigns = {} }) {
     const wCenter = box.getCenter(new THREE.Vector3());
     const lCenter = model.worldToLocal(wCenter.clone());
 
-    Object.entries(designsRef.current).forEach(([zoneId, design]) => {
+    Object.entries(designs).forEach(([zoneId, design]) => {
       if (!design?.imageUrl) return;
       const cfg = ZONE_PLANE[zoneId];
       if (!cfg) return;
@@ -198,7 +198,7 @@ export default function NotebookPreview3D({ modelPath, zoneDesigns = {} }) {
 
   // ── Rebuild planes when model is ready OR designs change ──────────
   useEffect(() => {
-    if (ready) rebuildPlanes();
+    if (ready) rebuildPlanes(zoneDesigns);
   }, [ready, zoneDesigns, rebuildPlanes]);
 
   return (

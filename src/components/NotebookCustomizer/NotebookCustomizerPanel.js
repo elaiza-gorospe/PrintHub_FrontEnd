@@ -108,6 +108,13 @@ export default function NotebookCustomizerPanel({
       const id = `upload-${Date.now()}`;
       setGallery((prev) => [...prev, { id, url: data.url, label: file.name }]);
       setSelectedGalleryId(id);
+      // Auto-place into active zone so 3D model updates immediately
+      setZoneDesigns((prev) => ({
+        ...prev,
+        ...(activeZone
+          ? { [activeZone]: { imageUrl: data.url, x: 10, y: 10, w: 80, h: 80 } }
+          : {}),
+      }));
     } catch (err) {
       setUploadError(err.message || "Upload failed. Please try again.");
     } finally {
@@ -167,6 +174,13 @@ export default function NotebookCustomizerPanel({
         { id, url: imageUrl, label: prompt.trim().slice(0, 30) },
       ]);
       setSelectedGalleryId(id);
+      // Auto-place into active zone so 3D model updates immediately
+      setZoneDesigns((prev) => ({
+        ...prev,
+        ...(activeZone
+          ? { [activeZone]: { imageUrl, x: 10, y: 10, w: 80, h: 80 } }
+          : {}),
+      }));
     } catch (err) {
       setGenError(err.message || "Something went wrong. Please try again.");
     } finally {
@@ -192,9 +206,14 @@ export default function NotebookCustomizerPanel({
   const hasAnyDesign = Object.values(zoneDesigns).some(Boolean);
 
   const handleUseDesign = () => {
+    const primaryImage =
+      zoneDesigns.front_cover?.imageUrl ||
+      Object.values(zoneDesigns).find(Boolean)?.imageUrl ||
+      null;
     onDesignReady({
       type: "notebook",
       zones: zoneDesigns,
+      generatedImageUrl: primaryImage,
       generatedAt: new Date().toISOString(),
     });
   };

@@ -222,10 +222,15 @@ export default function TshirtCustomizerPanel({
   const hasAnyDesign = Object.values(zoneDesigns).some(Boolean);
 
   const handleUseDesign = () => {
+    const primaryImage =
+      zoneDesigns.front?.imageUrl ||
+      Object.values(zoneDesigns).find(Boolean)?.imageUrl ||
+      null;
     onDesignReady({
       type: "tshirt",
       zones: zoneDesigns,
       shirtColor,
+      generatedImageUrl: primaryImage,
       generatedAt: new Date().toISOString(),
     });
   };
