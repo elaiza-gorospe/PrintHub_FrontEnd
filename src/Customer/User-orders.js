@@ -6,11 +6,37 @@ import { FaArrowLeft } from "react-icons/fa";
 import { buildApiUrl } from "../config/api";
 import { Capacitor } from "@capacitor/core";
 
+const STATUS_GROUPS = [
+  {
+    key: "active",
+    label: "Active Orders",
+    match: (o) => o.payment_status !== "paid" && o.status !== "cancelled",
+  },
+  {
+    key: "paid",
+    label: "Paid / Processing",
+    match: (o) =>
+      o.payment_status === "paid" &&
+      !["delivered", "cancelled"].includes(o.status),
+  },
+  {
+    key: "delivered",
+    label: "Delivered",
+    match: (o) => o.status === "delivered",
+  },
+  {
+    key: "cancelled",
+    label: "Cancelled",
+    match: (o) => o.status === "cancelled",
+  },
+];
+
 function UserOrders() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -49,6 +75,27 @@ function UserOrders() {
 
     fetchOrders();
   }, [navigate]);
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+    setCancellingId(orderId);
+    try {
+      const res = await fetch(buildApiUrl(`/api/orders/${orderId}`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "cancelled" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to cancel order");
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: "cancelled" } : o)),
+      );
+    } catch (err) {
+      alert(err.message || "Could not cancel order. Please try again.");
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   const formatCurrency = (price) => {
     return new Intl.NumberFormat("en-PH", {
@@ -95,13 +142,6 @@ function UserOrders() {
           </button>
           <h1 className="uo-title">My Orders</h1>
         </div>
-
-        {loading && (
-          <div className="uo-loading">
-            <p>Loading orders...</p>
-          </div>
-        )}
-
         {error && (
           <div className="uo-error">
             <p>{error}</p>
@@ -123,188 +163,216 @@ function UserOrders() {
 
         {!loading && !error && orders.length > 0 && (
           <div className="uo-orders">
-            {orders.map((order) => (
-              <div key={order.id} className="uo-order-card">
-                <div className="uo-order-header">
-                  <div className="uo-order-info">
-                    <h3>Order #{order.id}</h3>
-                    <p className="uo-date">
-                      {new Date(order.createdAt).toLocaleDateString("en-PH", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                  </div>
-                  <div
-                    className="uo-status"
-                    style={{
-                      backgroundColor: getStatusColor(
-                        order.status,
-                        order.payment_status,
-                      ),
-                    }}
-                  >
-                    {order.payment_status !== "paid"
-                      ? `PAYMENT PENDING`
-                      : order.status?.charAt(0).toUpperCase() +
-                        order.status?.slice(1)}
-                  </div>
-                </div>
-
-                <div className="uo-items">
-                  <h4>Items</h4>
-                  {order.items && order.items.length > 0 ? (
-                    <div className="uo-items-list">
-                      {order.items.map((item) => {
-                        const design = item.customizations?.design;
-                        const productImg = item.product?.images?.[0];
-                        const productName =
-                          item.product?.name || `Product #${item.productId}`;
-                        return (
-                          <div key={item.id} className="uo-item-row">
-                            <div className="uo-item-thumbs">
-                              {productImg && (
-                                <img
-                                  src={productImg}
-                                  alt={productName}
-                                  className="uo-item-thumb"
-                                  title="Product"
-                                />
-                              )}
-                              {(() => {
-                                const zoneImgs = Object.values(
-                                  design?.zones || {},
-                                )
-                                  .filter((z) => z?.imageUrl)
-                                  .map((z) => z.imageUrl);
-                                const imgs = zoneImgs.length
-                                  ? zoneImgs
-                                  : design?.generatedImageUrl
-                                    ? [design.generatedImageUrl]
-                                    : [];
-                                return imgs.map((src, i) => (
-                                  <div key={i} className="uo-item-design-wrap">
-                                    <img
-                                      src={src}
-                                      alt={`AI Design zone ${i + 1}`}
-                                      className="uo-item-thumb uo-item-thumb-design"
-                                      title={`AI Design zone ${i + 1}`}
-                                    />
-                                    {i === 0 && (
-                                      <span className="uo-design-badge">
-                                        AI Design
-                                      </span>
-                                    )}
-                                  </div>
-                                ));
-                              })()}
-                            </div>
-                            <div className="uo-item-details">
-                              <p className="uo-item-name">{productName}</p>
-                              {design?.prompt && (
-                                <p className="uo-item-design-prompt">
-                                  "
-                                  {design.prompt.length > 80
-                                    ? design.prompt.slice(0, 80) + "…"
-                                    : design.prompt}
-                                  "
-                                </p>
-                              )}
-                              <p className="uo-item-qty">
-                                Qty: {item.quantity}
-                              </p>
-                            </div>
-                            <div className="uo-item-price">
-                              {formatCurrency(item.unit_price)} ×{" "}
-                              {item.quantity} ={" "}
-                              {formatCurrency(item.total_price)}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <p className="uo-no-items">No items in this order</p>
-                  )}
-                </div>
-
-                {order.shipping_address && (
-                  <div className="uo-shipping">
-                    <h4>Shipping Address</h4>
-                    <p>{order.shipping_address}</p>
-                  </div>
-                )}
-
-                <div className="uo-order-footer">
-                  <div className="uo-total">
-                    <strong>Total:</strong>
-                    <strong>{formatCurrency(order.total)}</strong>
-                  </div>
-                  {order.total > 0 &&
-                    order.status !== "cancelled" &&
-                    order.payment_status !== "paid" && (
-                      <div className="uo-pay-row">
-                        <span className="uo-pay-label">
-                          {order.payment_status === "awaiting_payment"
-                            ? "Awaiting payment"
-                            : "Payment pending"}
-                        </span>
-                        <button
-                          type="button"
-                          className="uo-pay-btn"
-                          onClick={async () => {
-                            // Use stored checkout_url if available
-                            if (order.checkout_url) {
-                              // Always create a fresh session so the return URL matches current platform
-                              // Fall through to create new session below
-                            }
-                            // Create a new PayMongo session with correct return URL for this platform
-                            try {
-                              const returnBase = Capacitor.isNativePlatform()
-                                ? "com.printhub.customer://"
-                                : window.location.origin;
-                              const res = await fetch(
-                                buildApiUrl("/api/payments/checkout"),
-                                {
-                                  method: "POST",
-                                  headers: {
-                                    "Content-Type": "application/json",
-                                  },
-                                  body: JSON.stringify({
-                                    orderId: order.id,
-                                    returnBase,
-                                  }),
-                                },
-                              );
-                              const data = await res.json();
-                              if (!res.ok)
-                                throw new Error(
-                                  data.message ||
-                                    "Failed to create payment session",
-                                );
-                              window.location.assign(data.checkout_url);
-                            } catch (err) {
-                              alert(
-                                err.message ||
-                                  "Could not initiate payment. Please try again.",
-                              );
-                            }
+            {STATUS_GROUPS.map((group) => {
+              const grouped = orders.filter(group.match);
+              if (!grouped.length) return null;
+              return (
+                <div key={group.key} className="uo-group">
+                  <h2 className="uo-group-title">{group.label}</h2>
+                  {grouped.map((order) => (
+                    <div key={order.id} className="uo-order-card">
+                      <div className="uo-order-header">
+                        <div className="uo-order-info">
+                          <h3>Order #{order.id}</h3>
+                          <p className="uo-date">
+                            {new Date(order.createdAt).toLocaleDateString(
+                              "en-PH",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              },
+                            )}
+                          </p>
+                        </div>
+                        <div
+                          className="uo-status"
+                          style={{
+                            backgroundColor: getStatusColor(
+                              order.status,
+                              order.payment_status,
+                            ),
                           }}
                         >
-                          Pay Now
-                        </button>
+                          {order.status === "cancelled"
+                            ? "CANCELLED"
+                            : order.payment_status !== "paid"
+                              ? `PAYMENT PENDING`
+                              : order.status?.charAt(0).toUpperCase() +
+                                order.status?.slice(1)}
+                        </div>
                       </div>
-                    )}
-                  {order.delivered_at && (
-                    <p className="uo-delivered">
-                      Delivered on{" "}
-                      {new Date(order.delivered_at).toLocaleDateString("en-PH")}
-                    </p>
-                  )}
+
+                      <div className="uo-items">
+                        <h4>Items</h4>
+                        {order.items && order.items.length > 0 ? (
+                          <div className="uo-items-list">
+                            {order.items.map((item) => {
+                              const design = item.customizations?.design;
+                              const productImg = item.product?.images?.[0];
+                              const productName =
+                                item.product?.name ||
+                                `Product #${item.productId}`;
+                              return (
+                                <div key={item.id} className="uo-item-row">
+                                  <div className="uo-item-thumbs">
+                                    {productImg && (
+                                      <img
+                                        src={productImg}
+                                        alt={productName}
+                                        className="uo-item-thumb"
+                                        title="Product"
+                                      />
+                                    )}
+                                    {(() => {
+                                      const zoneImgs = Object.values(
+                                        design?.zones || {},
+                                      )
+                                        .filter((z) => z?.imageUrl)
+                                        .map((z) => z.imageUrl);
+                                      const imgs = zoneImgs.length
+                                        ? zoneImgs
+                                        : design?.generatedImageUrl
+                                          ? [design.generatedImageUrl]
+                                          : [];
+                                      return imgs.map((src, i) => (
+                                        <div
+                                          key={i}
+                                          className="uo-item-design-wrap"
+                                        >
+                                          <img
+                                            src={src}
+                                            alt={`AI Design zone ${i + 1}`}
+                                            className="uo-item-thumb uo-item-thumb-design"
+                                            title={`AI Design zone ${i + 1}`}
+                                          />
+                                          {i === 0 && (
+                                            <span className="uo-design-badge">
+                                              AI Design
+                                            </span>
+                                          )}
+                                        </div>
+                                      ));
+                                    })()}
+                                  </div>
+                                  <div className="uo-item-details">
+                                    <p className="uo-item-name">
+                                      {productName}
+                                    </p>
+                                    {design?.prompt && (
+                                      <p className="uo-item-design-prompt">
+                                        "
+                                        {design.prompt.length > 80
+                                          ? design.prompt.slice(0, 80) + "…"
+                                          : design.prompt}
+                                        "
+                                      </p>
+                                    )}
+                                    <p className="uo-item-qty">
+                                      Qty: {item.quantity}
+                                    </p>
+                                  </div>
+                                  <div className="uo-item-price">
+                                    {formatCurrency(item.unit_price)} ×{" "}
+                                    {item.quantity} ={" "}
+                                    {formatCurrency(item.total_price)}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="uo-no-items">No items in this order</p>
+                        )}
+                      </div>
+
+                      {order.shipping_address && (
+                        <div className="uo-shipping">
+                          <h4>Shipping Address</h4>
+                          <p>{order.shipping_address}</p>
+                        </div>
+                      )}
+
+                      <div className="uo-order-footer">
+                        <div className="uo-total">
+                          <strong>Total:</strong>
+                          <strong>{formatCurrency(order.total)}</strong>
+                        </div>
+                        {order.total > 0 &&
+                          order.status !== "cancelled" &&
+                          order.payment_status !== "paid" && (
+                            <div className="uo-pay-row">
+                              <button
+                                type="button"
+                                className="uo-cancel-btn"
+                                disabled={cancellingId === order.id}
+                                onClick={() => handleCancelOrder(order.id)}
+                              >
+                                {cancellingId === order.id
+                                  ? "Cancelling…"
+                                  : "Cancel Order"}
+                              </button>
+                              <button
+                                type="button"
+                                className="uo-pay-btn"
+                                onClick={async () => {
+                                  // Use stored checkout_url if available
+                                  if (order.checkout_url) {
+                                    // Always create a fresh session so the return URL matches current platform
+                                    // Fall through to create new session below
+                                  }
+                                  // Create a new PayMongo session with correct return URL for this platform
+                                  try {
+                                    const returnBase =
+                                      Capacitor.isNativePlatform()
+                                        ? "com.printhub.customer://"
+                                        : window.location.origin;
+                                    const res = await fetch(
+                                      buildApiUrl("/api/payments/checkout"),
+                                      {
+                                        method: "POST",
+                                        headers: {
+                                          "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                          orderId: order.id,
+                                          returnBase,
+                                        }),
+                                      },
+                                    );
+                                    const data = await res.json();
+                                    if (!res.ok)
+                                      throw new Error(
+                                        data.message ||
+                                          "Failed to create payment session",
+                                      );
+                                    window.location.assign(data.checkout_url);
+                                  } catch (err) {
+                                    alert(
+                                      err.message ||
+                                        "Could not initiate payment. Please try again.",
+                                    );
+                                  }
+                                }}
+                              >
+                                Pay Now
+                              </button>
+                            </div>
+                          )}
+                        {order.delivered_at && (
+                          <p className="uo-delivered">
+                            Delivered on{" "}
+                            {new Date(order.delivered_at).toLocaleDateString(
+                              "en-PH",
+                            )}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
