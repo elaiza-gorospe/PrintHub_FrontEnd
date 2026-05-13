@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import "./AIBuilder.css";
 
 export default function AIBuilder3DPreview({ designImage, prompt }) {
@@ -9,9 +8,9 @@ export default function AIBuilder3DPreview({ designImage, prompt }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Load and display 3D GLB model
+  // Create 3D scene with design image as a texture on a cube
   useEffect(() => {
-    if (!designImage || !mountRef.current) return undefined;
+    if (!designImage || !prompt || !mountRef.current) return undefined;
 
     setError("");
 
@@ -41,34 +40,27 @@ export default function AIBuilder3DPreview({ designImage, prompt }) {
     controls.autoRotate = true;
     controls.autoRotateSpeed = 4;
 
-    // Load GLB model
-    const loader = new GLTFLoader();
-    let model = null;
+    // Create a textured cube with the design image
+    const textureLoader = new THREE.TextureLoader();
+    let cube = null;
 
-    loader.load(
+    textureLoader.load(
       designImage,
-      (gltf) => {
-        model = gltf.scene;
-        scene.add(model);
-
-        // Auto-fit camera to model
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const fov = camera.fov * (Math.PI / 180);
-        let cameraZ = maxDim / 2 / Math.tan(fov / 2);
-        cameraZ *= 1.5; // Add padding
-        camera.position.z = cameraZ;
-        camera.lookAt(model.position);
-        controls.target.copy(box.getCenter(new THREE.Vector3()));
-        controls.update();
-
+      (texture) => {
+        const geometry = new THREE.BoxGeometry(2, 2, 2);
+        const material = new THREE.MeshStandardMaterial({
+          map: texture,
+          roughness: 0.5,
+          metalness: 0.2,
+        });
+        cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
         setLoading(false);
       },
       undefined,
       (err) => {
-        console.warn("GLB load failed:", err);
-        setError("Failed to load 3D model");
+        console.warn("Texture load failed:", err);
+        setError("Failed to load design image");
         setLoading(false);
       },
     );
@@ -95,24 +87,22 @@ export default function AIBuilder3DPreview({ designImage, prompt }) {
       window.removeEventListener("resize", handleResize);
       if (rafId) cancelAnimationFrame(rafId);
       controls.dispose();
-      if (model) {
-        model.traverse((node) => {
-          if (node.geometry) node.geometry.dispose();
-          if (node.material) {
-            if (Array.isArray(node.material)) {
-              node.material.forEach((m) => m.dispose());
-            } else {
-              node.material.dispose();
-            }
+      if (cube) {
+        cube.geometry.dispose();
+        if (cube.material) {
+          if (Array.isArray(cube.material)) {
+            cube.material.forEach((m) => m.dispose());
+          } else {
+            cube.material.dispose();
           }
-        });
+        }
       }
       renderer.dispose();
       if (renderer.domElement && renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement);
       }
     };
-  }, [designImage]);
+  }, [designImage, prompt]);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>

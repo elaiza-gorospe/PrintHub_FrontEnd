@@ -160,66 +160,28 @@ function UserCartPage() {
             {cartItems.map((item) => (
               <div key={item.id} className="ucart-item">
                 <div className="ucart-thumb">
-                  {(() => {
-                    const zoneImgs = Object.values(
-                      item.customizations?.design?.zones || {},
-                    )
-                      .filter((z) => z?.imageUrl)
-                      .map((z) => z.imageUrl);
-                    const fallback =
-                      item.customizations?.design?.generatedImageUrl ||
-                      item.productImage ||
-                      item.images?.[0] ||
-                      item.product?.images?.[0] ||
-                      item.customizations?.design?.sourceAssetUrls?.[0];
-                    const imgs = zoneImgs.length
-                      ? zoneImgs
-                      : fallback
-                        ? [fallback]
-                        : [];
-                    if (!imgs.length) return null;
-                    if (imgs.length === 1) {
-                      return (
-                        <img
-                          src={imgs[0]}
-                          alt={item.title || "Design"}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                            borderRadius: 10,
-                          }}
-                        />
-                      );
-                    }
-                    return (
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gridTemplateRows: "1fr 1fr",
-                          width: "100%",
-                          height: "100%",
-                          borderRadius: 10,
-                          overflow: "hidden",
-                          gap: 1,
-                        }}
-                      >
-                        {imgs.slice(0, 4).map((src, i) => (
-                          <img
-                            key={i}
-                            src={src}
-                            alt={`zone ${i + 1}`}
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                            }}
-                          />
-                        ))}
-                      </div>
-                    );
-                  })()}
+                  {item.customizations?.design?.generatedImageUrl ||
+                  item.productImage ||
+                  item.images?.[0] ||
+                  item.product?.images?.[0] ||
+                  item.customizations?.design?.sourceAssetUrls?.[0] ? (
+                    <img
+                      src={
+                        item.customizations?.design?.generatedImageUrl ||
+                        item.productImage ||
+                        item.images?.[0] ||
+                        item.product?.images?.[0] ||
+                        item.customizations?.design?.sourceAssetUrls?.[0]
+                      }
+                      alt={item.title || "Product image"}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: 4,
+                      }}
+                    />
+                  ) : null}
                 </div>
 
                 <div className="ucart-info">

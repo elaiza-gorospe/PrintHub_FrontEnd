@@ -319,44 +319,6 @@
   font-weight: 600;
 }
 
-.uo-cancel-btn {
-  background: transparent;
-  color: #c0392b;
-  border: 1.5px solid #c0392b;
-  padding: 7px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    color 0.2s;
-}
-.uo-cancel-btn:hover:not(:disabled) {
-  background: #c0392b;
-  color: #fff;
-}
-.uo-cancel-btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-/* ORDER GROUPS */
-.uo-group {
-  margin-bottom: 36px;
-}
-
-.uo-group-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: #3f505c;
-  margin: 0 0 14px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #e0e8e4;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
 .uo-pay-btn {
   background: #27ae60;
   color: #fff;
