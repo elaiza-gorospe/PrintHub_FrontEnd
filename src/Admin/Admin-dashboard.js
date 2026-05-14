@@ -187,8 +187,8 @@ function AdminDashboard() {
 
   // ✅ ROLE-BASED ACCESS CONTROL: Only admins can access admin pages
   useEffect(() => {
-    if (!sidebarUser || role !== "admin") {
-      // Redirect non-admin users to home page
+    if (!sidebarUser || role !== "admin" && role !== "staff") {
+      // Redirect non-admin and non-staff users to home page
       navigate("/");
       return;
     }

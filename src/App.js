@@ -33,7 +33,7 @@ import UserPasswordSecurityPage from "./Customer/User-password-security";
 import ProductDetail from "./Customer/Product-detail";
 import { buildApiUrl } from "./config/api";
 
-// ✅ PROTECTED ROUTE - Only admins can access
+// ✅ PROTECTED ROUTE - Only admins and staff can access
 function ProtectedAdminRoute({ children }) {
   const storedUser = (() => {
     try {
@@ -49,7 +49,8 @@ function ProtectedAdminRoute({ children }) {
 
   const role = storedUser?.role || "user";
 
-  if (!storedUser || role !== "admin") {
+  // Allow both admin AND staff
+  if (!storedUser || (role !== "admin" && role !== "staff")) {
     return <Navigate to="/" replace />;
   }
 
