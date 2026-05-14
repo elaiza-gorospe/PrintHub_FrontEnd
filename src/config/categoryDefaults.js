@@ -324,6 +324,164 @@ export const CATEGORY_DEFAULTS = {
     ai_prompt_rules:
       "Generate a vibrant T-shirt design optimized for screen printing or DTG. For screen print: limit to 4-6 colors for cost efficiency. Design must work on the specified print area (chest, back, sleeve, or full). Include color specifications in CMYK or PMS if multi-color. Avoid small fine details that won't transfer well. Design should scale well across all sizes. Safe margin: 0.25in from print edges. For DTG: can use full color spectrum without limitations. Include a mockup guide indicating where the design sits on the garment. Resolution: 300dpi minimum.",
   },
+  "Jersey": {
+    "print_type": "screen-print",
+    "material": "100% Polyester - 140gsm",
+    "color_options": [
+      "Full Color (CMYK) - Sublimation",
+      "Full Color (Plastisol) - Screen Print",
+      "Single Color - Screen Print",
+      "Multi-Color - Screen Print"
+    ],
+    "size_options": ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"],
+    "material_options": [
+      "100% Polyester - 140gsm",
+      "100% Polyester - 160gsm",
+      "Cotton/Poly Blend - 150gsm",
+      "Moisture Wicking - 130gsm",
+      "Mesh Fabric - 120gsm"
+    ],
+    "side_options": [
+      "Front",
+      "Back",
+      "Front & Back",
+      "Sleeve (Left)",
+      "Sleeve (Right)",
+      "Full Sublimation"
+    ],
+    "finishing_options": [
+      "None",
+      "Embroidery",
+      "Heat Transfer",
+      "Sublimation",
+      "Screen Print",
+      "Name & Number Print"
+    ],
+    "processing_options": [
+      "Standard (7-10 days)",
+      "Rush (4-5 days)",
+      "Express (2-3 days)"
+    ],
+    "delivery_options": DELIVERY_OPTIONS,
+    "quantity_options": [
+      "5 pcs|₱1,200.00",
+      "10 pcs|₱1,100.00",
+      "25 pcs|₱1,000.00",
+      "50 pcs|₱900.00",
+      "100 pcs|₱800.00",
+      "250 pcs|₱700.00"
+    ],
+    "shipping_options": [
+      "Pick Up|Free",
+      "Metro Delivery|₱150.00",
+      "Provincial|₱300.00"
+    ],
+    "ai_prompt_rules": "Generate a sporty jersey design. For sublimation: full color with seamless edges, no color limitations. For screen print: max 4-6 colors. Design must include front chest area, back (optional number area), and sleeve options. Maintain safe margin of 0.5in from seams. High contrast numbers if included. Avoid designs that stretch across seams. Resolution: 300dpi minimum. Include placement guide for all print areas."
+  },
+  "Cap": {
+    "print_type": "embroidery",
+    "material": "Cotton Twill",
+    "color_options": [
+      "Single Color - Embroidery",
+      "Multi-Color (max 4) - Embroidery",
+      "Full Color - Heat Transfer",
+      "Full Color - DTG"
+    ],
+    "size_options": ["One Size (Adjustable)", "S/M", "L/XL", "Custom Fit"],
+    "material_options": [
+      "Cotton Twill",
+      "Polyester",
+      "Cotton/Poly Blend",
+      "Mesh Back",
+      "Denim",
+      "Acrylic Wool",
+      "Leather Patch"
+    ],
+    "side_options": [
+      "Front Center",
+      "Left Panel",
+      "Right Panel",
+      "Back Closure",
+      "Full Panel"
+    ],
+    "finishing_options": [
+      "None",
+      "Embroidery",
+      "Heat Transfer",
+      "3D Embroidery (Puffy)",
+      "Leather Patch",
+      "PVC Patch",
+      "Velcro Backing"
+    ],
+    "processing_options": [
+      "Standard (5-7 days)",
+      "Rush (3-4 days)",
+      "Express (1-2 days)"
+    ],
+    "delivery_options": DELIVERY_OPTIONS,
+    "quantity_options": [
+      "10 pcs|₱650.00",
+      "25 pcs|₱600.00",
+      "50 pcs|₱550.00",
+      "100 pcs|₱500.00",
+      "250 pcs|₱450.00",
+      "500 pcs|₱400.00"
+    ],
+    "shipping_options": [
+      "Pick Up|Free",
+      "Metro Delivery|₱150.00",
+      "Provincial|₱250.00"
+    ],
+    "ai_prompt_rules": "Generate a cap/hat design. For embroidery: limit to max 4 colors, use simple shapes (no small details under 2mm), text minimum 5mm tall. Provide stitch count estimate. For patch: include border outline. Design must fit within 4x2 inches max for front panel. Center placement is default. Include mockup showing curved surface wrap. Vector format preferred. Resolution: 300dpi minimum for print, vector for embroidery."
+  },
+  "Mug": {
+    "print_type": "digital",
+    "material": "Ceramic - 11oz",
+    "color_options": ["Full Color (CMYK) - Sublimation"],
+    "size_options": [
+      "11oz (Standard)",
+      "15oz (Large)",
+      "10oz (Travel)",
+      "12oz (Tall)",
+      "Whiskey Glass"
+    ],
+    "material_options": [
+      "Ceramic - 11oz",
+      "Ceramic - 15oz",
+      "Enamel - 12oz",
+      "Glass - 11oz",
+      "Stainless Steel",
+      "Travel Mug with Lid"
+    ],
+    "side_options": ["360° Wrap", "Front Only", "Front & Back", "Two Sides"],
+    "finishing_options": [
+      "None",
+      "Gloss Finish",
+      "Matte Finish",
+      "Color Inside",
+      "Color Handle"
+    ],
+    "processing_options": [
+      "Standard (5-7 days)",
+      "Rush (3-4 days)",
+      "Express (2 days)"
+    ],
+    "delivery_options": DELIVERY_OPTIONS,
+    "quantity_options": [
+      "10 pcs|₱350.00",
+      "25 pcs|₱320.00",
+      "50 pcs|₱290.00",
+      "100 pcs|₱260.00",
+      "250 pcs|₱230.00",
+      "500 pcs|₱200.00"
+    ],
+    "shipping_options": [
+      "Pick Up|Free",
+      "Metro Delivery|₱150.00",
+      "Provincial|₱350.00"
+    ],
+    "ai_prompt_rules": "Generate a mug design for sublimation printing. Full color CMYK with no limitations. For 360° wrap: design width 9.25 inches x 3.5 inches height (for 11oz). Keep important elements (logo, text) within front-facing 4x3 inch safe zone. Avoid placing text on handle side or bottom. Seam allowance: 0.125in at both ends. High resolution photos acceptable. White background = white ceramic. Resolution: 300dpi minimum at print size."
+  },
 };
 
 export const CATEGORY_NAMES = Object.keys(CATEGORY_DEFAULTS);

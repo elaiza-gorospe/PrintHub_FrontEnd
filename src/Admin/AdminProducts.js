@@ -16,12 +16,14 @@ import { CATEGORY_DEFAULTS, CATEGORY_NAMES } from "../config/categoryDefaults";
 
 const CATEGORY_ZONES = {
   tshirt: ["front", "back", "left_sleeve", "right_sleeve"],
+  jersery: ["front", "back"],
+  cap: ["front", "back", "left_sleeve", "right_sleeve"],
   notebook: ["front_cover", "back_cover"],
   calling_card: ["front", "back"],
   mug: ["front"],
   banners: [],
   stickers: [],
-  hang_tags: [],
+  hang_tags: [],  
   brochures: [],
   other: [],
 };
@@ -1165,6 +1167,9 @@ function AdminProducts({
                     }}
                   >
                     <option value="tshirt">T-shirts</option>
+                    <option value="jersery">Jersey</option>
+                    <option value="cap">Cap</option>
+                    <option value="mugs">Mugs</option>
                     <option value="notebook">Notebook</option>
                     <option value="calling_card">Business Card</option>
                     <option value="banners">Banners</option>
