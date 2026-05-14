@@ -59,21 +59,36 @@ function Header() {
       email: u.email || "",
     }));
 
-    fetch(buildApiUrl(`/api/user-profile/${u.id}`))
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.message || "Failed to load profile");
+    const fetchUserProfile = () => {
+      fetch(buildApiUrl(`/api/user-profile/${u.id}`))
+        .then(async (res) => {
+          const data = await res.json();
+          if (!res.ok) throw new Error(data?.message || "Failed to load profile");
 
-        setUser((prev) => ({
-          ...prev,
-          name: data.name || prev.name || u.firstName || "User",
-          email: data.email || u.email || prev.email || "",
-          avatarUrl: prev.avatarUrl || "",
-        }));
-      })
-      .catch((err) => {
-        console.error(err);
-      });
+          setUser((prev) => ({
+            ...prev,
+            name: data.name || prev.name || u.firstName || "User",
+            email: data.email || u.email || prev.email || "",
+            avatarUrl: data.avatar_url || "",
+          }));
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    };
+
+    fetchUserProfile();
+
+    // Listen for profile picture updates
+    const handleProfileUpdate = () => {
+      fetchUserProfile();
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -149,7 +164,15 @@ function Header() {
                   setIsMobileMenuOpen(false);
                 }}
               >
-                <FaUserCircle />
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt="Profile"
+                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <FaUserCircle />
+                )}
               </button>
 
               {isProfileOpen && (

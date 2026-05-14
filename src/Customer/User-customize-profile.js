@@ -211,6 +211,7 @@ function UserCustomizeProfile() {
 
       // update preview and form
       setAvatarPreview(data.url || "");
+      window.dispatchEvent(new Event('profileUpdated'));
       setForm((prev) => ({ ...prev, avatar_url: data.url }));
 
       // try to persist to profile (best-effort)
@@ -367,9 +368,8 @@ function UserCustomizeProfile() {
 
       {toast.show && (
         <div
-          className={`ucp-toast ${
-            toast.type === "error" ? "ucp-toast-error" : "ucp-toast-success"
-          }`}
+          className={`ucp-toast ${toast.type === "error" ? "ucp-toast-error" : "ucp-toast-success"
+            }`}
         >
           {toast.message}
         </div>
