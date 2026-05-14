@@ -84,6 +84,23 @@ function AdminLoginRegisterGuard({ children }) {
   return children;
 }
 
+function ChatbotVisibility() {
+  const location = useLocation();
+
+  const hideChatbotPaths = [
+    "/user-login",
+    "/user-register",
+    "/admin-login",
+    "/admin-register",
+  ];
+
+  if (hideChatbotPaths.includes(location.pathname)) {
+    return null;
+  }
+
+  return <Chatbot />;
+}
+
 function App() {
   return (
     <CartProvider>
@@ -151,9 +168,8 @@ function App() {
             element={<UserAccountSettings />}
           />
           <Route path="/product/:id" element={<ProductDetail />} />
-        </Routes>
-        {/* Add Chatbot component here - it will appear on all pages */}
-        <Chatbot />
+                </Routes>
+        <ChatbotVisibility />
       </BrowserRouter>
     </CartProvider>
   );

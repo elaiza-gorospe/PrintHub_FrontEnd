@@ -538,71 +538,9 @@ return (
                 Request a quote
               </button>
             </p>
-            
-            {/* MOVED SELECT SIZE SECTION HERE */}
-            <div className="pd-size-section-in-tab">
-              <h3 style={{ marginTop: '20px', fontSize: '18px' }}>1. Select size</h3>
-              <div className="pd-card-options">
-                {product.sizes.map((size) => (
-                  <label
-                    key={size}
-                    className={`pd-option-card ${selectedSize === size && !customSizeSelected ? "selected" : ""}`}
-                  >
-                    <input
-                      type="radio"
-                      name="size"
-                      value={size}
-                      checked={selectedSize === size && !customSizeSelected}
-                      onChange={() => {
-                        setSelectedSize(size);
-                        setCustomSizeSelected(false);
-                      }}
-                    />
-                    <div className="pd-option-inner">
-                      <div className="pd-option-logo">
-                        <FaIdCard />
-                      </div>
-                      <div className="pd-option-title">Standard</div>
-                      <div className="pd-option-sub">
-                        {size.includes("(")
-                          ? size.split("(")[1].replace(")", "")
-                          : size}
-                      </div>
-                    </div>
-                    {selectedSize === size && !customSizeSelected && (
-                      <div className="pd-check-badge">
-                        <FaCheck />
-                      </div>
-                    )}
-                  </label>
-                ))}
-                <button
-                  type="button"
-                  className={`pd-option-card pd-option-card-contact ${customSizeSelected ? "selected" : ""}`}
-                  onClick={() => {
-                    setCustomSizeSelected(true);
-                    scrollToQuote();
-                  }}
-                >
-                  <div className="pd-option-inner">
-                    <div className="pd-option-logo pd-option-logo-contact">
-                      <FaHeadset />
-                    </div>
-                    <div className="pd-option-title">
-                      Looking for something else? ...
-                    </div>
-                    <div className="pd-option-sub pd-option-sub-strong">
-                      Contact Us!
-                    </div>
-                  </div>
-                  {customSizeSelected && (
-                    <div className="pd-check-badge">
-                      <FaCheck />
-                    </div>
-                  )}
-                </button>
-              </div>
-            </div>
+
+            {/* Select size section moved below with the other product modification options */}
+
           </div>
         )}
         {activeTab === "specs" && (
@@ -631,9 +569,83 @@ return (
       </div>
     </div>
     <div className="pd-sections">
-      {/* REMOVED SELECT SIZE SECTION FROM HERE - it's now moved to the PRODUCT tab */}
       {!customSizeSelected && (
         <>
+        <section className="pd-section">
+  <h2>1. Select size</h2>
+  <div className="pd-card-options">
+    {product.sizes.map((size) => (
+      <label
+        key={size}
+        className={`pd-option-card ${
+          selectedSize === size && !customSizeSelected ? "selected" : ""
+        }`}
+      >
+        <input
+          type="radio"
+          name="size"
+          value={size}
+          checked={selectedSize === size && !customSizeSelected}
+          onChange={() => {
+            setSelectedSize(size);
+            setCustomSizeSelected(false);
+          }}
+        />
+
+        <div className="pd-option-inner">
+          <div className="pd-option-logo">
+            <FaIdCard />
+          </div>
+
+          <div className="pd-option-title">Standard</div>
+
+          <div className="pd-option-sub">
+            {size.includes("(")
+              ? size.split("(")[1].replace(")", "")
+              : size}
+          </div>
+        </div>
+
+        {selectedSize === size && !customSizeSelected && (
+          <div className="pd-check-badge">
+            <FaCheck />
+          </div>
+        )}
+      </label>
+    ))}
+
+    <button
+      type="button"
+      className={`pd-option-card pd-option-card-contact ${
+        customSizeSelected ? "selected" : ""
+      }`}
+      onClick={() => {
+        setCustomSizeSelected(true);
+        scrollToQuote();
+      }}
+    >
+      <div className="pd-option-inner">
+        <div className="pd-option-logo pd-option-logo-contact">
+          <FaHeadset />
+        </div>
+
+        <div className="pd-option-title">
+          Looking for something else? ...
+        </div>
+
+        <div className="pd-option-sub pd-option-sub-strong">
+          Contact Us!
+        </div>
+      </div>
+
+      {customSizeSelected && (
+        <div className="pd-check-badge">
+          <FaCheck />
+        </div>
+      )}
+    </button>
+  </div>
+</section>
           <section className="pd-section">
             <h2>2. Select material</h2>
             {product.materials.map((material) => (

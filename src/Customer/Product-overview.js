@@ -39,7 +39,7 @@ function ProductOverview() {
   }, []);
 
   const categoryMapping = {
-    Clothing: ["T-Shirt"],
+    Clothing: ["T-Shirt", "Jersey", "Mug", "Cap"],
     Business: [
       "Note Cards",
       "Brochure",
