@@ -258,3 +258,161 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 768px) {
+  /* Page shell */
+  .ucart-page {
+    background: #f0f2f5;
+    padding: 0 0 calc(80px + env(safe-area-inset-bottom));
+  }
+
+  /* Top bar */
+  .ucart-topbar-alt {
+    padding: 14px 16px 10px;
+    margin-bottom: 0;
+    gap: 8px;
+  }
+
+  .ucart-topbar-alt h1 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #2f3a45;
+  }
+
+  /* Hide back buttons — footer nav handles navigation */
+  .ucart-back,
+  .ucart-topbar-alt .uo-back {
+    display: none;
+  }
+
+  /* Cards layout */
+  .ucart-wrap {
+    padding: 0 12px;
+    gap: 12px;
+  }
+
+  .ucart-card,
+  .ucart-summary {
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(31, 42, 47, 0.09);
+    padding: 14px 14px;
+  }
+
+  .ucart-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #455073;
+    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+  }
+
+  /* ── Cart item: image spans 2 rows, info top-right, controls bottom-right ── */
+  .ucart-item {
+    grid-template-columns: 68px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    row-gap: 8px;
+    padding: 14px 0;
+    align-items: start;
+  }
+
+  .ucart-thumb {
+    width: 68px;
+    height: 68px;
+    border-radius: 12px;
+    grid-row: 1 / 3;
+    align-self: start;
+  }
+
+  .ucart-info {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .ucart-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: #1a2e3b;
+    line-height: 1.3;
+  }
+
+  .ucart-desc {
+    font-size: 11px;
+    color: #8a9aa5;
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  .ucart-price {
+    font-size: 15px;
+    font-weight: 900;
+    color: #1b3f6e;
+    margin-top: 4px;
+  }
+
+  /* Controls row below info */
+  .ucart-controls {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Qty stepper */
+  .ucart-qty {
+    border-radius: 10px;
+  }
+
+  .ucart-qty-btn {
+    padding: 8px 11px;
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 12px;
+  }
+
+  .ucart-qty-num {
+    font-size: 14px;
+    font-weight: 800;
+    min-width: 28px;
+    max-width: 40px;
+    padding: 0 6px;
+  }
+
+  /* Remove button */
+  .ucart-remove {
+    padding: 8px 11px;
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 10px;
+  }
+
+  /* ── Summary card ── */
+  .ucart-summary {
+    margin-top: 0;
+  }
+
+  .ucart-row {
+    font-size: 13px;
+    margin: 8px 0;
+  }
+
+  .ucart-total {
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  .ucart-checkout {
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .ucart-continue {
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    margin-top: 8px;
+  }
+}
