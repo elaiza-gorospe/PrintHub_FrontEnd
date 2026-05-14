@@ -23,7 +23,7 @@ const CATEGORY_ZONES = {
   mug: ["front"],
   banners: [],
   stickers: [],
-  hang_tags: [],  
+  hang_tags: [],
   brochures: [],
   other: [],
 };
@@ -113,7 +113,7 @@ function AdminProducts({
               ? "print"
               : "service",
           price: parseFloat(product.price),
-          stock: product.stock || 0,
+          stock: product.stock !== undefined && product.stock !== null ? product.stock : 0,
           status: product.active ? "active" : "inactive",
           dbId: product.id,
           material: product.material,
@@ -262,7 +262,7 @@ function AdminProducts({
       quantity_mode: fullProduct.quantity_mode || "dropdown",
       quantity_count:
         fullProduct.quantity_count !== undefined &&
-        fullProduct.quantity_count !== null
+          fullProduct.quantity_count !== null
           ? String(fullProduct.quantity_count)
           : "",
       shipping_options: fullProduct.shipping_options || [],
@@ -797,7 +797,7 @@ function AdminProducts({
                 </td>
                 <td data-label="Price">₱ {p.price.toLocaleString()}</td>
                 <td data-label="Stock">
-                  {p.category === "service" ? "—" : p.stock}
+                  {p.stock !== undefined && p.stock !== null ? p.stock : "—"}
                 </td>
                 <td data-label="Status">
                   <button
@@ -812,9 +812,8 @@ function AdminProducts({
                     title={`Click to toggle status (currently ${p.status})`}
                   >
                     <span
-                      className={`dashpage-pill status-${
-                        p.status === "active" ? "completed" : "cancelled"
-                      }`}
+                      className={`dashpage-pill status-${p.status === "active" ? "completed" : "cancelled"
+                        }`}
                     >
                       {p.status === "active" ? (
                         <FaCheckCircle style={{ marginRight: 6 }} />
