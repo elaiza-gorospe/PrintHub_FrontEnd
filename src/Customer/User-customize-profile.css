@@ -244,6 +244,12 @@ svg {
 }
 
 /* ✅ Mobile responsive (matches Admin-profile behavior) */
+@media (max-width: 768px) {
+  .ucp-back-button {
+    display: none;
+  }
+}
+
 @media (max-width: 480px) {
   .ucp-back-button {
     width: 100%;

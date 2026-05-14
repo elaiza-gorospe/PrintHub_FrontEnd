@@ -45,7 +45,8 @@ code {
   .pd-page,
   .ucart-page,
   .ups-page,
-  .upr-page {
+  .upr-page,
+  .ucp-adminlike-page {
     padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
   }
 

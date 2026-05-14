@@ -19,7 +19,7 @@ const TABS = [
     id: "profile",
     label: "Profile",
     icon: FaUserCircle,
-    path: "/user-dashboard",
+    path: "/user-customize-profile",
   },
 ];
 
@@ -44,6 +44,13 @@ function MobileFooterNav() {
       return (
         location.pathname === "/product-overview" ||
         location.pathname.startsWith("/product/")
+      );
+    }
+    if (tab.id === "profile") {
+      return (
+        location.pathname === "/user-customize-profile" ||
+        location.pathname === "/user-account-settings" ||
+        location.pathname === "/user-password-security"
       );
     }
     return location.pathname === tab.path;
