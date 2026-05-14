@@ -141,10 +141,9 @@ function AdminDashboard() {
         const pendingOrders = ordersData.filter(
           (o) => o.status === "pending",
         ).length;
-        const totalRevenue = ordersData.reduce(
-          (sum, o) => sum + parseFloat(o.total || 0),
-          0,
-        );
+        const totalRevenue = ordersData
+          .filter((o) => o.status === "completed")
+          .reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
         const totalUsers = Array.isArray(usersData)
           ? usersData.length
           : (usersData?.users?.length ?? 0);
