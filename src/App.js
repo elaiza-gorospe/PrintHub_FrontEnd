@@ -9,6 +9,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { CartProvider } from "./contexts/CartContext";
+import MobileFooterNav from "./components/MobileFooterNav";
 
 import AdminLoginPage from "./Admin/Admin-login";
 import AdminRegistrationPage from "./Admin/Admin-registration";
@@ -80,74 +81,102 @@ function AdminLoginRegisterGuard({ children }) {
   return children;
 }
 
+// Routes where the mobile footer nav should appear (authenticated customer area)
+const CUSTOMER_ROUTES = [
+  "/user-home",
+  "/user-cart",
+  "/user-orders",
+  "/user-inquiries",
+  "/user-dashboard",
+  "/user-customize-profile",
+  "/user-account-settings",
+  "/user-password-security",
+  "/product-overview",
+  "/payment/return",
+];
+
+function AppInner() {
+  const location = useLocation();
+  const showFooterNav =
+    CUSTOMER_ROUTES.includes(location.pathname) ||
+    location.pathname.startsWith("/product/");
+
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+
+        <Route
+          path="/admin-login"
+          element={
+            <AdminLoginRegisterGuard>
+              <AdminLoginPage />
+            </AdminLoginRegisterGuard>
+          }
+        />
+        <Route
+          path="/admin-register"
+          element={
+            <AdminLoginRegisterGuard>
+              <AdminRegistrationPage />
+            </AdminLoginRegisterGuard>
+          }
+        />
+        <Route
+          path="/admin-dashboard"
+          element={
+            <ProtectedAdminRoute>
+              <AdminDashboard />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin-manageaccount"
+          element={
+            <ProtectedAdminRoute>
+              <AdminManageAccounts />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route path="/user-login" element={<UserLoginPage />} />
+        <Route path="/user-register" element={<UserRegistrationPage />} />
+        <Route path="/user-forgot-otp" element={<UserForgotOtpPage />} />
+        <Route
+          path="/user-reset-password"
+          element={<UserResetPasswordPage />}
+        />
+        <Route path="/user-otp" element={<UserOtpPage />} />
+        <Route path="/user-home" element={<UserHomePage />} />
+        <Route
+          path="/user-password-security"
+          element={<UserPasswordSecurityPage />}
+        />
+        <Route path="/user-cart" element={<UserCartPage />} />
+        <Route path="/user-orders" element={<UserOrders />} />
+        <Route path="/payment/return" element={<UserPaymentReturn />} />
+        <Route path="/user-inquiries" element={<UserInquiries />} />
+        <Route path="/user-dashboard" element={<CustomerDashboard />} />
+        <Route path="/product-overview" element={<ProductOverview />} />
+        <Route
+          path="/user-customize-profile"
+          element={<UserCustomizeProfile />}
+        />
+        <Route
+          path="/user-account-settings"
+          element={<UserAccountSettings />}
+        />
+        <Route path="/product/:id" element={<ProductDetail />} />
+      </Routes>
+      {showFooterNav && <MobileFooterNav />}
+    </>
+  );
+}
+
 function App() {
   return (
     <CartProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-
-          <Route
-            path="/admin-login"
-            element={
-              <AdminLoginRegisterGuard>
-                <AdminLoginPage />
-              </AdminLoginRegisterGuard>
-            }
-          />
-          <Route
-            path="/admin-register"
-            element={
-              <AdminLoginRegisterGuard>
-                <AdminRegistrationPage />
-              </AdminLoginRegisterGuard>
-            }
-          />
-          <Route
-            path="/admin-dashboard"
-            element={
-              <ProtectedAdminRoute>
-                <AdminDashboard />
-              </ProtectedAdminRoute>
-            }
-          />
-          <Route
-            path="/admin-manageaccount"
-            element={
-              <ProtectedAdminRoute>
-                <AdminManageAccounts />
-              </ProtectedAdminRoute>
-            }
-          />
-          <Route path="/user-login" element={<UserLoginPage />} />
-          <Route path="/user-register" element={<UserRegistrationPage />} />
-          <Route path="/user-forgot-otp" element={<UserForgotOtpPage />} />
-          <Route
-            path="/user-reset-password"
-            element={<UserResetPasswordPage />}
-          />
-          <Route path="/user-otp" element={<UserOtpPage />} />
-          <Route path="/user-home" element={<UserHomePage />} />
-          <Route
-            path="/user-password-security"
-            element={<UserPasswordSecurityPage />}
-          />
-          <Route path="/user-cart" element={<UserCartPage />} />
-          <Route path="/user-orders" element={<UserOrders />} />
-          <Route path="/payment/return" element={<UserPaymentReturn />} />
-          <Route path="/user-inquiries" element={<UserInquiries />} />
-          <Route path="/user-dashboard" element={<CustomerDashboard />} />
-          <Route path="/product-overview" element={<ProductOverview />} />
-          <Route
-            path="/user-customize-profile"
-            element={<UserCustomizeProfile />}
-          />
-          <Route
-            path="/user-account-settings"
-            element={<UserAccountSettings />}
-          />
-          <Route path="/product/:id" element={<ProductDetail />} />
-        </Routes>
+        <AppInner />
       </BrowserRouter>
     </CartProvider>
   );

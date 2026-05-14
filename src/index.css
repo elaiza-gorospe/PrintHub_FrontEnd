@@ -1,13 +1,57 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+/* ── Mobile native-app feel ───────────────────────────── */
+@media (max-width: 768px) {
+  /* Remove rubber-band / pull-to-refresh overscroll */
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  /* Suppress the default blue highlight rectangle on tap (Android WebView) */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smooth momentum scrolling for any scrollable container */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent accidental text selection while tapping buttons / icons */
+  button,
+  a,
+  [role="button"] {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Give all customer page containers breathing room above the footer nav */
+  .uh-page,
+  .uo-page,
+  .ui-page,
+  .po-page,
+  .pd-page,
+  .ucart-page,
+  .ups-page,
+  .upr-page {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+  }
+
+  /* Pages using wrapper/content-wrapper patterns */
+  .content-wrapper,
+  .us-wrapper {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
 }

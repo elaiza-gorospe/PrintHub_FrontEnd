@@ -5,6 +5,49 @@
   padding: 30px 20px;
 }
 
+/* TAB SWITCHER (Orders / Inquiries) */
+.uo-tabs {
+  max-width: 1000px;
+  margin: 0 auto 24px;
+  display: flex;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 4px;
+  border: 1px solid rgba(44, 62, 80, 0.08);
+  box-shadow: 0 2px 8px rgba(31, 42, 47, 0.06);
+}
+
+.uo-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #8a9aa5;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    color 0.18s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.uo-tab:hover {
+  color: #455073;
+  background: rgba(69, 80, 115, 0.06);
+}
+
+.uo-tab--active {
+  background: #455073;
+  color: #ffffff;
+}
+
+.uo-tab--active:hover {
+  background: #3a4462;
+  color: #ffffff;
+}
+
 /* TOP SECTION */
 .uo-top {
   max-width: 1000px;
@@ -375,7 +418,7 @@
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .uo-page {
-    padding: 20px 12px;
+    padding: 20px 12px calc(80px + env(safe-area-inset-bottom));
   }
 
   .uo-top {

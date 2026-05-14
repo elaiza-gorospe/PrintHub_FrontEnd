@@ -342,21 +342,20 @@
     margin-top: 2px;
   }
 
+  /* On mobile, search bar fills the remaining space */
   .uh-search {
-    max-width: 300px;
-    margin: 0 10px;
+    max-width: none;
+    margin: 0 10px 0 14px;
+    flex: 1;
   }
 
   .uh-search input {
     font-size: 12px;
   }
 
-  .uh-desktop-only {
+  /* Footer nav handles all navigation on mobile — hide actions bar */
+  .uh-actions {
     display: none;
-  }
-
-  .uh-mobile-only {
-    display: block;
   }
 }
 
@@ -376,8 +375,7 @@
   }
 
   .uh-search {
-    max-width: 240px;
-    margin: 0 8px;
+    margin: 0 8px 0 12px;
     height: 32px;
   }
 
@@ -388,37 +386,5 @@
   .uh-search-btn {
     font-size: 12px;
     padding: 4px 6px;
-  }
-
-  .uh-actions {
-    gap: 10px;
-  }
-
-  .uh-icon-btn {
-    font-size: 16px;
-    padding: 4px 6px;
-  }
-
-  .uh-cart-badge {
-    width: 18px;
-    height: 18px;
-    font-size: 10px;
-    top: -8px;
-    right: -8px;
-  }
-
-  .uh-dropdown {
-    width: 280px;
-    right: -80px;
-  }
-
-  .uh-mobile-menu {
-    width: 160px;
-    right: -70px;
-  }
-
-  .uh-login-btn {
-    padding: 6px 12px;
-    font-size: 12px;
   }
 }
