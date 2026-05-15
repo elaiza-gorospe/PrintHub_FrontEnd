@@ -50,7 +50,10 @@ function ProductDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const quoteRef = useRef(null);
+  const reelRef = useRef(null);
   const { addToCart } = useCart();
+
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
 
   const [product, setProduct] = useState(null);
   const [productLoading, setProductLoading] = useState(true);
@@ -225,6 +228,19 @@ function ProductDetail() {
     }
   };
 
+  const handleReelScroll = () => {
+    const reel = reelRef.current;
+    if (!reel) return;
+    setActiveImageIdx(Math.round(reel.scrollLeft / reel.offsetWidth));
+  };
+
+  const scrollToSlide = (idx) => {
+    const reel = reelRef.current;
+    if (!reel) return;
+    reel.scrollTo({ left: idx * reel.offsetWidth, behavior: "smooth" });
+    setActiveImageIdx(idx);
+  };
+
   const scrollToQuote = () => {
     // Select the Contact Us / custom size option when user requests a quote
     setCustomSizeSelected(true);
@@ -298,6 +314,7 @@ function ProductDetail() {
 
         <div className="pd-top">
           <div className="pd-gallery">
+            {/* Desktop: vertical thumbs + main image */}
             <div className="pd-thumbs">
               {product.gallery.map((img, index) => (
                 <button
@@ -314,6 +331,33 @@ function ProductDetail() {
             <div className="pd-main-image">
               <img src={selectedImage} alt={product.title} />
             </div>
+
+            {/* Mobile: swipeable snap carousel */}
+            <div
+              className="pd-img-reel"
+              ref={reelRef}
+              onScroll={handleReelScroll}
+            >
+              {product.gallery.map((img, index) => (
+                <div key={index} className="pd-img-slide">
+                  <img src={img} alt={`${product.title} ${index + 1}`} />
+                </div>
+              ))}
+            </div>
+
+            {product.gallery.length > 1 && (
+              <div className="pd-img-dots">
+                {product.gallery.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`pd-img-dot ${i === activeImageIdx ? "active" : ""}`}
+                    onClick={() => scrollToSlide(i)}
+                    aria-label={`Image ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="pd-info">
@@ -1005,6 +1049,19 @@ function ProductDetail() {
             </section>
           )}
         </div>
+
+        {/* Mobile sticky Add to Cart — sits above bottom nav */}
+        {!customSizeSelected && (
+          <div className="pd-sticky-cta">
+            <button
+              type="button"
+              className="pd-sticky-btn"
+              onClick={handleAddToCart}
+            >
+              Add to Cart
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
