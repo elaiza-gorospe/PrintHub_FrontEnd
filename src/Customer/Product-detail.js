@@ -10,6 +10,8 @@ import { buildApiUrl } from "../config/api";
 import AIBuilderPanel from "../components/AIBuilder/AIBuilderPanel";
 import TshirtCustomizerPanel from "../components/TshirtCustomizer/TshirtCustomizerPanel";
 import NotebookCustomizerPanel from "../components/NotebookCustomizer/NotebookCustomizerPanel";
+import MugCustomizerPanel from "../components/MugCustomizer/MugCustomizerPanel";
+import FlatCustomizerPanel from "../components/FlatCustomizer/FlatCustomizerPanel";
 
 /** Map a raw API product to the shape the component expects */
 function mapApiProduct(data) {
@@ -420,6 +422,20 @@ function ProductDetail() {
               <div className="pd-tab-content pd-tab-builder-inline">
                 {product.dbCategory === "notebook" ? (
                   <NotebookCustomizerPanel
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
+                ) : product.dbCategory === "mug" ? (
+                  <MugCustomizerPanel
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
+                ) : ["calling_card", "banners", "stickers", "hang_tags", "brochures"].includes(product.dbCategory) ? (
+                  <FlatCustomizerPanel
                     product={product}
                     activeDesign={activeDesign}
                     onDesignReady={(meta) => setActiveDesign(meta)}
