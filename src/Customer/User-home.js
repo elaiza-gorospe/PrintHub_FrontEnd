@@ -48,13 +48,33 @@ function UserHomePage() {
 
       <section className="uh-section">
         <div className="uh-section-title">
-          <h2>Popular Print Products</h2>
-          <p>Discover our bestselling print essentials for your business.</p>
+          <div className="uh-section-title-row">
+            <h2>Popular Print Products</h2>
+            <button
+              type="button"
+              className="uh-see-all-btn"
+              onClick={() => navigate("/Product-overview")}
+            >
+              See All →
+            </button>
+          </div>
+          <p className="uh-section-subtitle">
+            Discover our bestselling print essentials for your business.
+          </p>
         </div>
 
         <div className="uh-cards">
           {products.map((p) => (
-            <div key={p.id} className="uh-card">
+            <div
+              key={p.id}
+              className="uh-card"
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/product/${p.id}`)}
+              onKeyDown={(e) =>
+                e.key === "Enter" && navigate(`/product/${p.id}`)
+              }
+            >
               <div className="uh-card-img">
                 <img
                   src={
@@ -75,7 +95,10 @@ function UserHomePage() {
                 <button
                   type="button"
                   className="uh-card-link"
-                  onClick={() => navigate(`/product/${p.id}`)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/product/${p.id}`);
+                  }}
                 >
                   SHOP NOW &gt;&gt;
                 </button>
