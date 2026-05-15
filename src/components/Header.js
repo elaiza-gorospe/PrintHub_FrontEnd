@@ -237,6 +237,17 @@ function Header() {
                       type="button"
                       onClick={() => {
                         setIsProfileOpen(false);
+                        navigate("/user-payments");
+                      }}
+                    >
+                      <FaFileInvoiceDollar /> <span>Payment logs & invoices</span>
+                    </button>
+
+                    <button
+                      className="uh-dd-item"
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
                         navigate("/user-inquiries");
                       }}
                     >

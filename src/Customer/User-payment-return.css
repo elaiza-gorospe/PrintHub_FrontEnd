@@ -29,6 +29,35 @@
   line-height: 1.5;
 }
 
+.upr-email {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 10px;
+  text-align: left;
+  border: 1px solid #dbe4ef;
+  background: #f8fafc;
+}
+
+.upr-email.success {
+  border-color: rgba(39, 174, 96, 0.28);
+  background: rgba(39, 174, 96, 0.08);
+}
+
+.upr-email.failed {
+  border-color: rgba(230, 126, 34, 0.28);
+  background: rgba(230, 126, 34, 0.08);
+}
+
+.upr-email strong {
+  color: #343d5c;
+}
+
+.upr-email p {
+  color: #334155;
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
+
 .upr-actions {
   margin-top: 20px;
   display: flex;

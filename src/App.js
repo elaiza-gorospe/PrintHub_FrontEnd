@@ -28,6 +28,7 @@ import UserAccountSettings from "./Customer/User-account-settings";
 import UserCartPage from "./Customer/User-cart";
 import UserOrders from "./Customer/User-orders";
 import UserPaymentReturn from "./Customer/User-payment-return";
+import UserPayments from "./Customer/User-payments";
 import UserInquiries from "./Customer/User-inquiries";
 import UserPasswordSecurityPage from "./Customer/User-password-security";
 import ProductDetail from "./Customer/Product-detail";
@@ -136,6 +137,7 @@ function App() {
           />
           <Route path="/user-cart" element={<UserCartPage />} />
           <Route path="/user-orders" element={<UserOrders />} />
+          <Route path="/user-payments" element={<UserPayments />} />
           <Route path="/payment/return" element={<UserPaymentReturn />} />
           <Route path="/user-inquiries" element={<UserInquiries />} />
           <Route path="/user-dashboard" element={<CustomerDashboard />} />
