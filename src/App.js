@@ -240,6 +240,27 @@ function HomePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const revealItems = document.querySelectorAll(".reveal-on-scroll");
+    if (!revealItems.length) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.16 },
+    );
+
+    revealItems.forEach((item) => observer.observe(item));
+
+    return () => observer.disconnect();
+  }, [products, loadingProducts, productsError]);
+
+  useEffect(() => {
     if (location.state?.scrollTo) {
       const el = document.getElementById(location.state.scrollTo);
       if (el) el.scrollIntoView({ behavior: "smooth" });
@@ -278,11 +299,27 @@ function HomePage() {
       <NavbarComponent />
 
       {/* HERO */}
-      <header className="App-header"></header>
+      <header className="App-header">
+        <div className="hero-copy">
+          <span className="hero-kicker">PMG Printing House</span>
+          <h1>Print-ready ideas, made local.</h1>
+          <p>
+            Custom shirts, signage, paper prints, IDs, mugs, machines, and
+            supplies in one hands-on printing shop.
+          </p>
+          <button
+            type="button"
+            className="hero-cta"
+            onClick={() => navigate("/product-overview")}
+          >
+            Explore Products
+          </button>
+        </div>
+      </header>
 
       <main className="main-content">
         {/* HOW TO ORDER (HTML/CSS) */}
-        <section className="content-section howto-wrap">
+        <section className="content-section howto-wrap reveal-on-scroll">
           <h2 className="howto-title">
             Print Your Own Design With <span>PMG</span>!
           </h2>
@@ -335,18 +372,11 @@ function HomePage() {
         </section>
 
         {/* ✅ PRODUCT CATALOG */}
-        <section className="content-section">
+        <section className="content-section reveal-on-scroll">
           <h2>Product Catalog</h2>
           <p>Discover our bestselling print essentials for your business.</p>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: "24px",
-              marginTop: "30px",
-            }}
-          >
+          <div className="product-grid">
             {loadingProducts ? (
               <p style={{ padding: "20px", textAlign: "center" }}>
                 Loading products...
@@ -370,40 +400,19 @@ function HomePage() {
                     key={item.id}
                     type="button"
                     onClick={() => navigate(`/product/${item.id}`)}
-                    style={{
-                      background: "#fff",
-                      padding: "20px",
-                      borderRadius: "10px",
-                      boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-                      textAlign: "left",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
+                    className="product-card"
                   >
-                    <div
-                      style={{
-                        height: 160,
-                        overflow: "hidden",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "#f8fafc",
-                        borderRadius: 8,
-                        marginBottom: 12,
-                      }}
-                    >
+                    <div className="product-card-media">
                       <img
                         src={item.images?.[0] || fallbackImage}
                         alt={item.name}
-                        style={{ maxWidth: "100%", maxHeight: "100%" }}
                         onError={(e) => {
                           e.target.src = fallbackImage;
                         }}
                       />
                     </div>
-                    <div style={{ color: "#343d5c", fontWeight: 600 }}>
-                      {item.name}
-                    </div>
+                    <div className="product-card-title">{item.name}</div>
+                    <div className="product-card-action">View details</div>
                   </button>
                 );
               })
@@ -412,17 +421,62 @@ function HomePage() {
         </section>
 
         {/* ✅ ABOUT */}
-        <section className="content-section" id="about">
-          <h2>About PMG</h2>
-          <p>PMG is your one stop printhing shop.</p>
+        <section className="content-section reveal-on-scroll" id="about">
+          <h2>About PMG Printing House</h2>
+          <p>
+            <strong>Your trusted one-stop printing shop</strong>
+          </p>
+          <p>
+            PMG Printing House was built for one reason: to make printing easy,
+            complete, and reliable. Whether you need a single calling card or
+            500 fully sublimated jerseys, we have the equipment, expertise, and
+            supplies to get it done.
+          </p>
+          <p>
+            We don't just print. We also provide printing machines and
+            consumables as a straight authorized dealer, so even fellow printing
+            businesses trust us.
+          </p>
+
+          <h3>What We Print And More</h3>
+          <ul className="home-info-list">
+            <li>T-shirt printing (DTF, sublimation, screen print)</li>
+            <li>Cut & sew (full custom apparel)</li>
+            <li>Digital printing: flyers, trifolds, invitations, stickers</li>
+            <li>Large format: tarpaulin, sintra board, plaque</li>
+            <li>
+              Office & event essentials: calling cards, PVC ID & lanyards, mug
+              printing, cap printing
+            </li>
+            <li>Embroidery & signage installation</li>
+          </ul>
+
+          <h3>Why Customers Come Back</h3>
+          <ul className="home-info-list">
+            <li>
+              <strong>One-stop convenience</strong> - No need to go to five
+              different shops.
+            </li>
+            <li>
+              <strong>Machines + supplies</strong> - We help you print and run
+              your own printing business.
+            </li>
+            <li>
+              <strong>Fast, local, and hands-on</strong> - Real people who
+              answer calls and messages.
+            </li>
+          </ul>
         </section>
 
         {/* ✅ CONTACT */}
-        <section className="content-section" id="contact">
+        <section className="content-section contact-section reveal-on-scroll" id="contact">
           <h2>Contact</h2>
-          <p>Email: printhub@gmail.com</p>
-          <p>Phone: +63 900 000 0000</p>
-          <p>Address: Your City, Philippines</p>
+          <div className="contact-links">
+            <a href="tel:09389343337090">0938-934-3337090</a>
+            <a href="tel:09081858988091">0908-185-8988091</a>
+            <a href="tel:09122043818">0912-204-3818</a>
+            <a href="mailto:pmg.prints@gmail.com">pmg.prints@gmail.com</a>
+          </div>
         </section>
       </main>
     </div>
