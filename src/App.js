@@ -401,7 +401,7 @@ function HomePage() {
                         }}
                       />
                     </div>
-                    <div style={{ color: "#0f352a", fontWeight: 600 }}>
+                    <div style={{ color: "#343d5c", fontWeight: 600 }}>
                       {item.name}
                     </div>
                   </button>

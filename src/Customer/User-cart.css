@@ -1,7 +1,9 @@
 /* Page background similar to your green theme */
 .ucart-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f8f6f1 0%, #eef3f0 55%, #e7efec 100%);
+  background:
+    radial-gradient(circle at top left, rgba(200, 162, 74, 0.12), transparent 30%),
+    linear-gradient(180deg, #f8f4e8 0%, #fffdf8 48%, #eee7d8 100%);
   padding: clamp(16px, 4vw, 44px) clamp(12px, 3vw, 24px);
   font-family: Arial, sans-serif;
 }
@@ -17,8 +19,8 @@
 }
 
 .ucart-back {
-  background: rgba(27, 63, 110, 0.1);
-  color: #1b3f6e;
+  background: rgba(77, 88, 124, 0.1);
+  color: #343d5c;
   border: none;
   border-radius: 10px;
   padding: 10px 14px;
@@ -31,7 +33,7 @@
 }
 
 .ucart-back:hover {
-  background: #3466a3;
+  background: #4d587c;
   color: #fff;
 }
 
@@ -64,15 +66,16 @@
 /* Card style */
 .ucart-card,
 .ucart-summary {
-  background: #fff;
+  background: #fffdf8;
   border-radius: 14px;
   padding: clamp(14px, 3vw, 22px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(77, 88, 124, 0.12);
+  box-shadow: 0 18px 42px rgba(31, 40, 56, 0.1);
 }
 
 .ucart-section-title {
   margin: 0 0 12px;
-  color: #1b3f6e;
+  color: #343d5c;
   font-size: 18px;
   font-weight: 900;
 }
@@ -94,8 +97,8 @@
   width: 70px;
   height: 70px;
   border-radius: 12px;
-  background: #e6f3ea;
-  border: 1px solid #b8dbc6;
+  background: #eee7d8;
+  border: 1px solid rgba(77, 88, 124, 0.12);
 }
 
 .ucart-info {
@@ -104,7 +107,7 @@
 
 .ucart-name {
   font-weight: 900;
-  color: #133b24;
+  color: #1f2838;
 }
 
 .ucart-desc {
@@ -129,8 +132,8 @@
 .ucart-qty {
   display: flex;
   align-items: center;
-  background: #f7faf8;
-  border: 1px solid #dbe7df;
+  background: #f8f4e8;
+  border: 1px solid #ded7c7;
   border-radius: 10px;
   overflow: hidden;
 }
@@ -143,7 +146,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #135e30;
+  color: #4d587c;
 }
 
 .ucart-qty-btn:hover {
@@ -153,7 +156,7 @@
 .ucart-qty-num {
   padding: 0 12px;
   font-weight: 800;
-  color: #133b24;
+  color: #1f2838;
   /* keep input narrow — about 12% of the control area, with sensible limits */
   min-width: 36px;
   max-width: 50px;
@@ -198,14 +201,14 @@
   justify-content: space-between;
   font-size: 16px;
   font-weight: 900;
-  color: #1b3f6e;
+  color: #343d5c;
   margin-bottom: 12px;
 }
 
 .ucart-checkout {
   width: 100%;
   border: none;
-  background: #1b3f6e;
+  background: linear-gradient(135deg, #343d5c 0%, #4d587c 100%);
   color: #fff;
   border-radius: 10px;
   padding: 12px;
@@ -215,7 +218,7 @@
 }
 
 .ucart-checkout:hover {
-  background: #3466a3;
+  background: #343d5c;
 }
 
 .ucart-continue {
@@ -226,13 +229,13 @@
   cursor: pointer;
   min-height: 44px;
   font-weight: 800;
-  background: #e6f3ea;
-  color: #1b3f6e;
-  border: 1px solid #b8dbc6;
+  background: #f8f4e8;
+  color: #343d5c;
+  border: 1px solid #ded7c7;
 }
 
 .ucart-continue:hover {
-  background: #d8efe1;
+  background: #eee7d8;
 }
 
 .ucart-auth-modal-overlay {
@@ -248,7 +251,7 @@
 
 .ucart-auth-modal {
   width: min(420px, 100%);
-  background: #fff;
+  background: #fffdf8;
   border-radius: 14px;
   padding: 24px;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
@@ -257,7 +260,7 @@
 
 .ucart-auth-modal h2 {
   margin: 0 0 10px;
-  color: #1b3f6e;
+  color: #343d5c;
   font-size: 22px;
   font-weight: 900;
 }
@@ -287,21 +290,21 @@
 }
 
 .ucart-auth-modal-cancel {
-  background: #e6f3ea;
-  color: #1b3f6e;
+  background: #f8f4e8;
+  color: #343d5c;
 }
 
 .ucart-auth-modal-cancel:hover {
-  background: #d8efe1;
+  background: #eee7d8;
 }
 
 .ucart-auth-modal-primary {
-  background: #1b3f6e;
+  background: #4d587c;
   color: #fff;
 }
 
 .ucart-auth-modal-primary:hover {
-  background: #3466a3;
+  background: #343d5c;
 }
 
 /* Mobile */

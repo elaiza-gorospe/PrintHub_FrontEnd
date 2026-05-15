@@ -175,6 +175,11 @@
   color: var(--text);
 }
 
+.pd-line-options {
+  display: flex;
+  flex-direction: column;
+}
+
 .pd-card-options {
   display: flex;
   flex-wrap: wrap;
@@ -283,6 +288,19 @@
   background: #fff;
   color: var(--text);
   transition: background 0.2s ease;
+}
+
+.pd-line-options .pd-line-option:first-child {
+  border-top: none;
+}
+
+.pd-size-contact-option {
+  width: 100%;
+  border-right: none;
+  border-bottom: none;
+  border-left: none;
+  font: inherit;
+  text-align: left;
 }
 
 .pd-line-option.selected {

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaIdCard, FaHeadset, FaCheck, FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa";
 import "./Product-detail.css";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useCart } from "../hooks/useCart";
@@ -446,11 +446,11 @@ function ProductDetail() {
           <section className="pd-section">
             <h2>1. Select size</h2>
 
-            <div className="pd-card-options">
+            <div className="pd-line-options">
               {product.sizes.map((size) => (
                 <label
                   key={size}
-                  className={`pd-option-card ${selectedSize === size && !customSizeSelected ? "selected" : ""}`}
+                  className={`pd-line-option ${selectedSize === size && !customSizeSelected ? "selected" : ""}`}
                 >
                   <input
                     type="radio"
@@ -462,52 +462,28 @@ function ProductDetail() {
                       setCustomSizeSelected(false);
                     }}
                   />
-
-                  <div className="pd-option-inner">
-                    <div className="pd-option-logo">
-                      <FaIdCard />
-                    </div>
-                    <div className="pd-option-title">Standard</div>
-                    <div className="pd-option-sub">
-                      {size.includes("(")
-                        ? size.split("(")[1].replace(")", "")
-                        : size}
-                    </div>
-                  </div>
-
-                  {selectedSize === size && !customSizeSelected && (
-                    <div className="pd-check-badge">
-                      <FaCheck />
-                    </div>
-                  )}
+                  <span>
+                    {size.includes("(")
+                      ? size.split("(")[1].replace(")", "")
+                      : size}
+                  </span>
                 </label>
               ))}
 
-              <button
-                type="button"
-                className={`pd-option-card pd-option-card-contact ${customSizeSelected ? "selected" : ""}`}
-                onClick={() => {
-                  setCustomSizeSelected(true);
-                  scrollToQuote();
-                }}
+              <label
+                className={`pd-line-option pd-size-contact-option ${customSizeSelected ? "selected" : ""}`}
               >
-                <div className="pd-option-inner">
-                  <div className="pd-option-logo pd-option-logo-contact">
-                    <FaHeadset />
-                  </div>
-                  <div className="pd-option-title">
-                    Looking for something else? ...
-                  </div>
-                  <div className="pd-option-sub pd-option-sub-strong">
-                    Contact Us!
-                  </div>
-                </div>
-                {customSizeSelected && (
-                  <div className="pd-check-badge">
-                    <FaCheck />
-                  </div>
-                )}
-              </button>
+                <input
+                  type="radio"
+                  name="size"
+                  checked={customSizeSelected}
+                  onChange={() => {
+                    setCustomSizeSelected(true);
+                    scrollToQuote();
+                  }}
+                />
+                <span>Looking for something else? Contact Us!</span>
+              </label>
             </div>
           </section>
 
