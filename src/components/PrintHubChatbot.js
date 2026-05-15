@@ -1,23 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
+import { buildApiUrl } from "../config/api";
 import "./PrintHubChatbot.css";
-
-// ─── CONFIG ───────────────────────────────────────────────────────────────────
-// Add to your .env file:  REACT_APP_GEMINI_API_KEY=your_key_here
-// Get a FREE key at:      https://aistudio.google.com/app/apikey
-
-
-const SYSTEM_PROMPT = `You are PrintHub Assistant 🤖, a friendly and knowledgeable AI chatbot for PrintHub — a professional printing service. Help customers with:
-
-- Pricing and quotes (business cards, flyers, posters, tarpaulins, mugs, shirts, notebooks, etc.)
-- Delivery times and shipping options
-- Turnaround time for orders
-- Design services and file requirements (PDF, PNG, JPG, AI, PSD)
-- Payment methods (GCash, PayMaya, Bank Transfer)
-- Returns and refunds policy
-- Bulk order discounts
-- Order status and tracking
-
-Be concise, warm, and helpful. Use bullet points when listing multiple items. If you don't know exact pricing, tell the customer to contact PrintHub directly for a custom quote. Keep responses short and scannable. Use emojis sparingly for warmth.`;
 
 const SUGGESTED = [
   "💳 Business card pricing",
@@ -72,7 +55,7 @@ export default function PrintHubChatbot() {
         parts: [{ text: m.content }],
       }));
 
-      const res = await fetch("http://localhost:5000/api/chat", {
+      const res = await fetch(buildApiUrl("/api/chat"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: contents }),
