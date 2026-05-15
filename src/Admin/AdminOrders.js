@@ -530,6 +530,7 @@ function AdminOrders() {
                                     setAiPreviewModal({
                                       imageUrl: design.generatedImageUrl,
                                       productName,
+                                      design,
                                     })
                                   }
                                   title="Click to preview AI design"
@@ -818,6 +819,7 @@ function AdminOrders() {
                             setAiPreviewModal({
                               imageUrl: design.generatedImageUrl,
                               productName,
+                              design,
                             })
                           }
                           title="Click to preview AI design"
@@ -1053,6 +1055,7 @@ function AdminOrders() {
                   setAi3DPreviewModal({
                     imageUrl: aiPreviewModal.imageUrl,
                     productName: aiPreviewModal.productName,
+                    design: aiPreviewModal.design,
                   });
                 }}
                 style={{
@@ -1169,7 +1172,17 @@ function AdminOrders() {
             >
               <TshirtPreview3D
                 modelPath="/models/tshirt.glb"
-                zoneDesigns={{ front: { imageUrl: ai3DPreviewModal.imageUrl } }}
+                shirtColor={
+                  ai3DPreviewModal.design?.shirtColor ||
+                  ai3DPreviewModal.design?.productColor ||
+                  ai3DPreviewModal.design?.baseColor ||
+                  "#ffffff"
+                }
+                zoneDesigns={
+                  ai3DPreviewModal.design?.zones || {
+                    front: { imageUrl: ai3DPreviewModal.imageUrl },
+                  }
+                }
               />
             </div>
 

@@ -16,17 +16,26 @@ import { CATEGORY_DEFAULTS, CATEGORY_NAMES } from "../config/categoryDefaults";
 
 const CATEGORY_ZONES = {
   tshirt: ["front", "back", "left_sleeve", "right_sleeve"],
-  jersery: ["front", "back"],
+  jersey: ["front", "back", "left_sleeve", "right_sleeve"],
+  jersery: ["front", "back", "left_sleeve", "right_sleeve"],
   cap: ["front", "back", "left_sleeve", "right_sleeve"],
   notebook: ["front_cover", "back_cover"],
   calling_card: ["front", "back"],
-  mug: ["front"],
-  banners: [],
-  stickers: [],
-  hang_tags: [],
-  brochures: [],
-  other: [],
+  business_card: ["front", "back"],
+  mug: ["front", "back"],
+  banners: ["front"],
+  poster: ["front"],
+  posters: ["front"],
+  flyers: ["front", "back"],
+  thank_you_card: ["front", "back"],
+  stickers: ["front"],
+  hang_tags: ["front", "back"],
+  brochures: ["front", "back"],
+  other: ["front", "back"],
 };
+
+const getCategoryZones = (category) =>
+  CATEGORY_ZONES[category] || CATEGORY_ZONES.other;
 
 function AdminProducts({
   refreshTrigger = 0,
@@ -266,7 +275,10 @@ function AdminProducts({
           ? String(fullProduct.quantity_count)
           : "",
       shipping_options: fullProduct.shipping_options || [],
-      print_zones: fullProduct.print_zones || [],
+      print_zones:
+        fullProduct.print_zones?.length > 0
+          ? fullProduct.print_zones
+          : getCategoryZones(fullProduct.category || "other"),
       category: fullProduct.category || "other",
     });
     setTagInputs({
@@ -343,7 +355,7 @@ function AdminProducts({
             quantity_options: editForm.quantity_options,
             shipping_options: editForm.shipping_options,
             category: editForm.category,
-            print_zones: CATEGORY_ZONES[editForm.category] || [],
+            print_zones: getCategoryZones(editForm.category),
           }),
         },
       );

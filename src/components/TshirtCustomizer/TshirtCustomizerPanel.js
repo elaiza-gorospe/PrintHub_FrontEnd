@@ -9,7 +9,7 @@
  *   onClear       {fn}             – called when user removes the active design
  *   activeDesign  {object|null}    – currently applied design meta
  */
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FaCloudUploadAlt, FaMagic, FaCheckCircle } from "react-icons/fa";
 import { buildApiUrl } from "../../config/api";
 import TshirtZoneCanvas from "./TshirtZoneCanvas";
@@ -17,6 +17,18 @@ import TshirtPreview3D from "./TshirtPreview3D";
 import "./TshirtCustomizer.css";
 
 const TSHIRT_GLB = "/models/tshirt.glb";
+const QUICK_COLORS = [
+  "#ffffff",
+  "#111827",
+  "#ff0000",
+  "#f97316",
+  "#facc15",
+  "#22c55e",
+  "#0ea5e9",
+  "#2563eb",
+  "#7c3aed",
+  "#ec4899",
+];
 
 // Convert hue (0-360) to a hex color at full saturation/lightness=50%
 function hueToHex(hue) {
@@ -32,6 +44,12 @@ function hueToHex(hue) {
       .padStart(2, "0");
   };
   return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+function normalizeHexColor(value) {
+  const raw = String(value || "").trim();
+  const withHash = raw.startsWith("#") ? raw : `#${raw}`;
+  return /^#[0-9a-fA-F]{6}$/.test(withHash) ? withHash.toLowerCase() : null;
 }
 
 const GUEST_GEN_KEY = "ai_guest_generations";
@@ -73,6 +91,11 @@ export default function TshirtCustomizerPanel({
   onDesignReady,
   onClear,
   activeDesign,
+  modelPath = TSHIRT_GLB,
+  PreviewComponent = TshirtPreview3D,
+  designType = "tshirt",
+  productLabel = "T-shirt",
+  previewProps = {},
 }) {
   const zones = product?.print_zones || [];
 
@@ -86,7 +109,9 @@ export default function TshirtCustomizerPanel({
 
   // shirt color — starts white; hue slider updates it
   const [shirtColor, setShirtColor] = useState("#ffffff");
+  const [hexInput, setHexInput] = useState("#ffffff");
   const [sliderHue, setSliderHue] = useState(0);
+  const colorInputRef = useRef(null);
 
   // upload state
   const [uploading, setUploading] = useState(false);
@@ -97,6 +122,15 @@ export default function TshirtCustomizerPanel({
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState("");
+
+  useEffect(() => {
+    if (activeDesign?.type !== designType) return;
+    if (activeDesign.zones) setZoneDesigns(activeDesign.zones);
+    const savedColor =
+      activeDesign.shirtColor || activeDesign.productColor || activeDesign.baseColor;
+    if (savedColor) applyShirtColor(savedColor);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDesign]);
 
   // ── Upload handler ────────────────────────────────────────────────
   const handleFileChange = async (e) => {
@@ -167,8 +201,8 @@ export default function TshirtCustomizerPanel({
     setGenError("");
 
     try {
-      const zoneName = activeZone ? activeZone.replace(/_/g, " ") : "t-shirt";
-      const fullPrompt = `${prompt.trim()}, for the ${zoneName} of a t-shirt, flat graphic design, transparent background, high quality`;
+      const zoneName = activeZone ? activeZone.replace(/_/g, " ") : productLabel;
+      const fullPrompt = `${prompt.trim()}, for the ${zoneName} of a ${productLabel}, flat graphic design, transparent background, high quality`;
 
       const userId = getUserId();
       const res = await fetch(buildApiUrl("/api/builder/generate-image"), {
@@ -233,12 +267,19 @@ export default function TshirtCustomizerPanel({
 
   // ── Zone select: place selected gallery image if one is highlighted ─
   const handleZoneSelect = (zoneId) => {
-    console.log(`Zone selected: ${zoneId}`);  // Debug log
     setActiveZone(zoneId);
   };
 
   // ── Use this design ───────────────────────────────────────────────
   const hasAnyDesign = Object.values(zoneDesigns).some(Boolean);
+
+  const applyShirtColor = (color) => {
+    const normalized = normalizeHexColor(color);
+    if (!normalized) return false;
+    setShirtColor(normalized);
+    setHexInput(normalized);
+    return true;
+  };
 
   const handleUseDesign = () => {
     const primaryImage =
@@ -246,9 +287,11 @@ export default function TshirtCustomizerPanel({
       Object.values(zoneDesigns).find(Boolean)?.imageUrl ||
       null;
     onDesignReady({
-      type: "tshirt",
+      type: designType,
       zones: zoneDesigns,
       shirtColor,
+      productColor: shirtColor,
+      baseColor: shirtColor,
       generatedImageUrl: primaryImage,
       generatedAt: new Date().toISOString(),
     });
@@ -258,10 +301,10 @@ export default function TshirtCustomizerPanel({
   return (
     <div className="tsc-root">
       {/* Applied design confirmation bar */}
-      {activeDesign?.type === "tshirt" && (
+      {activeDesign?.type === designType && (
         <div className="tsc-active-design-bar">
           <FaCheckCircle />
-          <span>T-shirt design applied to your order.</span>
+          <span>{productLabel} design applied to your order.</span>
           <button
             type="button"
             className="tsc-clear-btn"
@@ -395,10 +438,11 @@ export default function TshirtCustomizerPanel({
 
           {/* 3D preview + color */}
           <div className="tsc-preview-panel">
-            <TshirtPreview3D
-              modelPath={TSHIRT_GLB}
+            <PreviewComponent
+              modelPath={modelPath}
               shirtColor={shirtColor}
               zoneDesigns={zoneDesigns}
+              {...previewProps}
             />
 
             {/* Color picker */}
@@ -413,14 +457,66 @@ export default function TshirtCustomizerPanel({
                   value={sliderHue}
                   onChange={(e) => {
                     const h = Number(e.target.value);
+                    const nextColor = hueToHex(h);
                     setSliderHue(h);
-                    setShirtColor(hueToHex(h));
+                    applyShirtColor(nextColor);
                   }}
                 />
-                <div
+                <button
+                  type="button"
                   className="tsc-color-swatch"
                   style={{ background: shirtColor }}
+                  title="Pick shirt color"
+                  onClick={() => colorInputRef.current?.click()}
                 />
+              </div>
+              <div className="tsc-color-controls">
+                <input
+                  className="tsc-hex-input"
+                  value={hexInput}
+                  maxLength={7}
+                  aria-label="Shirt color hex code"
+                  onChange={(e) => {
+                    const nextValue = e.target.value;
+                    setHexInput(nextValue);
+                    applyShirtColor(nextValue);
+                  }}
+                  onBlur={() => {
+                    if (!applyShirtColor(hexInput)) setHexInput(shirtColor);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.currentTarget.blur();
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className="tsc-more-colors-btn"
+                  onClick={() => colorInputRef.current?.click()}
+                >
+                  More colors
+                </button>
+                <input
+                  ref={colorInputRef}
+                  type="color"
+                  className="tsc-native-color-input"
+                  value={shirtColor}
+                  onChange={(e) => applyShirtColor(e.target.value)}
+                />
+              </div>
+              <div className="tsc-quick-colors">
+                {QUICK_COLORS.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    className={`tsc-quick-color${shirtColor === color ? " active" : ""}`}
+                    style={{ background: color }}
+                    title={color.toUpperCase()}
+                    aria-label={`Use ${color} shirt color`}
+                    onClick={() => applyShirtColor(color)}
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -446,7 +542,7 @@ export default function TshirtCustomizerPanel({
               setGallery([]);
               setSelectedGalleryId(null);
               setActiveZone(zones[0] || null);
-              setShirtColor("#ffffff");
+              applyShirtColor("#ffffff");
               setSliderHue(0);
               setPrompt("");
               onClear?.();

@@ -10,6 +10,80 @@ import { buildApiUrl } from "../config/api";
 import AIBuilderPanel from "../components/AIBuilder/AIBuilderPanel";
 import TshirtCustomizerPanel from "../components/TshirtCustomizer/TshirtCustomizerPanel";
 import NotebookCustomizerPanel from "../components/NotebookCustomizer/NotebookCustomizerPanel";
+import BusinessCardCustomizerPanel from "../components/BusinessCardCustomizer/BusinessCardCustomizerPanel";
+import BrochureCustomizerPanel from "../components/BrochureCustomizer/BrochureCustomizerPanel";
+import CapCustomizerPanel from "../components/CapCustomizer/CapCustomizerPanel";
+import JerseyCustomizerPanel from "../components/JerseyCustomizer/JerseyCustomizerPanel";
+import MugCustomizerPanel from "../components/MugCustomizer/MugCustomizerPanel";
+import PosterCustomizerPanel from "../components/PosterCustomizer/PosterCustomizerPanel";
+import FlyerCustomizerPanel from "../components/FlyerCustomizer/FlyerCustomizerPanel";
+import ThankYouCardCustomizerPanel from "../components/ThankYouCardCustomizer/ThankYouCardCustomizerPanel";
+
+const DEFAULT_PRODUCT_ZONES = {
+  notebook: ["front_cover", "back_cover"],
+  tshirt: ["front", "back", "left_sleeve", "right_sleeve"],
+  jersey: ["front", "back", "left_sleeve", "right_sleeve"],
+  jersery: ["front", "back", "left_sleeve", "right_sleeve"],
+  cap: ["front", "back", "left_sleeve", "right_sleeve"],
+  mug: ["front", "back"],
+  calling_card: ["front", "back"],
+  business_card: ["front", "back"],
+  brochures: ["front", "back"],
+  flyers: ["front", "back"],
+  poster: ["front"],
+  posters: ["front"],
+  thank_you_card: ["front", "back"],
+  banners: ["front"],
+  stickers: ["front"],
+  hang_tags: ["front", "back"],
+  other: ["front", "back"],
+};
+
+function getDefaultPrintZones(category) {
+  const normalized = String(category || "other").toLowerCase();
+  return DEFAULT_PRODUCT_ZONES[normalized] || DEFAULT_PRODUCT_ZONES.other;
+}
+
+function inferCustomizerCategory({ category, name, title }) {
+  const rawCategory = String(category || "").toLowerCase();
+  const label = `${name || ""} ${title || ""}`.toLowerCase();
+
+  if (label.includes("flyer")) return "flyers";
+  if (label.includes("poster")) return "posters";
+
+  if (rawCategory && !["service", "print", "other"].includes(rawCategory)) {
+    return rawCategory;
+  }
+  if (label.includes("business card") || label.includes("calling card")) {
+    return "business_card";
+  }
+  if (label.includes("thank you")) return "thank_you_card";
+  if (label.includes("brochure")) return "brochures";
+  if (label.includes("notebook")) return "notebook";
+  if (label.includes("jersey")) return "jersey";
+  if (label.includes("cap") || label.includes("hat")) return "cap";
+  if (label.includes("mug") || label.includes("cup")) return "mug";
+  if (label.includes("shirt") || label.includes("t-shirt") || label.includes("tshirt")) {
+    return "tshirt";
+  }
+  return rawCategory || "other";
+}
+
+function getCustomizerPanel(category) {
+  const normalized = String(category || "other").toLowerCase();
+  if (normalized === "notebook") return NotebookCustomizerPanel;
+  if (normalized === "business_card" || normalized === "calling_card") {
+    return BusinessCardCustomizerPanel;
+  }
+  if (normalized === "brochures") return BrochureCustomizerPanel;
+  if (normalized === "flyer" || normalized === "flyers") return FlyerCustomizerPanel;
+  if (normalized === "poster" || normalized === "posters") return PosterCustomizerPanel;
+  if (normalized === "thank_you_card") return ThankYouCardCustomizerPanel;
+  if (normalized === "cap") return CapCustomizerPanel;
+  if (normalized === "jersey" || normalized === "jersery") return JerseyCustomizerPanel;
+  if (normalized === "mug") return MugCustomizerPanel;
+  return TshirtCustomizerPanel;
+}
 
 /** Map a raw API product to the shape the component expects */
 function mapApiProduct(data) {
@@ -19,6 +93,15 @@ function mapApiProduct(data) {
       if (idx === -1) return { label: opt, price: "" };
       return { label: opt.slice(0, idx), price: opt.slice(idx + 1) };
     });
+
+  const dbCategory = inferCustomizerCategory({
+    category: data.category,
+    name: data.name,
+  });
+  const printZones =
+    data.print_zones?.length > 0
+      ? data.print_zones
+      : getDefaultPrintZones(dbCategory);
 
   return {
     id: data.id,
@@ -37,8 +120,9 @@ function mapApiProduct(data) {
     quantities: parseOptions(data.quantity_options),
     shipping: parseOptions(data.shipping_options),
     ai_prompt_rules: data.ai_prompt_rules || null,
-    print_zones: data.print_zones || [],
-    dbCategory: data.category || "other",
+    print_zones: printZones,
+    dbCategory,
+    rawCategory: data.category || "other",
     quantity_mode: data.quantity_mode || "dropdown",
     quantity_count: data.quantity_count || null,
   };
@@ -422,21 +506,17 @@ function ProductDetail() {
 
             {activeTab === "customize" && (
               <div className="pd-tab-content pd-tab-builder-inline">
-                {product.dbCategory === "notebook" ? (
-                  <NotebookCustomizerPanel
+                {(() => {
+                  const CustomizerPanel = getCustomizerPanel(product.dbCategory);
+                  return (
+                    <CustomizerPanel
                     product={product}
                     activeDesign={activeDesign}
                     onDesignReady={(meta) => setActiveDesign(meta)}
                     onClear={() => setActiveDesign(null)}
                   />
-                ) : (
-                  <TshirtCustomizerPanel
-                    product={product}
-                    activeDesign={activeDesign}
-                    onDesignReady={(meta) => setActiveDesign(meta)}
-                    onClear={() => setActiveDesign(null)}
-                  />
-                )}
+                  );
+                })()}
               </div>
             )}
           </div>
