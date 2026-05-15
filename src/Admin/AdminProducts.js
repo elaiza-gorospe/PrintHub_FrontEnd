@@ -19,10 +19,10 @@ const CATEGORY_ZONES = {
   notebook: ["front_cover", "back_cover"],
   calling_card: ["front", "back"],
   mug: ["front"],
-  banners: [],
-  stickers: [],
-  hang_tags: [],
-  brochures: [],
+  banners:   ["front"],
+  stickers:  ["front"],
+  hang_tags: ["front", "back"],
+  brochures: ["outside", "inside"],
   other: [],
 };
 
@@ -1171,7 +1171,8 @@ function AdminProducts({
                     <option value="stickers">Stickers &amp; Labels</option>
                     <option value="hang_tags">Hang Tags</option>
                     <option value="brochures">Brochures</option>
-                    <option value="other">Other</option>
+                    <option value="mug">Mug</option>
+                    {/* <option value="other">Other</option> */}
                   </select>
                 </div>
               </div>
