@@ -4,8 +4,7 @@ import "./PrintHubChatbot.css";
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 // Add to your .env file:  REACT_APP_GEMINI_API_KEY=your_key_here
 // Get a FREE key at:      https://aistudio.google.com/app/apikey
-const GEMINI_KEY = process.env.REACT_APP_GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+
 
 const SYSTEM_PROMPT = `You are PrintHub Assistant 🤖, a friendly and knowledgeable AI chatbot for PrintHub — a professional printing service. Help customers with:
 
@@ -73,20 +72,14 @@ export default function PrintHubChatbot() {
         parts: [{ text: m.content }],
       }));
 
-      const res = await fetch(GEMINI_URL, {
+      const res = await fetch("http://localhost:5000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents,
-          generationConfig: { temperature: 0.7, maxOutputTokens: 512 },
-        }),
+        body: JSON.stringify({ messages: contents }),
       });
 
       const data = await res.json();
-      const reply =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "Sorry, I couldn't get a response. Please try again!";
+      const reply = data.reply || "Sorry, I could not get a response.";
 
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch {
