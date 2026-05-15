@@ -160,7 +160,12 @@ function App() {
 
 function ChatbotRouteGate() {
   const location = useLocation();
-  const hiddenRoutes = ["/user-login", "/user-register"];
+  const hiddenRoutes = [
+    "/user-login",
+    "/user-register",
+    "/user-otp",
+    "/user-forgot-otp",
+  ];
 
   if (hiddenRoutes.includes(location.pathname)) {
     return null;
