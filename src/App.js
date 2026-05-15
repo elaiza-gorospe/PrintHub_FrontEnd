@@ -293,7 +293,24 @@ function HomePage() {
       <NavbarComponent />
 
       {/* HERO */}
-      <header className="App-header"></header>
+      <header className="App-header">
+        <div className="app-hero-overlay" />
+        <div className="app-hero-content">
+          <h1 className="app-hero-title">
+            Your One-Stop Print Shop in the Philippines
+          </h1>
+          <p className="app-hero-sub">
+            Business cards, packaging, banners, and more — printed for your brand.
+          </p>
+          <button
+            className="app-hero-cta"
+            type="button"
+            onClick={() => navigate("/user-login")}
+          >
+            Get Started →
+          </button>
+        </div>
+      </header>
 
       <main className="main-content">
         {/* HOW TO ORDER (HTML/CSS) */}
@@ -337,12 +354,20 @@ function HomePage() {
                 },
               ].map((s, idx) => (
                 <div className="howto-step" key={idx}>
+                  {/* Desktop: STEP label + arrow */}
                   <div className="howto-step-top">
                     <span className="howto-step-label">{s.step}</span>
                     {idx !== 5 && <span className="howto-arrow">▶</span>}
                   </div>
-                  <div className="howto-step-title">{s.title}</div>
-                  <div className="howto-step-text">{s.text}</div>
+                  {/* Mobile: numbered circle + vertical connector */}
+                  <div className="howto-step-indicator">
+                    <div className="howto-step-circle">{idx + 1}</div>
+                    {idx !== 5 && <div className="howto-step-connector" />}
+                  </div>
+                  <div className="howto-step-body">
+                    <div className="howto-step-title">{s.title}</div>
+                    <div className="howto-step-text">{s.text}</div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -354,76 +379,40 @@ function HomePage() {
           <h2>Product Catalog</h2>
           <p>Discover our bestselling print essentials for your business.</p>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: "24px",
-              marginTop: "30px",
-            }}
-          >
-            {loadingProducts ? (
-              <p style={{ padding: "20px", textAlign: "center" }}>
-                Loading products...
-              </p>
-            ) : productsError ? (
-              <p
-                style={{
-                  padding: "20px",
-                  textAlign: "center",
-                  color: "#e74c3c",
-                }}
-              >
-                {productsError}
-              </p>
-            ) : (
-              products.map((item) => {
+          {loadingProducts ? (
+            <p style={{ padding: "20px", textAlign: "center" }}>
+              Loading products...
+            </p>
+          ) : productsError ? (
+            <p style={{ padding: "20px", textAlign: "center", color: "#e74c3c" }}>
+              {productsError}
+            </p>
+          ) : (
+            <div className="hp-product-grid">
+              {products.map((item) => {
                 const fallbackImage =
                   "https://via.placeholder.com/300x200?text=No+Image";
                 return (
                   <button
                     key={item.id}
                     type="button"
+                    className="hp-product-card"
                     onClick={() => navigate(`/product/${item.id}`)}
-                    style={{
-                      background: "#fff",
-                      padding: "20px",
-                      borderRadius: "10px",
-                      boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-                      textAlign: "left",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
                   >
-                    <div
-                      style={{
-                        height: 160,
-                        overflow: "hidden",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "#f8fafc",
-                        borderRadius: 8,
-                        marginBottom: 12,
-                      }}
-                    >
+                    <div className="hp-product-img-wrap">
                       <img
                         src={item.images?.[0] || fallbackImage}
                         alt={item.name}
-                        style={{ maxWidth: "100%", maxHeight: "100%" }}
-                        onError={(e) => {
-                          e.target.src = fallbackImage;
-                        }}
+                        className="hp-product-img"
+                        onError={(e) => { e.target.src = fallbackImage; }}
                       />
                     </div>
-                    <div style={{ color: "#0f352a", fontWeight: 600 }}>
-                      {item.name}
-                    </div>
+                    <div className="hp-product-name">{item.name}</div>
                   </button>
                 );
-              })
-            )}
-          </div>
+              })}
+            </div>
+          )}
         </section>
 
         {/* ✅ ABOUT */}
