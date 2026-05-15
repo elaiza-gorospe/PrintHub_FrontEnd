@@ -616,9 +616,8 @@ function ProductDetail() {
                   product.quantities.map((qty) => (
                     <label
                       key={qty.label}
-                      className={`pd-line-option pd-price-option ${
-                        selectedQty?.label === qty.label ? "selected" : ""
-                      }`}
+                      className={`pd-line-option pd-price-option ${selectedQty?.label === qty.label ? "selected" : ""
+                        }`}
                     >
                       <input
                         type="radio"
@@ -638,9 +637,8 @@ function ProductDetail() {
                 {product.shipping.map((ship) => (
                   <label
                     key={ship.label}
-                    className={`pd-line-option pd-price-option ${
-                      selectedShipping?.label === ship.label ? "selected" : ""
-                    }`}
+                    className={`pd-line-option pd-price-option ${selectedShipping?.label === ship.label ? "selected" : ""
+                      }`}
                   >
                     <input
                       type="radio"
@@ -936,7 +934,7 @@ function ProductDetail() {
                     <strong>
                       {formatPrice(
                         extractNumericPrice(selectedQty?.price) +
-                          extractNumericPrice(selectedShipping?.price),
+                        extractNumericPrice(selectedShipping?.price),
                       )}
                     </strong>
                   </p>

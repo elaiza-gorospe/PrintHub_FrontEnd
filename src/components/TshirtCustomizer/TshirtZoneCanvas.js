@@ -21,6 +21,7 @@ const ZONE_META = [
 ];
 
 function ZoneBox({ meta, design, isActive, onSelect, onDesignChange }) {
+  console.log(`ZoneBox ${meta.id} received design:`, design ? design.imageUrl : 'null');
   const containerRef = useRef(null);
   const dragRef = useRef(null);
   const resizeRef = useRef(null);
