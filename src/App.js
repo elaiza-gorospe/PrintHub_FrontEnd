@@ -32,6 +32,7 @@ import UserInquiries from "./Customer/User-inquiries";
 import UserPasswordSecurityPage from "./Customer/User-password-security";
 import ProductDetail from "./Customer/Product-detail";
 import { buildApiUrl } from "./config/api";
+import PrintHubChatbot from './components/PrintHubChatbot';
 
 // ✅ PROTECTED ROUTE - Only admins and staff can access
 function ProtectedAdminRoute({ children }) {
@@ -149,6 +150,7 @@ function App() {
           />
           <Route path="/product/:id" element={<ProductDetail />} />
         </Routes>
+         <PrintHubChatbot /> 
       </BrowserRouter>
     </CartProvider>
   );
