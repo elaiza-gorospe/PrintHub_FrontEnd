@@ -60,6 +60,11 @@ function CheckoutModal({
   };
 
   const handlePlaceOrder = async () => {
+    if (!userId) {
+      setError("Please create an account before checking out.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 

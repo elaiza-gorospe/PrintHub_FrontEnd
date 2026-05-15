@@ -169,14 +169,21 @@ function AdminProfile() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to update profile");
 
+      const updatedUser = {
+        ...user,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        avatar_url: admin.avatar_url,
+      };
       localStorage.setItem(
         "user",
-        JSON.stringify({
-          ...user,
-          firstName: admin.firstName,
-          email: admin.email,
-        }),
+        JSON.stringify(updatedUser),
       );
+      if (localStorage.getItem("adminUser")) {
+        localStorage.setItem("adminUser", JSON.stringify(updatedUser));
+      }
+      window.dispatchEvent(new Event("profileUpdated"));
 
       setIsEditing(false);
       // ✅ ADDED: clear name error on successful save
@@ -284,19 +291,40 @@ function AdminProfile() {
       if (!res.ok) throw new Error(data.message || "Upload failed");
 
       setAdminAvatarPreview(data.url || "");
+      setAdmin((prev) => ({ ...prev, avatar_url: data.url || "" }));
 
       // Save to profile (best-effort)
       if (userId) {
         try {
-          await fetch(buildApiUrl(`/api/user-profile/${userId}`), {
+          const profileRes = await fetch(buildApiUrl(`/api/user-profile/${userId}`), {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ avatar_url: data.url }),
           });
+          if (!profileRes.ok) {
+            const profileData = await profileRes.json().catch(() => ({}));
+            throw new Error(profileData?.message || "Failed to save avatar");
+          }
         } catch (err) {
-          // ignore
+          throw err;
         }
       }
+
+      try {
+        const storedUser = JSON.parse(
+          localStorage.getItem("user") ||
+            localStorage.getItem("adminUser") ||
+            "{}",
+        );
+        const updatedUser = { ...storedUser, avatar_url: data.url };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        if (localStorage.getItem("adminUser")) {
+          localStorage.setItem("adminUser", JSON.stringify(updatedUser));
+        }
+      } catch {
+        /* ignore localStorage sync errors */
+      }
+      window.dispatchEvent(new Event("profileUpdated"));
     } catch (err) {
       console.error(err);
       setAdminAvatarError(err.message || "Upload failed");

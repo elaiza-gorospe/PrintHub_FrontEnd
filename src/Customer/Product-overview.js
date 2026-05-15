@@ -14,7 +14,18 @@ function ProductOverview() {
   const [showLoginModal, setShowLoginModal] = useState(false); // ✅ modal state
 
   // ✅ Check if user is logged in
-  const user = JSON.parse(localStorage.getItem("user"));
+  const getCustomerUser = () => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem("user") || "null");
+      const role = String(parsed?.role || "").toLowerCase();
+      if (!parsed?.id || role === "admin" || role === "staff" || role === "guest") {
+        return null;
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -73,7 +84,7 @@ function ProductOverview() {
 
   // ✅ Handle view/buy click
   const handleViewProduct = (id) => {
-    if (!user) {
+    if (!getCustomerUser()) {
       setShowLoginModal(true); // guest → show popup
     } else {
       navigate(`/product/${id}`);

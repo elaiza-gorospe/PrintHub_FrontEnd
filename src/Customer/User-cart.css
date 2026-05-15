@@ -235,6 +235,75 @@
   background: #d8efe1;
 }
 
+.ucart-auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(12, 24, 35, 0.58);
+}
+
+.ucart-auth-modal {
+  width: min(420px, 100%);
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+  color: #243443;
+}
+
+.ucart-auth-modal h2 {
+  margin: 0 0 10px;
+  color: #1b3f6e;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.ucart-auth-modal p {
+  margin: 0;
+  color: #425466;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.ucart-auth-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.ucart-auth-modal-cancel,
+.ucart-auth-modal-primary {
+  border: none;
+  border-radius: 10px;
+  padding: 11px 16px;
+  min-height: 44px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.ucart-auth-modal-cancel {
+  background: #e6f3ea;
+  color: #1b3f6e;
+}
+
+.ucart-auth-modal-cancel:hover {
+  background: #d8efe1;
+}
+
+.ucart-auth-modal-primary {
+  background: #1b3f6e;
+  color: #fff;
+}
+
+.ucart-auth-modal-primary:hover {
+  background: #3466a3;
+}
+
 /* Mobile */
 /* Alternative top bar (when using Header component) */
 .ucart-topbar-alt {

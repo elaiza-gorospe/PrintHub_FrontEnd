@@ -97,7 +97,12 @@ function ProductDetail() {
   const [activeDesign, setActiveDesign] = useState(null); // designMeta | null
   const storedUser = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem("user"));
+      const parsed = JSON.parse(localStorage.getItem("user") || "null");
+      const role = String(parsed?.role || "").toLowerCase();
+      if (!parsed?.id || role === "admin" || role === "staff" || role === "guest") {
+        return null;
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -182,8 +187,7 @@ function ProductDetail() {
     setQuoteError("");
 
     try {
-      const storedUser = localStorage.getItem("user");
-      const userId = storedUser ? JSON.parse(storedUser).id : null;
+      const userId = storedUser?.id || null;
 
       const res = await fetch(buildApiUrl("/api/inquiries"), {
         method: "POST",

@@ -6,7 +6,6 @@ import {
   FaTrash,
   FaMinus,
   FaPlus,
-  FaShoppingCart,
 } from "react-icons/fa";
 import CheckoutModal from "./CheckoutModal";
 import { useCart } from "../hooks/useCart";
@@ -16,6 +15,7 @@ import Header from "../components/Header";
 function UserCartPage() {
   const navigate = useNavigate();
   const [showCheckout, setShowCheckout] = useState(false);
+  const [showCheckoutAuthModal, setShowCheckoutAuthModal] = useState(false);
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
 
   // Local edit state for quantity inputs (keeps typing from immediately mutating global cart)
@@ -34,8 +34,23 @@ function UserCartPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartItems]);
 
-  // Get user ID from localStorage (set during login)
-  const userId = parseInt(localStorage.getItem("userId")) || null;
+  const getStoredUser = () => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  };
+
+  const storedUser = getStoredUser();
+  const userRole = String(storedUser?.role || "").toLowerCase();
+  const isCustomer = Boolean(
+    storedUser?.id &&
+      userRole !== "admin" &&
+      userRole !== "staff" &&
+      userRole !== "guest",
+  );
+  const userId = isCustomer ? parseInt(storedUser.id, 10) : null;
 
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.price * item.qty,
@@ -69,12 +84,16 @@ function UserCartPage() {
   };
 
   const handleCheckoutClick = () => {
-    if (!userId) {
-      alert("Please login first");
-      navigate("/user-login");
+    if (!isCustomer) {
+      setShowCheckoutAuthModal(true);
       return;
     }
     setShowCheckout(true);
+  };
+
+  const handleCheckoutAuthConfirm = () => {
+    setShowCheckoutAuthModal(false);
+    navigate("/user-register");
   };
 
   const handleCheckoutComplete = (orderData) => {
@@ -409,6 +428,37 @@ function UserCartPage() {
             onClose={() => setShowCheckout(false)}
             onSuccess={handleCheckoutComplete}
           />
+        )}
+
+        {showCheckoutAuthModal && (
+          <div className="ucart-auth-modal-overlay" role="presentation">
+            <div
+              className="ucart-auth-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="ucart-auth-modal-title"
+            >
+              <h2 id="ucart-auth-modal-title">Checkout requires an account</h2>
+              <p>Log in or register to proceed to checkout.</p>
+
+              <div className="ucart-auth-modal-actions">
+                <button
+                  className="ucart-auth-modal-cancel"
+                  type="button"
+                  onClick={() => setShowCheckoutAuthModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="ucart-auth-modal-primary"
+                  type="button"
+                  onClick={handleCheckoutAuthConfirm}
+                >
+                  Register
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

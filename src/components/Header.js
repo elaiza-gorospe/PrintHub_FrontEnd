@@ -29,10 +29,24 @@ function Header() {
     avatarUrl: "",
   });
 
-  // Get logged-in user from localStorage
-  const isLoggedIn = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user"))
-    : null;
+  const getCustomerUser = () => {
+    try {
+      const stored = localStorage.getItem("user");
+      if (!stored) return null;
+      const parsed = JSON.parse(stored);
+      const role = String(parsed?.role || "").toLowerCase();
+      if (!parsed?.id || role === "admin" || role === "staff" || role === "guest") {
+        return null;
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
+  };
+
+  // Get logged-in customer from localStorage. Admin/staff sessions should not
+  // appear as customer accounts on product pages.
+  const isLoggedIn = getCustomerUser();
 
   // Calculate total cart items count with useMemo to ensure updates
   const cartCount = useMemo(
@@ -41,15 +55,7 @@ function Header() {
   );
 
   useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (!stored) return;
-
-    let u;
-    try {
-      u = JSON.parse(stored);
-    } catch {
-      return;
-    }
+    const u = getCustomerUser();
 
     if (!u?.id) return;
 

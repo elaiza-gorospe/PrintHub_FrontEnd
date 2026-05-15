@@ -62,6 +62,12 @@ function getUserId() {
   return parseInt(localStorage.getItem("userId"), 10) || null;
 }
 
+function withImageCacheBust(url) {
+  if (!url) return url;
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}v=${Date.now()}`;
+}
+
 export default function TshirtCustomizerPanel({
   product,
   onDesignReady,
@@ -129,7 +135,10 @@ export default function TshirtCustomizerPanel({
       if (!res.ok) throw new Error(data.message || "Upload failed");
 
       const id = `upload-${Date.now()}`;
-      setGallery((prev) => [...prev, { id, url: data.url, label: file.name }]);
+      setGallery((prev) => [
+        ...prev,
+        { id, url: withImageCacheBust(data.url), label: file.name },
+      ]);
       setSelectedGalleryId(id);
     } catch (err) {
       setUploadError(err.message || "Upload failed. Please try again.");
@@ -185,7 +194,11 @@ export default function TshirtCustomizerPanel({
       const id = `gen-${Date.now()}`;
       setGallery((prev) => [
         ...prev,
-        { id, url: imageUrl, label: prompt.trim().slice(0, 30) },
+        {
+          id,
+          url: withImageCacheBust(imageUrl),
+          label: prompt.trim().slice(0, 30),
+        },
       ]);
       setSelectedGalleryId(id);
     } catch (err) {

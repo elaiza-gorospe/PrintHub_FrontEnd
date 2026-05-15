@@ -1,24 +1,20 @@
-// User-login.js (FULL UPDATED FILE — adds Reactivation OTP modal + logic, no UI/layout changes)
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import backgroundImage from "../assets/images/pmg-image.jpg";
 import "./User-login.css";
-import { MdVisibility, MdVisibilityOff } from "react-icons/md"; // ✅ ADD
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import backgroundImage from "../assets/images/pmg-image.jpg";
 import { buildApiUrl } from "../config/api";
 
 function UserLoginPage() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
-
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [showForgotModal, setShowForgotModal] = useState(false);
-
-  // ✅ show/hide password
   const [showPassword, setShowPassword] = useState(false);
-
-  // ✅ Reactivation OTP modal states (NEW)
   const [showReactivateModal, setShowReactivateModal] = useState(false);
   const [reactivateOtp, setReactivateOtp] = useState("");
   const [reactivateMsg, setReactivateMsg] = useState("");
@@ -27,22 +23,29 @@ function UserLoginPage() {
     e.preventDefault();
   };
 
-  const navigate = useNavigate();
+  const saveLoggedInUser = (loggedInUser) => {
+    const role = String(loggedInUser?.role || "").toLowerCase();
+
+    if (role === "admin" || role === "staff") {
+      localStorage.removeItem("user");
+      localStorage.removeItem("userId");
+      localStorage.setItem("adminUser", JSON.stringify(loggedInUser));
+      navigate("/admin-dashboard");
+      return;
+    }
+
+    localStorage.removeItem("adminUser");
+    localStorage.setItem("user", JSON.stringify(loggedInUser));
+    localStorage.setItem("userId", loggedInUser.id);
+    navigate("/user-home");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!email) {
-      setError("Please fill in Email field");
-      return;
-    } else if (!password) {
-      setError("Please fill in Password field");
-      return;
-    }
-
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setError("Please enter a valid email address");
+    if (!email || !password) {
+      setError("Email and password are required");
       return;
     }
 
@@ -50,52 +53,34 @@ function UserLoginPage() {
       const response = await fetch(buildApiUrl("/api/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       });
 
       const data = await response.json();
 
+      if (response.status === 403 && data.needsReactivation) {
+        setReactivateMsg(data.message || "");
+        setShowReactivateModal(true);
+        return;
+      }
+
       if (!response.ok) {
-        // ✅ archived account -> show reactivation OTP modal
-        if (data?.needsReactivation) {
-          setReactivateMsg(
-            data.message ||
-              "This account is archived. OTP sent for reactivation.",
-          );
-          setShowReactivateModal(true);
-          return;
-        }
-
-        setLoginAttempts((prev) => prev + 1);
-
-        if (loginAttempts + 1 >= 3) {
+        const nextAttempts = loginAttempts + 1;
+        setLoginAttempts(nextAttempts);
+        if (nextAttempts >= 3) {
           setShowForgotModal(true);
         }
-
         setError(data.message || "Login failed");
         return;
       }
 
       setLoginAttempts(0);
-
-      // ✅ SAVE LOGGED IN USER (so Admin-dashboard can read role)
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("userId", data.user.id); // ✅ Store userId for cart/orders
-
-      // ✅ Role routing: admin/staff/customer
-      if (data.user.role === "admin") {
-        navigate("/admin-dashboard");
-      } else if (data.user.role === "staff") {
-        navigate("/admin-dashboard"); // staff uses same dashboard but no Manage Accounts
-      } else {
-        navigate("/user-home"); // customer
-      }
+      saveLoggedInUser(data.user);
     } catch (err) {
       setError("Network error, please try again later");
     }
   };
 
-  // ✅ Send OTP for Forgot Password (existing)
   const handleForgotSendOtp = async () => {
     setError("");
 
@@ -130,7 +115,6 @@ function UserLoginPage() {
     }
   };
 
-  // ✅ Verify Reactivation OTP (NEW)
   const handleVerifyReactivationOtp = async () => {
     setError("");
 
@@ -172,7 +156,7 @@ function UserLoginPage() {
   return (
     <div className="user-login-container">
       <button className="back-button" onClick={() => navigate("/")}>
-        ← Back
+        Back
       </button>
 
       <div className="login-split">
@@ -196,7 +180,6 @@ function UserLoginPage() {
                 />
               </div>
 
-              {/* ✅ PASSWORD WITH EYE ICON */}
               <div className="form-group" style={{ position: "relative" }}>
                 <label>Password</label>
                 <input
@@ -224,7 +207,14 @@ function UserLoginPage() {
               </div>
 
               <div className="form-options">
-                {/* ✅ open modal */}
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                  Remember me
+                </label>
                 <span
                   className="forgot-password"
                   onClick={() => setShowForgotModal(true)}
@@ -260,7 +250,6 @@ function UserLoginPage() {
         />
       </div>
 
-      {/* 🔹 Forgot Password Modal (EXISTING) */}
       {showForgotModal && (
         <div className="forgot-password-modal">
           <div className="modal-content">
@@ -291,7 +280,6 @@ function UserLoginPage() {
         </div>
       )}
 
-      {/* ✅ Reactivation OTP Modal (NEW) */}
       {showReactivateModal && (
         <div className="forgot-password-modal">
           <div className="modal-content">

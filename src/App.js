@@ -150,10 +150,21 @@ function App() {
           />
           <Route path="/product/:id" element={<ProductDetail />} />
         </Routes>
-         <PrintHubChatbot /> 
+        <ChatbotRouteGate />
       </BrowserRouter>
     </CartProvider>
   );
+}
+
+function ChatbotRouteGate() {
+  const location = useLocation();
+  const hiddenRoutes = ["/user-login", "/user-register"];
+
+  if (hiddenRoutes.includes(location.pathname)) {
+    return null;
+  }
+
+  return <PrintHubChatbot />;
 }
 
 /* ---------- NAVBAR ---------- */
