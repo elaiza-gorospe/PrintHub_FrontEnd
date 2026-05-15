@@ -10,6 +10,7 @@ import { buildApiUrl } from "../config/api";
 import AIBuilderPanel from "../components/AIBuilder/AIBuilderPanel";
 import TshirtCustomizerPanel from "../components/TshirtCustomizer/TshirtCustomizerPanel";
 import NotebookCustomizerPanel from "../components/NotebookCustomizer/NotebookCustomizerPanel";
+import CapCustomizer from "../components/CapCustomizer/CapCustomizerPanel";
 
 /** Map a raw API product to the shape the component expects */
 function mapApiProduct(data) {
@@ -425,6 +426,13 @@ function ProductDetail() {
                     onDesignReady={(meta) => setActiveDesign(meta)}
                     onClear={() => setActiveDesign(null)}
                   />
+                ) : product.dbCategory === "cap" ? (
+                  <CapCustomizer
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
                 ) : (
                   <TshirtCustomizerPanel
                     product={product}
@@ -616,9 +624,8 @@ function ProductDetail() {
                   product.quantities.map((qty) => (
                     <label
                       key={qty.label}
-                      className={`pd-line-option pd-price-option ${
-                        selectedQty?.label === qty.label ? "selected" : ""
-                      }`}
+                      className={`pd-line-option pd-price-option ${selectedQty?.label === qty.label ? "selected" : ""
+                        }`}
                     >
                       <input
                         type="radio"
@@ -638,9 +645,8 @@ function ProductDetail() {
                 {product.shipping.map((ship) => (
                   <label
                     key={ship.label}
-                    className={`pd-line-option pd-price-option ${
-                      selectedShipping?.label === ship.label ? "selected" : ""
-                    }`}
+                    className={`pd-line-option pd-price-option ${selectedShipping?.label === ship.label ? "selected" : ""
+                      }`}
                   >
                     <input
                       type="radio"
@@ -936,7 +942,7 @@ function ProductDetail() {
                     <strong>
                       {formatPrice(
                         extractNumericPrice(selectedQty?.price) +
-                          extractNumericPrice(selectedShipping?.price),
+                        extractNumericPrice(selectedShipping?.price),
                       )}
                     </strong>
                   </p>

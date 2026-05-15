@@ -12,6 +12,14 @@ const ZONE_PLANE = {
   right_sleeve: { ox: -0.38, oy: 0.2, oz: 0.2, ry: 0.5, sw: 0.2, sh: 0.2 },
 };
 
+// UV bounds for texture mapping (for proper morphing)
+const ZONE_UV = {
+  front: { uMin: 0.25, uMax: 0.75, vMin: 0.3, vMax: 0.7 },
+  back: { uMin: 0.25, uMax: 0.75, vMin: 0.7, vMax: 1.0 },
+  left_sleeve: { uMin: 0.0, uMax: 0.2, vMin: 0.4, vMax: 0.6 },
+  right_sleeve: { uMin: 0.8, uMax: 1.0, vMin: 0.4, vMax: 0.6 },
+};
+
 export default function TshirtPreview3D({
   modelPath,
   shirtColor = "#ffffff",
@@ -59,6 +67,8 @@ export default function TshirtPreview3D({
       const cfg = ZONE_PLANE[zoneId];
       if (!cfg) return;
 
+      console.log(`Creating plane for zone: ${zoneId}`);
+
       new THREE.TextureLoader()
         .setCrossOrigin("anonymous")
         .load(design.imageUrl, (tex) => {
@@ -87,6 +97,69 @@ export default function TshirtPreview3D({
           modelRef.current.add(mesh);
           meshesRef.current.push(mesh);
         });
+    });
+  }, []);
+
+  // Create a single composite texture that wraps with the shirt's UVs
+  const updateCompositeTexture = useCallback(() => {
+    const model = modelRef.current;
+    if (!model) return;
+
+    // Create canvas for composite texture
+    const canvas = document.createElement("canvas");
+    canvas.width = 2048;
+    canvas.height = 2048;
+    const ctx = canvas.getContext("2d");
+
+    // Fill with shirt color base
+    ctx.fillStyle = shirtColorRef.current;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Load and draw each design
+    const loadPromises = [];
+
+    Object.entries(designsRef.current).forEach(([zoneId, design]) => {
+      if (!design?.imageUrl) return;
+      const uv = ZONE_UV[zoneId];
+      if (!uv) return;
+
+      const promise = new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = () => {
+          const x = uv.uMin * canvas.width;
+          const y = uv.vMin * canvas.height;
+          const w = (uv.uMax - uv.uMin) * canvas.width;
+          const h = (uv.vMax - uv.vMin) * canvas.height;
+
+          // Apply user drag/resize
+          const userX = (design.x / 100) * w;
+          const userY = (design.y / 100) * h;
+          const userW = (design.w / 100) * w;
+          const userH = (design.h / 100) * h;
+
+          ctx.drawImage(img, x + userX, y + userY, userW, userH);
+          resolve();
+        };
+        img.onerror = resolve;
+        img.src = design.imageUrl;
+      });
+      loadPromises.push(promise);
+    });
+
+    Promise.all(loadPromises).then(() => {
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.needsUpdate = true;
+
+      // Apply texture to all shirt meshes
+      model.traverse((node) => {
+        if (node.isMesh && node.material) {
+          if (node.material.map) node.material.map.dispose();
+          node.material.map = texture;
+          node.material.needsUpdate = true;
+        }
+      });
     });
   }, []);
 
@@ -132,6 +205,18 @@ export default function TshirtPreview3D({
         modelRef.current = model;
         model.rotation.y = 5; // face front on load
         scene.add(model);
+
+        // IMPORTANT: Log the model structure
+        console.log("Model loaded, checking materials:");
+        model.traverse((node) => {
+          if (node.isMesh) {
+            console.log("Mesh found:", node.name, "Material:", node.material);
+          }
+        });
+
+        // FIRST apply the texture (this will create the material with map)
+        // THEN apply color (this will just update the color property)
+        updateCompositeTexture();
         applyColor(model, shirtColorRef.current);
 
         const box = new THREE.Box3().setFromObject(model);
@@ -147,13 +232,13 @@ export default function TshirtPreview3D({
         controls.target.copy(center);
         controls.update();
 
-        setReady(true); // triggers rebuildPlanes
+        setReady(true);
       },
       undefined,
       (err) => {
         console.warn("GLB load failed:", err);
         setError(
-          "Failed to load 3D model. Place tshirt.glb in public/models/.",
+          "Failed to load 3D model. Place shirt.glb in public/models/.",
         );
       },
     );
@@ -214,8 +299,12 @@ export default function TshirtPreview3D({
 
   // ── Rebuild planes when model is ready OR when designs change ─────
   useEffect(() => {
-    if (ready) rebuildPlanes();
-  }, [ready, zoneDesigns, rebuildPlanes]);
+    if (ready) {
+      // First, make sure applyColor doesn't wipe the texture
+      // by temporarily disabling the color update during texture load
+      updateCompositeTexture();
+    }
+  }, [ready, zoneDesigns]);
 
   return (
     <div>
@@ -268,17 +357,19 @@ function applyColor(model, hexColor) {
   const color = new THREE.Color(hexColor);
   model.traverse((node) => {
     if (node.isMesh) {
-      // Strip vertex colors from geometry so they can't override the material color
+      // Strip vertex colors from geometry
       if (node.geometry.hasAttribute("color")) {
         node.geometry.deleteAttribute("color");
       }
-      // Replace material entirely with a fresh one
-      node.material = new THREE.MeshStandardMaterial({
-        color,
-        roughness: 0.8,
-        metalness: 0.0,
-        vertexColors: false,
-      });
+
+      // Only update color, don't recreate the whole material
+      if (node.material) {
+        node.material.color = color;
+        // Keep existing map texture if it exists
+        if (node.material.map) {
+          node.material.map.needsUpdate = true;
+        }
+      }
     }
   });
 }

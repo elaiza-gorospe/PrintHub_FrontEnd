@@ -198,9 +198,9 @@ export default function TshirtCustomizerPanel({
   // ── Gallery item click — assign to active zone ────────────────────
   const handleGalleryClick = (item) => {
     setSelectedGalleryId(item.id);
-
     if (!activeZone) return;
 
+    // Safety: Only update the clicked zone, never touch other zones
     setZoneDesigns((prev) => ({
       ...prev,
       [activeZone]: {
@@ -220,14 +220,8 @@ export default function TshirtCustomizerPanel({
 
   // ── Zone select: place selected gallery image if one is highlighted ─
   const handleZoneSelect = (zoneId) => {
+    console.log(`Zone selected: ${zoneId}`);  // Debug log
     setActiveZone(zoneId);
-    if (!selectedGalleryId) return;
-    const item = gallery.find((g) => g.id === selectedGalleryId);
-    if (!item) return;
-    setZoneDesigns((prev) => ({
-      ...prev,
-      [zoneId]: { imageUrl: item.url, x: 10, y: 10, w: 80, h: 80 },
-    }));
   };
 
   // ── Use this design ───────────────────────────────────────────────

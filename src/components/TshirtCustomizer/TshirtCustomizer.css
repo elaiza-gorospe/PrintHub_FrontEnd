@@ -596,3 +596,7 @@
     transform: rotate(360deg);
   }
 }
+/* Fix for 3D planes visibility */
+.tsc-preview-3d {
+  overflow: visible !important;
+}
