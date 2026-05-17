@@ -20,6 +20,7 @@ function Header() {
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
   const { cartItems } = useCart();
 
@@ -109,6 +110,17 @@ function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleSearch = () => {
+    const q = searchQuery.trim();
+    if (!q) return;
+    navigate(`/product-overview?search=${encodeURIComponent(q)}`);
+    setSearchQuery("");
+  };
+
+  const handleSearchKey = (e) => {
+    if (e.key === "Enter") handleSearch();
+  };
+
   const handleLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
@@ -125,8 +137,19 @@ function Header() {
       </div>
 
       <div className="uh-search">
-        <input type="text" placeholder="Search products or services" />
-        <button className="uh-search-btn" type="button" aria-label="Search">
+        <input
+          type="text"
+          placeholder="Search products or services"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={handleSearchKey}
+        />
+        <button
+          className="uh-search-btn"
+          type="button"
+          aria-label="Search"
+          onClick={handleSearch}
+        >
           <FaSearch />
         </button>
       </div>

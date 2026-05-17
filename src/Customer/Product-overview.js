@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./Product-overview.css";
 import Header from "../components/Header";
 import { buildApiUrl } from "../config/api";
@@ -7,11 +7,14 @@ import LoginRequiredModal from "../components/LoginRequiredModal.js"; // explici
 
 function ProductOverview() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [category, setCategory] = useState("");
-  const [showLoginModal, setShowLoginModal] = useState(false); // ✅ modal state
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const searchParam = new URLSearchParams(location.search).get("search") || "";
 
   // ✅ Check if user is logged in
   const getCustomerUser = () => {
@@ -66,7 +69,7 @@ function ProductOverview() {
 
   const categories = Object.keys(categoryMapping);
 
-  const filtered =
+  const categoryFiltered =
     category && category !== "All"
       ? products.filter((p) => {
           const printType = p.print_type || "";
@@ -77,7 +80,19 @@ function ProductOverview() {
               name.toLowerCase().includes(item.toLowerCase())
           );
         })
-      : products; // ✅ Show all if category is "All"
+      : products;
+
+  const filtered = searchParam
+    ? categoryFiltered.filter((p) => {
+        const q = searchParam.toLowerCase();
+        return (
+          (p.name || "").toLowerCase().includes(q) ||
+          (p.print_type || "").toLowerCase().includes(q) ||
+          (p.description || "").toLowerCase().includes(q) ||
+          (p.category || "").toLowerCase().includes(q)
+        );
+      })
+    : categoryFiltered;
 
   const fallbackImage =
     "[via.placeholder.com](https://via.placeholder.com/300x200?text=No+Image)";
@@ -103,7 +118,9 @@ function ProductOverview() {
           >
             ← Back
           </button>
-          <h1 className="po-title">Product Overview</h1>
+          <h1 className="po-title">
+            {searchParam ? `Results for "${searchParam}"` : "Product Overview"}
+          </h1>
         </div>
 
         <div className="po-controls">
@@ -129,6 +146,14 @@ function ProductOverview() {
         {error && (
           <p style={{ padding: "20px", textAlign: "center", color: "#e74c3c" }}>
             {error}
+          </p>
+        )}
+
+        {!loading && !error && filtered.length === 0 && (
+          <p style={{ padding: "40px 20px", textAlign: "center", color: "#7e8b92" }}>
+            {searchParam
+              ? `No products found for "${searchParam}".`
+              : "No products available."}
           </p>
         )}
 

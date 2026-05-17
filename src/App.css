@@ -196,6 +196,52 @@ textarea:focus {
   width: 100%;
 }
 
+/* ---------- NAVBAR SEARCH ---------- */
+.navbar-search {
+  flex: 1;
+  max-width: 400px;
+  margin: 0 18px;
+  height: 36px;
+  background: #f4f4f4;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  padding: 0 6px 0 14px;
+}
+
+.navbar-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: #2f3a45;
+  font-family: inherit;
+}
+
+.navbar-search input::placeholder { color: #999; }
+
+.navbar-search button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  line-height: 1;
+}
+
+.navbar-search button:hover { background: rgba(69, 80, 115, 0.1); }
+
+@media (max-width: 768px) {
+  .navbar-search {
+    max-width: none;
+    margin: 0 8px;
+    flex: 1;
+  }
+}
+
 /* ---------- LOGIN BUTTON ---------- */
 .navbar-login {
   background-color: var(--ph-cream);
