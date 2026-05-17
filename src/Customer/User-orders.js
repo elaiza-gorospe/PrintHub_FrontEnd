@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./User-orders.css";
 import "./User-inquiries.css";
@@ -7,38 +7,30 @@ import { FaArrowLeft, FaFileInvoiceDollar } from "react-icons/fa";
 import { buildApiUrl } from "../config/api";
 import { Capacitor } from "@capacitor/core";
 
-const STATUS_GROUPS = [
-  {
-    key: "active",
-    label: "Active Orders",
-    match: (o) => o.payment_status !== "paid" && o.status !== "cancelled",
-  },
-  {
-    key: "paid",
-    label: "Paid / Processing",
-    match: (o) =>
-      o.payment_status === "paid" &&
-      !["delivered", "cancelled"].includes(o.status),
-  },
-  {
-    key: "delivered",
-    label: "Delivered",
-    match: (o) => o.status === "delivered",
-  },
-  {
-    key: "cancelled",
-    label: "Cancelled",
-    match: (o) => o.status === "cancelled",
-  },
+const ORDER_TABS = [
+  { key: "all", label: "All" },
+  { key: "to_pay", label: "To pay" },
+  { key: "to_receive", label: "To receive" },
+  { key: "to_review", label: "To review" },
+  { key: "return", label: "Return" },
 ];
 
-const INQUIRY_STATUS_META = {
-  new: { label: "New", color: "#e67e22" },
-  quoted: { label: "Quoted", color: "#2980b9" },
-  accepted: { label: "Accepted", color: "#27ae60" },
-  closed: { label: "Closed", color: "#95a5a6" },
-  converted: { label: "Converted to Order", color: "#8e44ad" },
-};
+function getOrderBucket(order) {
+  if (order.status === "return_requested") return "return";
+  if (order.payment_status !== "paid" && order.status !== "cancelled") {
+    return "to_pay";
+  }
+  if (order.payment_status === "paid" && order.status === "delivered") {
+    return "to_review";
+  }
+  if (
+    order.payment_status === "paid" &&
+    !["delivered", "cancelled", "return_requested"].includes(order.status)
+  ) {
+    return "to_receive";
+  }
+  return "all";
+}
 
 function UserOrders() {
   const navigate = useNavigate();
@@ -46,7 +38,48 @@ function UserOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("all");
   const [cancellingId, setCancellingId] = useState(null);
+  const [payingId, setPayingId] = useState(null);
+  const [receipt, setReceipt] = useState(null);
+  const [complaintOrder, setComplaintOrder] = useState(null);
+  const [complaintReason, setComplaintReason] = useState("");
+  const [complaintDetails, setComplaintDetails] = useState("");
+  const [submittingComplaint, setSubmittingComplaint] = useState(false);
+
+  const currentUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user")) || null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      if (!currentUser?.id) {
+        navigate("/user-login");
+        return;
+      }
+
+      const res = await fetch(
+        buildApiUrl(`/api/user/${currentUser.id}/orders`),
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to load orders");
+
+      const sortedOrders = Array.isArray(data)
+        ? data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        : [];
+      setOrders(sortedOrders);
+      setError(null);
+    } catch (err) {
+      setError(err.message || "Failed to load orders");
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Inquiries tab state
   const [inquiries, setInquiries] = useState([]);
@@ -55,66 +88,24 @@ function UserOrders() {
   const [expanded, setExpanded] = useState(null);
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const stored = localStorage.getItem("user");
-        if (!stored) {
-          navigate("/user-login");
-          return;
-        }
-
-        const user = JSON.parse(stored);
-        if (!user?.id) {
-          navigate("/user-login");
-          return;
-        }
-
-        const res = await fetch(buildApiUrl(`/api/user/${user.id}/orders`));
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data?.message || "Failed to load orders");
-
-        // Sort orders by date added in descending order (newest first)
-        const sortedOrders = Array.isArray(data)
-          ? data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          : [];
-        setOrders(sortedOrders);
-        setError(null);
-      } catch (err) {
-        console.error(err);
-        setError(err.message || "Failed to load orders");
-        setOrders([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
-  useEffect(() => {
-    if (activeTab !== "inquiries" || inquiries.length > 0) return;
-    const fetchInquiries = async () => {
-      setInquiriesLoading(true);
-      try {
-        const stored = localStorage.getItem("user");
-        if (!stored) return;
-        const user = JSON.parse(stored);
-        if (!user?.id) return;
-        const res = await fetch(buildApiUrl(`/api/user/${user.id}/inquiries`));
-        const data = await res.json();
-        if (!res.ok)
-          throw new Error(data?.message || "Failed to load inquiries");
-        setInquiries(Array.isArray(data) ? data : []);
-        setInquiriesError(null);
-      } catch (err) {
-        setInquiriesError(err.message || "Failed to load inquiries");
-      } finally {
-        setInquiriesLoading(false);
-      }
-    };
-    fetchInquiries();
-  }, [activeTab, inquiries.length]);
+  const filteredOrders = useMemo(() => {
+    if (activeTab === "all") return orders;
+    return orders.filter((order) => getOrderBucket(order) === activeTab);
+  }, [activeTab, orders]);
+
+  const tabCounts = useMemo(() => {
+    return ORDER_TABS.reduce((acc, tab) => {
+      acc[tab.key] =
+        tab.key === "all"
+          ? orders.length
+          : orders.filter((order) => getOrderBucket(order) === tab.key).length;
+      return acc;
+    }, {});
+  }, [orders]);
 
   const handleCancelOrder = async (orderId) => {
     if (!window.confirm("Are you sure you want to cancel this order?")) return;
@@ -137,51 +128,242 @@ function UserOrders() {
     }
   };
 
-  const formatCurrency = (price) => {
-    return new Intl.NumberFormat("en-PH", {
+  const handlePayNow = async (order) => {
+    setPayingId(order.id);
+    try {
+      const returnBase = Capacitor.isNativePlatform()
+        ? "com.printhub.customer://"
+        : window.location.origin;
+      const res = await fetch(buildApiUrl("/api/payments/checkout"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id, returnBase }),
+      });
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.message || "Failed to create payment session");
+      window.location.assign(data.checkout_url);
+    } catch (err) {
+      alert(err.message || "Could not initiate payment. Please try again.");
+      setPayingId(null);
+    }
+  };
+
+  const handleViewReceipt = async (orderId) => {
+    try {
+      const res = await fetch(buildApiUrl(`/api/orders/${orderId}/receipt`));
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to load receipt");
+      setReceipt(data);
+    } catch (err) {
+      alert(err.message || "Could not load e-receipt.");
+    }
+  };
+
+  const handleSubmitComplaint = async (e) => {
+    e.preventDefault();
+    if (!complaintOrder || !complaintReason.trim()) return;
+    setSubmittingComplaint(true);
+    try {
+      const res = await fetch(
+        buildApiUrl(`/api/orders/${complaintOrder.id}/return-complaint`),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: currentUser.id,
+            reason: complaintReason,
+            details: complaintDetails,
+          }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.message || "Failed to submit complaint");
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === complaintOrder.id
+            ? { ...order, status: "return_requested" }
+            : order,
+        ),
+      );
+      setComplaintOrder(null);
+      setComplaintReason("");
+      setComplaintDetails("");
+      alert(
+        `${data.message}. Mock email: ${data.mockEmail?.subject || "received"}`,
+      );
+    } catch (err) {
+      alert(err.message || "Could not submit return complaint.");
+    } finally {
+      setSubmittingComplaint(false);
+    }
+  };
+
+  const formatCurrency = (price) =>
+    new Intl.NumberFormat("en-PH", {
       style: "currency",
       currency: "PHP",
-    }).format(price);
+    }).format(Number(price || 0));
+
+  const getStatusLabel = (order) => {
+    if (order.status === "return_requested") return "Return requested";
+    if (order.status === "cancelled") return "Cancelled";
+    if (order.payment_status !== "paid") return "Payment pending";
+    if (order.status === "delivered") return "Delivered";
+    return order.status?.charAt(0).toUpperCase() + order.status?.slice(1);
   };
 
-  const getStatusColor = (status, paymentStatus) => {
-    // If payment is not done, prioritize payment status in display
-    if (paymentStatus !== "paid") {
-      return "#ff6b6b"; // Red for unpaid orders
-    }
-
-    switch (status) {
-      case "pending":
-        return "#ff9800";
-      case "processing":
-        return "#2196f3";
-      case "confirmed":
-        return "#4caf50";
-      case "shipped":
-        return "#4caf50";
-      case "delivered":
-        return "#4caf50";
-      case "cancelled":
-        return "#f44336";
-      default:
-        return "#999";
-    }
+  const getStatusClass = (order) => {
+    if (order.status === "return_requested") return "return";
+    if (order.status === "cancelled") return "cancelled";
+    if (order.payment_status !== "paid") return "pending";
+    if (order.status === "delivered") return "delivered";
+    return "paid";
   };
 
-  const formatInquiryDate = (iso) =>
-    new Date(iso).toLocaleDateString("en-PH", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  const renderOrder = (order) => (
+    <div key={order.id} className="uo-order-card">
+      <div className="uo-order-header">
+        <div className="uo-order-info">
+          <h3>Order #{order.id}</h3>
+          <p className="uo-date">
+            {new Date(order.createdAt).toLocaleDateString("en-PH", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+        </div>
+        <div className={`uo-status ${getStatusClass(order)}`}>
+          {getStatusLabel(order)}
+        </div>
+      </div>
 
-  const formatInquiryPrice = (price) =>
-    price != null
-      ? new Intl.NumberFormat("en-PH", {
-          style: "currency",
-          currency: "PHP",
-        }).format(price)
-      : null;
+      <div className="uo-items">
+        <h4>Items</h4>
+        {order.items?.length ? (
+          <div className="uo-items-list">
+            {order.items.map((item) => {
+              const design = item.customizations?.design;
+              const productImg = item.product?.images?.[0];
+              const productName =
+                item.product?.name || `Product #${item.productId}`;
+              const zoneImgs = Object.values(design?.zones || {})
+                .filter((z) => z?.imageUrl)
+                .map((z) => z.imageUrl);
+              const imgs = zoneImgs.length
+                ? zoneImgs
+                : design?.generatedImageUrl
+                  ? [design.generatedImageUrl]
+                  : [];
+
+              return (
+                <div key={item.id} className="uo-item-row">
+                  <div className="uo-item-thumbs">
+                    {productImg && (
+                      <img
+                        src={productImg}
+                        alt={productName}
+                        className="uo-item-thumb"
+                      />
+                    )}
+                    {imgs.map((src, i) => (
+                      <div key={i} className="uo-item-design-wrap">
+                        <img
+                          src={src}
+                          alt={`Design ${i + 1}`}
+                          className="uo-item-thumb uo-item-thumb-design"
+                        />
+                        {i === 0 && (
+                          <span className="uo-design-badge">AI Design</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="uo-item-details">
+                    <p className="uo-item-name">{productName}</p>
+                    {design?.prompt && (
+                      <p className="uo-item-design-prompt">
+                        "
+                        {design.prompt.length > 80
+                          ? design.prompt.slice(0, 80) + "..."
+                          : design.prompt}
+                        "
+                      </p>
+                    )}
+                    <p className="uo-item-qty">Qty: {item.quantity}</p>
+                  </div>
+                  <div className="uo-item-price">
+                    {formatCurrency(item.unit_price)} x {item.quantity} ={" "}
+                    {formatCurrency(item.total_price)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="uo-no-items">No items in this order</p>
+        )}
+      </div>
+
+      {order.shipping_address && (
+        <div className="uo-shipping">
+          <h4>Shipping Address</h4>
+          <p>{order.shipping_address}</p>
+        </div>
+      )}
+
+      <div className="uo-order-footer">
+        <div className="uo-total">
+          <strong>Total:</strong>
+          <strong>{formatCurrency(order.total)}</strong>
+        </div>
+        <div className="uo-action-row">
+          {order.payment_status !== "paid" && order.status !== "cancelled" && (
+            <>
+              <button
+                type="button"
+                className="uo-cancel-btn"
+                disabled={cancellingId === order.id}
+                onClick={() => handleCancelOrder(order.id)}
+              >
+                {cancellingId === order.id ? "Cancelling..." : "Cancel Order"}
+              </button>
+              <button
+                type="button"
+                className="uo-pay-btn"
+                disabled={payingId === order.id}
+                onClick={() => handlePayNow(order)}
+              >
+                {payingId === order.id ? "Redirecting..." : "Pay Now"}
+              </button>
+            </>
+          )}
+
+          {order.payment_status === "paid" && (
+            <button
+              type="button"
+              className="uo-receipt-btn"
+              onClick={() => handleViewReceipt(order.id)}
+            >
+              E-Receipt
+            </button>
+          )}
+
+          {order.payment_status === "paid" && order.status === "delivered" && (
+            <button
+              type="button"
+              className="uo-return-btn"
+              onClick={() => setComplaintOrder(order)}
+            >
+              File complaint
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -218,376 +400,152 @@ function UserOrders() {
           </h1>
         </div>
 
-        {/* ── ORDERS TAB ─────────────────────────────── */}
-        {activeTab === "orders" && (
-          <>
-            {error && (
-              <div className="uo-error">
-                <p>{error}</p>
-              </div>
-            )}
+        <div className="uo-tabs">
+          {ORDER_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              className={`uo-tab ${activeTab === tab.key ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+              <span>{tabCounts[tab.key] || 0}</span>
+            </button>
+          ))}
+        </div>
 
-            {!loading && !error && orders.length === 0 && (
-              <div className="uo-empty">
-                <p>No orders yet.</p>
-                <button
-                  className="uo-shop-btn"
-                  type="button"
-                  onClick={() => navigate("/Product-overview")}
-                >
-                  Start Shopping
-                </button>
-              </div>
-            )}
-
-            {!loading && !error && orders.length > 0 && (
-              <div className="uo-orders">
-                {STATUS_GROUPS.map((group) => {
-                  const grouped = orders.filter(group.match);
-                  if (!grouped.length) return null;
-                  return (
-                    <div key={group.key} className="uo-group">
-                      <h2 className="uo-group-title">{group.label}</h2>
-                      {grouped.map((order) => (
-                        <div key={order.id} className="uo-order-card">
-                          <div className="uo-order-header">
-                            <div className="uo-order-info">
-                              <h3>Order #{order.id}</h3>
-                              <p className="uo-date">
-                                {new Date(order.createdAt).toLocaleDateString(
-                                  "en-PH",
-                                  {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  },
-                                )}
-                              </p>
-                            </div>
-                            <div
-                              className="uo-status"
-                              style={{
-                                backgroundColor: getStatusColor(
-                                  order.status,
-                                  order.payment_status,
-                                ),
-                              }}
-                            >
-                              {order.status === "cancelled"
-                                ? "CANCELLED"
-                                : order.payment_status !== "paid"
-                                  ? `PAYMENT PENDING`
-                                  : order.status?.charAt(0).toUpperCase() +
-                                    order.status?.slice(1)}
-                            </div>
-                          </div>
-
-                          <div className="uo-items">
-                            <h4>Items</h4>
-                            {order.items && order.items.length > 0 ? (
-                              <div className="uo-items-list">
-                                {order.items.map((item) => {
-                                  const design = item.customizations?.design;
-                                  const productImg = item.product?.images?.[0];
-                                  const productName =
-                                    item.product?.name ||
-                                    `Product #${item.productId}`;
-                                  return (
-                                    <div key={item.id} className="uo-item-row">
-                                      <div className="uo-item-thumbs">
-                                        {productImg && (
-                                          <img
-                                            src={productImg}
-                                            alt={productName}
-                                            className="uo-item-thumb"
-                                            title="Product"
-                                          />
-                                        )}
-                                        {(() => {
-                                          const zoneImgs = Object.values(
-                                            design?.zones || {},
-                                          )
-                                            .filter((z) => z?.imageUrl)
-                                            .map((z) => z.imageUrl);
-                                          const imgs = zoneImgs.length
-                                            ? zoneImgs
-                                            : design?.generatedImageUrl
-                                              ? [design.generatedImageUrl]
-                                              : [];
-                                          return imgs.map((src, i) => (
-                                            <div
-                                              key={i}
-                                              className="uo-item-design-wrap"
-                                            >
-                                              <img
-                                                src={src}
-                                                alt={`AI Design zone ${i + 1}`}
-                                                className="uo-item-thumb uo-item-thumb-design"
-                                                title={`AI Design zone ${i + 1}`}
-                                              />
-                                              {i === 0 && (
-                                                <span className="uo-design-badge">
-                                                  AI Design
-                                                </span>
-                                              )}
-                                            </div>
-                                          ));
-                                        })()}
-                                      </div>
-                                      <div className="uo-item-details">
-                                        <p className="uo-item-name">
-                                          {productName}
-                                        </p>
-                                        {design?.prompt && (
-                                          <p className="uo-item-design-prompt">
-                                            "
-                                            {design.prompt.length > 80
-                                              ? design.prompt.slice(0, 80) + "…"
-                                              : design.prompt}
-                                            "
-                                          </p>
-                                        )}
-                                        <p className="uo-item-qty">
-                                          Qty: {item.quantity}
-                                        </p>
-                                      </div>
-                                      <div className="uo-item-price">
-                                        {formatCurrency(item.unit_price)} ×{" "}
-                                        {item.quantity} ={" "}
-                                        {formatCurrency(item.total_price)}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            ) : (
-                              <p className="uo-no-items">
-                                No items in this order
-                              </p>
-                            )}
-                          </div>
-
-                          {order.shipping_address && (
-                            <div className="uo-shipping">
-                              <h4>Shipping Address</h4>
-                              <p>{order.shipping_address}</p>
-                            </div>
-                          )}
-
-                          <div className="uo-order-footer">
-                            <div className="uo-total">
-                              <strong>Total:</strong>
-                              <strong>{formatCurrency(order.total)}</strong>
-                            </div>
-                            {order.total > 0 &&
-                              order.status !== "cancelled" &&
-                              order.payment_status !== "paid" && (
-                                <div className="uo-pay-row">
-                                  <button
-                                    type="button"
-                                    className="uo-cancel-btn"
-                                    disabled={cancellingId === order.id}
-                                    onClick={() => handleCancelOrder(order.id)}
-                                  >
-                                    {cancellingId === order.id
-                                      ? "Cancelling…"
-                                      : "Cancel Order"}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="uo-pay-btn"
-                                    onClick={async () => {
-                                      // Use stored checkout_url if available
-                                      if (order.checkout_url) {
-                                        // Always create a fresh session so the return URL matches current platform
-                                        // Fall through to create new session below
-                                      }
-                                      // Create a new PayMongo session with correct return URL for this platform
-                                      try {
-                                        const returnBase =
-                                          Capacitor.isNativePlatform()
-                                            ? "com.printhub.customer://"
-                                            : window.location.origin;
-                                        const res = await fetch(
-                                          buildApiUrl("/api/payments/checkout"),
-                                          {
-                                            method: "POST",
-                                            headers: {
-                                              "Content-Type":
-                                                "application/json",
-                                            },
-                                            body: JSON.stringify({
-                                              orderId: order.id,
-                                              returnBase,
-                                            }),
-                                          },
-                                        );
-                                        const data = await res.json();
-                                        if (!res.ok)
-                                          throw new Error(
-                                            data.message ||
-                                              "Failed to create payment session",
-                                          );
-                                        window.location.assign(
-                                          data.checkout_url,
-                                        );
-                                      } catch (err) {
-                                        alert(
-                                          err.message ||
-                                            "Could not initiate payment. Please try again.",
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    Pay Now
-                                  </button>
-                                </div>
-                              )}
-                            {order.delivered_at && (
-                              <p className="uo-delivered">
-                                Delivered on{" "}
-                                {new Date(
-                                  order.delivered_at,
-                                ).toLocaleDateString("en-PH")}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
+        {loading && (
+          <div className="uo-loading">
+            <p>Loading orders...</p>
+          </div>
         )}
 
-        {/* ── INQUIRIES TAB ─────────────────────────────── */}
-        {activeTab === "inquiries" && (
-          <>
-            {inquiriesLoading && (
-              <div className="uo-loading">
-                <p>Loading inquiries...</p>
-              </div>
-            )}
-            {inquiriesError && (
-              <div className="uo-error">
-                <p>{inquiriesError}</p>
-              </div>
-            )}
-            {!inquiriesLoading && !inquiriesError && inquiries.length === 0 && (
+        {error && (
+          <div className="uo-error">
+            <p>{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && orders.length === 0 && (
+          <div className="uo-empty">
+            <p>No orders yet.</p>
+            <button
+              className="uo-shop-btn"
+              type="button"
+              onClick={() => navigate("/product-overview")}
+            >
+              Start Shopping
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && orders.length > 0 && (
+          <div className="uo-orders">
+            {filteredOrders.length ? (
+              filteredOrders.map(renderOrder)
+            ) : (
               <div className="uo-empty">
-                <FaFileInvoiceDollar size={40} color="#c5cae9" />
-                <p>You haven't submitted any quote requests yet.</p>
-                <button
-                  className="uo-shop-btn"
-                  type="button"
-                  onClick={() => navigate("/product-overview")}
-                >
-                  Browse Products
-                </button>
+                <p>No orders in this tab.</p>
               </div>
             )}
-            {!inquiriesLoading && !inquiriesError && inquiries.length > 0 && (
-              <div className="ui-list">
-                {inquiries.map((inq) => {
-                  const meta =
-                    INQUIRY_STATUS_META[inq.status] || INQUIRY_STATUS_META.new;
-                  const isOpen = expanded === inq.id;
-                  return (
-                    <div key={inq.id} className="ui-card">
-                      <div
-                        className="ui-card-header"
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setExpanded(isOpen ? null : inq.id)}
-                        onKeyDown={(e) =>
-                          e.key === "Enter" &&
-                          setExpanded(isOpen ? null : inq.id)
-                        }
-                      >
-                        <div className="ui-card-left">
-                          <span className="ui-card-id">Inquiry #{inq.id}</span>
-                          <span className="ui-card-date">
-                            {formatInquiryDate(inq.createdAt)}
-                          </span>
-                          {inq.product_title && (
-                            <span className="ui-card-product">
-                              {inq.product_title}
-                            </span>
-                          )}
-                        </div>
-                        <div className="ui-card-right">
-                          <span
-                            className="ui-status-pill"
-                            style={{ background: meta.color }}
-                          >
-                            {meta.label}
-                          </span>
-                          <span className="ui-chevron">
-                            {isOpen ? "▲" : "▼"}
-                          </span>
-                        </div>
-                      </div>
-                      {isOpen && (
-                        <div className="ui-card-body">
-                          {inq.quoted_price != null ? (
-                            <div className="ui-quoted-banner">
-                              <strong>Quoted Price:</strong>{" "}
-                              {formatInquiryPrice(inq.quoted_price)}
-                              {inq.status === "quoted" && (
-                                <p className="ui-quoted-info">
-                                  Our team has sent you a quote. Please contact
-                                  us to proceed with your order.
-                                </p>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="ui-pending-banner">
-                              Your request is being reviewed. We'll get back to
-                              you shortly.
-                            </div>
-                          )}
-                          {inq.admin_notes && (
-                            <div className="ui-admin-note">
-                              <strong>Note from our team:</strong>
-                              <p>{inq.admin_notes}</p>
-                            </div>
-                          )}
-                          <div className="ui-details-grid">
-                            {[
-                              ["Subject", inq.subject],
-                              ["Product", inq.product_title],
-                              ["Quantity", inq.quantity],
-                              ["Size", inq.size],
-                              ["Color", inq.color],
-                              ["Material", inq.material],
-                              ["Finishing", inq.finishing],
-                              ["Printing", inq.printing],
-                              ["Processing", inq.processing],
-                              ["Delivery", inq.delivery],
-                              ["Other", inq.other],
-                            ]
-                              .filter(([, val]) => val)
-                              .map(([label, val]) => (
-                                <div key={label} className="ui-detail-row">
-                                  <span className="ui-detail-label">
-                                    {label}
-                                  </span>
-                                  <span className="ui-detail-val">{val}</span>
-                                </div>
-                              ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
+          </div>
         )}
       </div>
+
+      {receipt && (
+        <div className="uo-modal" role="dialog" aria-modal="true">
+          <div className="uo-modal-card">
+            <button
+              type="button"
+              className="uo-modal-close"
+              onClick={() => setReceipt(null)}
+            >
+              x
+            </button>
+            <h2>E-Receipt</h2>
+            <div className="uo-receipt-meta">
+              <span>{receipt.receiptNo}</span>
+              <span>{receipt.paymentStatus.toUpperCase()}</span>
+            </div>
+            <p>
+              <strong>Customer:</strong> {receipt.customerName}
+            </p>
+            <p>
+              <strong>Payment Reference:</strong>{" "}
+              {receipt.paymentReference || "Pending confirmation"}
+            </p>
+            <div className="uo-receipt-items">
+              {receipt.items.map((item) => (
+                <div key={item.id}>
+                  <span>
+                    {item.productName} x {item.quantity}
+                  </span>
+                  <strong>{formatCurrency(item.totalPrice)}</strong>
+                </div>
+              ))}
+            </div>
+            <div className="uo-receipt-total">
+              <span>Total</span>
+              <strong>{formatCurrency(receipt.total)}</strong>
+            </div>
+            <div className="uo-mock-email">
+              <strong>Mock email notification</strong>
+              <p>To: {receipt.mockEmail.to || receipt.customerEmail}</p>
+              <p>Subject: {receipt.mockEmail.subject}</p>
+              <p>{receipt.mockEmail.body}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {complaintOrder && (
+        <div className="uo-modal" role="dialog" aria-modal="true">
+          <form className="uo-modal-card" onSubmit={handleSubmitComplaint}>
+            <button
+              type="button"
+              className="uo-modal-close"
+              onClick={() => setComplaintOrder(null)}
+            >
+              x
+            </button>
+            <h2>Return Complaint</h2>
+            <p>Order #{complaintOrder.id}</p>
+            <label>
+              Reason
+              <select
+                value={complaintReason}
+                onChange={(e) => setComplaintReason(e.target.value)}
+                required
+              >
+                <option value="">Select a reason</option>
+                <option value="Faulty or damaged product">
+                  Faulty or damaged product
+                </option>
+                <option value="Wrong item or print">Wrong item or print</option>
+                <option value="Poor print quality">Poor print quality</option>
+                <option value="Missing item">Missing item</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>
+            <label>
+              Details
+              <textarea
+                value={complaintDetails}
+                onChange={(e) => setComplaintDetails(e.target.value)}
+                rows="4"
+                placeholder="Describe the problem so staff can review it."
+              />
+            </label>
+            <button
+              type="submit"
+              className="uo-submit-return"
+              disabled={submittingComplaint || !complaintReason}
+            >
+              {submittingComplaint ? "Submitting..." : "Submit complaint"}
+            </button>
+          </form>
+        </div>
+      )}
     </>
   );
 }

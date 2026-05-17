@@ -32,6 +32,7 @@ function UserRegistrationPage() {
   const [success, setSuccess] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [missingFields, setMissingFields] = useState([]);
   const navigate = useNavigate();
 
   const [isTermsOpen, setIsTermsOpen] = useState(false);
@@ -41,6 +42,7 @@ function UserRegistrationPage() {
     const { name, value } = e.target;
     if (/^[A-Za-z\s]*$/.test(value)) {
       setFormData((prev) => ({ ...prev, [name]: value }));
+      setMissingFields((prev) => prev.filter((field) => field !== name));
     }
   };
 
@@ -59,6 +61,7 @@ function UserRegistrationPage() {
     if (digits.length > 12) digits = digits.slice(0, 12);
 
     setFormData((prev) => ({ ...prev, phone: "+" + digits }));
+    setMissingFields((prev) => prev.filter((field) => field !== "phone"));
 
     // validation: must be 639 + 9 digits  => total 12 digits and starts with 639
     if (digits.length < 12) {
@@ -76,11 +79,13 @@ function UserRegistrationPage() {
       ...prevState,
       [name]: type === "checkbox" ? checked : value,
     }));
+    setMissingFields((prev) => prev.filter((field) => field !== name));
   };
 
   const handlePasswordChange = (e) => {
     const { value } = e.target;
     setFormData((prev) => ({ ...prev, password: value }));
+    setMissingFields((prev) => prev.filter((field) => field !== "password"));
 
     setCriteria({
       uppercase: /[A-Z]/.test(value),
@@ -99,6 +104,9 @@ function UserRegistrationPage() {
   const handleConfirmPasswordChange = (e) => {
     const { value } = e.target;
     setFormData((prev) => ({ ...prev, confirmPassword: value }));
+    setMissingFields((prev) =>
+      prev.filter((field) => field !== "confirmPassword"),
+    );
 
     if (formData.password && value !== formData.password) {
       setConfirmPasswordError("Passwords do not match");
@@ -113,6 +121,7 @@ function UserRegistrationPage() {
     setSuccess("");
     setConfirmPasswordError("");
     setPhoneError("");
+    setMissingFields([]);
 
     const {
       firstName,
@@ -124,7 +133,21 @@ function UserRegistrationPage() {
       phone,
     } = formData;
 
-    if (!firstName || !lastName || !email || !password) {
+    const requiredFields = [
+      ["firstName", firstName],
+      ["lastName", lastName],
+      ["phone", phone && phone !== "+63" ? phone : ""],
+      ["address", formData.address],
+      ["email", email],
+      ["password", password],
+      ["confirmPassword", confirmPassword],
+    ];
+    const blankFields = requiredFields
+      .filter(([, value]) => !String(value || "").trim())
+      .map(([field]) => field);
+
+    if (blankFields.length > 0) {
+      setMissingFields(blankFields);
       setError("Please fill in all required fields");
       return;
     }
@@ -216,7 +239,7 @@ function UserRegistrationPage() {
 
             <form onSubmit={handleSubmit}>
               <div className="form-row">
-                <div className="form-group">
+                <div className={`form-group ${missingFields.includes("firstName") ? "field-missing" : ""}`}>
                   <label htmlFor="firstName">First Name</label>
                   <input
                     type="text"
@@ -224,10 +247,11 @@ function UserRegistrationPage() {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleNameChange}
+                    aria-invalid={missingFields.includes("firstName")}
                   />
                 </div>
 
-                <div className="form-group">
+                <div className={`form-group ${missingFields.includes("lastName") ? "field-missing" : ""}`}>
                   <label htmlFor="lastName">Last Name</label>
                   <input
                     type="text"
@@ -235,11 +259,12 @@ function UserRegistrationPage() {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleNameChange}
+                    aria-invalid={missingFields.includes("lastName")}
                   />
                 </div>
               </div>
 
-              <div className="form-group">
+              <div className={`form-group ${missingFields.includes("phone") ? "field-missing" : ""}`}>
                 <label htmlFor="phone">Phone Number</label>
                 <input
                   type="tel"
@@ -247,6 +272,7 @@ function UserRegistrationPage() {
                   name="phone"
                   value={formData.phone}
                   onChange={handlePhoneChange}
+                  aria-invalid={missingFields.includes("phone")}
                 />
                 {phoneError && (
                   <div className="error-message" style={{ marginTop: "5px" }}>
@@ -255,7 +281,7 @@ function UserRegistrationPage() {
                 )}
               </div>
 
-              <div className="form-group">
+              <div className={`form-group ${missingFields.includes("address") ? "field-missing" : ""}`}>
                 <label htmlFor="address">Address</label>
                 <input
                   type="text"
@@ -263,10 +289,11 @@ function UserRegistrationPage() {
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
+                  aria-invalid={missingFields.includes("address")}
                 />
               </div>
 
-              <div className="form-group">
+              <div className={`form-group ${missingFields.includes("email") ? "field-missing" : ""}`}>
                 <label htmlFor="email">Email Address *</label>
                 <input
                   type="email"
@@ -274,10 +301,11 @@ function UserRegistrationPage() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
+                  aria-invalid={missingFields.includes("email")}
                 />
               </div>
 
-              <div className="form-group" style={{ position: "relative" }}>
+              <div className={`form-group ${missingFields.includes("password") ? "field-missing" : ""}`} style={{ position: "relative" }}>
                 <label htmlFor="password">Password *</label>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -287,6 +315,7 @@ function UserRegistrationPage() {
                   onChange={handlePasswordChange}
                   onCopy={(e) => e.preventDefault()}
                   onPaste={(e) => e.preventDefault()}
+                  aria-invalid={missingFields.includes("password")}
                 />
                 <button
                   type="button"
@@ -314,7 +343,7 @@ function UserRegistrationPage() {
                 </div>
               )}
 
-              <div className="form-group" style={{ position: "relative" }}>
+              <div className={`form-group ${missingFields.includes("confirmPassword") ? "field-missing" : ""}`} style={{ position: "relative" }}>
                 <label htmlFor="confirmPassword">Confirm Password *</label>
                 <input
                   type={showConfirmPassword ? "text" : "password"}
@@ -324,6 +353,7 @@ function UserRegistrationPage() {
                   onChange={handleConfirmPasswordChange}
                   onCopy={(e) => e.preventDefault()}
                   onPaste={(e) => e.preventDefault()}
+                  aria-invalid={missingFields.includes("confirmPassword")}
                 />
                 <button
                   type="button"

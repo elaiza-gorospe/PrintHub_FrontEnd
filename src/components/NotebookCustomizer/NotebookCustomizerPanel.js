@@ -16,7 +16,7 @@ import NotebookZoneCanvas from "./NotebookZoneCanvas";
 import NotebookPreview3D from "./NotebookPreview3D";
 import "../TshirtCustomizer/TshirtCustomizer.css";
 
-const NOTEBOOK_GLB = "/models/notebook_material.glb";
+const NOTEBOOK_GLB = "/models/notebook.glb";
 
 const GUEST_GEN_KEY = "ai_guest_generations";
 const GUEST_LIMIT = 3;

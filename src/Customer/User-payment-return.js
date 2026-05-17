@@ -10,6 +10,8 @@ function UserPaymentReturn() {
   const [state, setState] = useState({
     loading: true,
     message: "Verifying payment...",
+    mockEmail: null,
+    isPaid: false,
   });
 
   const query = useMemo(
@@ -25,6 +27,8 @@ function UserPaymentReturn() {
         setState({
           loading: false,
           message: "Missing order reference from payment return.",
+          mockEmail: null,
+          isPaid: false,
         });
         return;
       }
@@ -43,6 +47,8 @@ function UserPaymentReturn() {
           setState({
             loading: false,
             message: `Payment confirmed for Order #${orderId}.`,
+            mockEmail: data?.receipt?.mockEmail || null,
+            isPaid: true,
           });
           return;
         }
@@ -51,6 +57,11 @@ function UserPaymentReturn() {
           setState({
             loading: false,
             message: "Payment was cancelled. You can try again from My Orders.",
+            mockEmail: {
+              subject: `Payment cancelled - PMG Order #${orderId}`,
+              body: `Your payment for Order #${orderId} was cancelled. You can retry payment from My Orders.`,
+            },
+            isPaid: false,
           });
           return;
         }
@@ -59,6 +70,11 @@ function UserPaymentReturn() {
           loading: false,
           message:
             "Payment is still pending confirmation. If you completed payment, please wait a moment and refresh My Orders.",
+          mockEmail: {
+            subject: `Payment pending - PMG Order #${orderId}`,
+            body: `Your payment for Order #${orderId} is still pending confirmation.`,
+          },
+          isPaid: false,
         });
       } catch (error) {
         setState({
@@ -66,6 +82,8 @@ function UserPaymentReturn() {
           message:
             error.message ||
             "Could not verify payment status. Please check My Orders.",
+          mockEmail: null,
+          isPaid: false,
         });
       }
     };
@@ -84,6 +102,15 @@ function UserPaymentReturn() {
               ? "Verifying payment with PayMongo..."
               : state.message}
           </p>
+
+          {!state.loading && state.mockEmail && (
+            <div className={`upr-email ${state.isPaid ? "success" : "failed"}`}>
+              <strong>Mock email notification</strong>
+              {state.mockEmail.to && <p>To: {state.mockEmail.to}</p>}
+              <p>Subject: {state.mockEmail.subject}</p>
+              <p>{state.mockEmail.body}</p>
+            </div>
+          )}
 
           <div className="upr-actions">
             <button

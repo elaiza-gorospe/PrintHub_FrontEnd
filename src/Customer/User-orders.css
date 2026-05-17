@@ -82,6 +82,55 @@
   font-weight: 800;
 }
 
+.uo-tabs {
+  max-width: 1000px;
+  margin: 0 auto 24px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  border-bottom: 1px solid #dfe7e4;
+}
+
+.uo-tab {
+  border: 0;
+  background: transparent;
+  color: #667085;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  min-width: max-content;
+  padding: 14px 16px;
+  position: relative;
+}
+
+.uo-tab span {
+  display: inline-flex;
+  margin-left: 8px;
+  min-width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #edf0ee;
+  color: #455073;
+  font-size: 12px;
+}
+
+.uo-tab.active {
+  color: #2f3a45;
+}
+
+.uo-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+  height: 3px;
+  border-radius: 999px;
+  background: #c8a24a;
+}
+
 /* LOADING / ERROR / EMPTY STATES */
 .uo-loading,
 .uo-error,
@@ -190,6 +239,26 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.uo-status.pending {
+  background: #ff6b6b;
+}
+
+.uo-status.paid {
+  background: #2196f3;
+}
+
+.uo-status.delivered {
+  background: #4caf50;
+}
+
+.uo-status.return {
+  background: #8e44ad;
+}
+
+.uo-status.cancelled {
+  background: #f44336;
 }
 
 /* ITEMS SECTION */
@@ -350,10 +419,12 @@
 }
 
 /* PAY NOW */
-.uo-pay-row {
+.uo-pay-row,
+.uo-action-row {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .uo-pay-label {
@@ -413,6 +484,131 @@
 }
 .uo-pay-btn:hover {
   background: #219a52;
+}
+
+.uo-receipt-btn,
+.uo-return-btn,
+.uo-submit-return {
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.uo-receipt-btn {
+  background: #455073;
+  color: #fff;
+}
+
+.uo-return-btn {
+  background: #fff3e8;
+  color: #b65f00;
+  border: 1px solid rgba(182, 95, 0, 0.22);
+}
+
+.uo-submit-return {
+  width: 100%;
+  background: #455073;
+  color: #fff;
+  margin-top: 4px;
+}
+
+.uo-submit-return:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.uo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  display: grid;
+  place-items: center;
+  background: rgba(31, 40, 56, 0.58);
+  padding: 20px;
+}
+
+.uo-modal-card {
+  width: min(640px, 100%);
+  max-height: 88vh;
+  overflow: auto;
+  position: relative;
+  background: #fffdf8;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 28px 70px rgba(31, 40, 56, 0.24);
+}
+
+.uo-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  height: 34px;
+  width: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: #f3eee0;
+  cursor: pointer;
+}
+
+.uo-modal-card h2 {
+  color: #343d5c;
+  margin: 0 0 16px;
+}
+
+.uo-modal-card label {
+  display: grid;
+  gap: 8px;
+  color: #3f505c;
+  font-weight: 800;
+  margin: 14px 0;
+  text-align: left;
+}
+
+.uo-modal-card select,
+.uo-modal-card textarea {
+  border: 1px solid #d8dedc;
+  border-radius: 8px;
+  font: inherit;
+  padding: 10px 12px;
+}
+
+.uo-receipt-meta,
+.uo-receipt-total {
+  display: flex;
+  justify-content: space-between;
+  color: #343d5c;
+  font-weight: 800;
+  gap: 12px;
+}
+
+.uo-receipt-items {
+  border-top: 1px solid #e1e8e6;
+  border-bottom: 1px solid #e1e8e6;
+  margin: 18px 0;
+  padding: 12px 0;
+}
+
+.uo-receipt-items div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.uo-mock-email {
+  background: #f5f1e8;
+  color: #455073;
+  border-radius: 10px;
+  margin-top: 18px;
+  padding: 16px;
+  text-align: left;
+}
+
+.uo-mock-email p {
+  margin: 6px 0;
 }
 
 /* RESPONSIVE */

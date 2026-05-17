@@ -176,7 +176,7 @@ svg {
 }
 
 .ucp-cancel-button:hover {
-  background: #d8efe1;
+  background: #c8d5e6;
 }
 
 .ucp-save-button {
@@ -220,7 +220,7 @@ svg {
 .ucp-form-row input:focus,
 .ucp-form-row select:focus {
   outline: none;
-  border-color: #135e30;
+  border-color: #1b3f6e;
 }
 
 /* ✅ Address textarea */
@@ -240,7 +240,7 @@ svg {
 
 .ucp-form-row textarea:focus {
   outline: none;
-  border-color: #135e30;
+  border-color: #1b3f6e;
 }
 
 /* ✅ Mobile responsive (matches Admin-profile behavior) */
@@ -312,9 +312,10 @@ svg {
 }
 
 .ucp-message-success {
-  background: #e7f7ee;
-  border: 1px solid #b8e3c8;
-  color: #0c502b;
+  /* green */
+  background: #a2b8d2;
+  border: 1px solid #a9c8ee;
+  color: #1b3f6e; 
 }
 
 /* ✅ Toast */
@@ -331,7 +332,8 @@ svg {
 }
 
 .ucp-toast-success {
-  background: #135e30;
+  /* green */
+  background: #1b3f6e;
   color: #fff;
 }
 
@@ -361,7 +363,7 @@ svg {
 
 .ucp-discard-title {
   margin: 0 0 8px;
-  color: #135e30;
+  color: #1b3f6e;
 }
 
 .ucp-discard-text {
@@ -388,13 +390,13 @@ svg {
 }
 
 .ucp-discard-cancel {
-  background: #e6f3ea;
-  color: #135e30;
-  border: 1px solid #b8dbc6;
+  background: #a2b8d2;
+  color: #1b3f6e;
+  border: 1px solid #a9c8ee;
 }
 
 .ucp-discard-cancel:hover {
-  background: #d8efe1;
+  background: #add3ff;
 }
 
 .ucp-discard-confirm {
@@ -404,4 +406,52 @@ svg {
 
 .ucp-discard-confirm:hover {
   background: #8d0019;
+}
+.ucp-profile-top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.ucp-profile-info {
+  flex: 1;
+}
+
+.ucp-edit-button {
+  background-color: #1b3f6e;
+  color: white;
+  border: none;
+  padding: 8px 32px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 120px;
+}
+
+.ucp-edit-button:hover {
+  background-color: #3466a3;
+}
+
+.ucp-profile-details {
+  margin: 20px 0;
+}
+
+.ucp-detail-row {
+  display: flex;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.ucp-detail-row label {
+  width: 120px;
+  font-weight: 600;
+  color: #333;
+}
+
+.ucp-detail-row span {
+  flex: 1;
+  color: #666;
 }

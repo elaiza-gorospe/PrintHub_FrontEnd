@@ -1,5 +1,11 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  FaCheckCircle,
+  FaClock,
+  FaEnvelopeOpenText,
+  FaShieldAlt,
+} from "react-icons/fa";
 import "./User-otp.css";
 import { buildApiUrl } from "../config/api";
 
@@ -29,7 +35,6 @@ function UserOtpPage() {
     setLoading(true);
 
     try {
-      // 1) verify OTP
       const response = await fetch(buildApiUrl("/api/register/verify-otp"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -44,7 +49,6 @@ function UserOtpPage() {
         return;
       }
 
-      // 2) get pending registration data (saved by User-regis.js)
       const saved = localStorage.getItem("pending_registration");
 
       if (!saved) {
@@ -62,14 +66,12 @@ function UserOtpPage() {
         return;
       }
 
-      // safety: must match the email we verified
       if (!regData?.email || regData.email !== email) {
         setError("Email mismatch. Please register again.");
         setLoading(false);
         return;
       }
 
-      // 3) complete registration (insert into DB)
       const completeRes = await fetch(buildApiUrl("/api/register/complete"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -84,7 +86,6 @@ function UserOtpPage() {
         return;
       }
 
-      // clear saved registration
       localStorage.removeItem("pending_registration");
 
       alert("Account verified successfully!");
@@ -98,7 +99,36 @@ function UserOtpPage() {
 
   return (
     <div className="user-otp-container">
+      <button
+        className="otp-back-button"
+        type="button"
+        onClick={() => navigate("/user-register")}
+      >
+        Back
+      </button>
+
+      <div className="otp-brand-panel">
+        <div className="otp-brand-mark">PMG</div>
+        <h1>One quick check, then you are in.</h1>
+        <p>We sent a secure 6-digit code to protect your new PrintHub account.</p>
+        <div className="otp-progress-list">
+          <span>
+            <FaCheckCircle /> Details saved
+          </span>
+          <span>
+            <FaEnvelopeOpenText /> Code sent
+          </span>
+          <span>
+            <FaShieldAlt /> Verify account
+          </span>
+        </div>
+      </div>
+
       <div className="otp-card">
+        <div className="otp-icon">
+          <FaEnvelopeOpenText />
+        </div>
+
         <div className="otp-header">
           <h2>Email Verification</h2>
           <p>
@@ -109,12 +139,17 @@ function UserOtpPage() {
         {error && <div className="otp-error">{error}</div>}
 
         <form onSubmit={handleVerify}>
+          <label className="otp-label" htmlFor="registration-otp">
+            Verification code
+          </label>
           <input
+            id="registration-otp"
             type="text"
+            inputMode="numeric"
             className="otp-input"
-            placeholder="● ● ● ● ● ●"
+            placeholder="000000"
             value={otp}
-            onChange={(e) => setOtp(e.target.value)}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
             maxLength={6}
             disabled={loading}
           />
@@ -124,8 +159,13 @@ function UserOtpPage() {
           </button>
         </form>
 
+        <div className="otp-help-strip">
+          <FaClock />
+          <span>The code expires in 5 minutes.</span>
+        </div>
+
         <div className="otp-footer">
-          Didn’t receive the code? Check your spam folder.
+          Didn't receive the code? Check your spam folder.
         </div>
       </div>
     </div>

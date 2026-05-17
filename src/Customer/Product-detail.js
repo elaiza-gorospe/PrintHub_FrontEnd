@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaIdCard, FaHeadset, FaCheck, FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa";
 import "./Product-detail.css";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useCart } from "../hooks/useCart";
@@ -10,8 +10,89 @@ import { buildApiUrl } from "../config/api";
 import AIBuilderPanel from "../components/AIBuilder/AIBuilderPanel";
 import TshirtCustomizerPanel from "../components/TshirtCustomizer/TshirtCustomizerPanel";
 import NotebookCustomizerPanel from "../components/NotebookCustomizer/NotebookCustomizerPanel";
+import BusinessCardCustomizerPanel from "../components/BusinessCardCustomizer/BusinessCardCustomizerPanel";
+import BrochureCustomizerPanel from "../components/BrochureCustomizer/BrochureCustomizerPanel";
+import CapCustomizerPanel from "../components/CapCustomizer/CapCustomizerPanel";
+import JerseyCustomizerPanel from "../components/JerseyCustomizer/JerseyCustomizerPanel";
 import MugCustomizerPanel from "../components/MugCustomizer/MugCustomizerPanel";
-import FlatCustomizerPanel from "../components/FlatCustomizer/FlatCustomizerPanel";
+import PosterCustomizerPanel from "../components/PosterCustomizer/PosterCustomizerPanel";
+import FlyerCustomizerPanel from "../components/FlyerCustomizer/FlyerCustomizerPanel";
+import ThankYouCardCustomizerPanel from "../components/ThankYouCardCustomizer/ThankYouCardCustomizerPanel";
+
+const RECENTLY_VIEWED_KEY = "printhub_recently_viewed_products";
+const RECENTLY_VIEWED_LIMIT = 8;
+
+function formatRecentPrice(price) {
+  if (price === null || price === undefined || price === "") return "";
+  const numeric = Number(price);
+  return Number.isFinite(numeric) ? `₱${numeric.toLocaleString()}` : String(price);
+}
+
+const DEFAULT_PRODUCT_ZONES = {
+  notebook: ["front_cover", "back_cover"],
+  tshirt: ["front", "back", "left_sleeve", "right_sleeve"],
+  jersey: ["front", "back", "left_sleeve", "right_sleeve"],
+  jersery: ["front", "back", "left_sleeve", "right_sleeve"],
+  cap: ["front", "back", "left_sleeve", "right_sleeve"],
+  mug: ["front", "back"],
+  calling_card: ["front", "back"],
+  business_card: ["front", "back"],
+  brochures: ["front", "back"],
+  flyers: ["front", "back"],
+  poster: ["front"],
+  posters: ["front"],
+  thank_you_card: ["front", "back"],
+  banners: ["front"],
+  stickers: ["front"],
+  hang_tags: ["front", "back"],
+  other: ["front", "back"],
+};
+
+function getDefaultPrintZones(category) {
+  const normalized = String(category || "other").toLowerCase();
+  return DEFAULT_PRODUCT_ZONES[normalized] || DEFAULT_PRODUCT_ZONES.other;
+}
+
+function inferCustomizerCategory({ category, name, title }) {
+  const rawCategory = String(category || "").toLowerCase();
+  const label = `${name || ""} ${title || ""}`.toLowerCase();
+
+  if (label.includes("flyer")) return "flyers";
+  if (label.includes("poster")) return "posters";
+
+  if (rawCategory && !["service", "print", "other"].includes(rawCategory)) {
+    return rawCategory;
+  }
+  if (label.includes("business card") || label.includes("calling card")) {
+    return "business_card";
+  }
+  if (label.includes("thank you")) return "thank_you_card";
+  if (label.includes("brochure")) return "brochures";
+  if (label.includes("notebook")) return "notebook";
+  if (label.includes("jersey")) return "jersey";
+  if (label.includes("cap") || label.includes("hat")) return "cap";
+  if (label.includes("mug") || label.includes("cup")) return "mug";
+  if (label.includes("shirt") || label.includes("t-shirt") || label.includes("tshirt")) {
+    return "tshirt";
+  }
+  return rawCategory || "other";
+}
+
+function getCustomizerPanel(category) {
+  const normalized = String(category || "other").toLowerCase();
+  if (normalized === "notebook") return NotebookCustomizerPanel;
+  if (normalized === "business_card" || normalized === "calling_card") {
+    return BusinessCardCustomizerPanel;
+  }
+  if (normalized === "brochures") return BrochureCustomizerPanel;
+  if (normalized === "flyer" || normalized === "flyers") return FlyerCustomizerPanel;
+  if (normalized === "poster" || normalized === "posters") return PosterCustomizerPanel;
+  if (normalized === "thank_you_card") return ThankYouCardCustomizerPanel;
+  if (normalized === "cap") return CapCustomizerPanel;
+  if (normalized === "jersey" || normalized === "jersery") return JerseyCustomizerPanel;
+  if (normalized === "mug") return MugCustomizerPanel;
+  return TshirtCustomizerPanel;
+}
 
 /** Map a raw API product to the shape the component expects */
 function mapApiProduct(data) {
@@ -22,12 +103,22 @@ function mapApiProduct(data) {
       return { label: opt.slice(0, idx), price: opt.slice(idx + 1) };
     });
 
+  const dbCategory = inferCustomizerCategory({
+    category: data.category,
+    name: data.name,
+  });
+  const printZones =
+    data.print_zones?.length > 0
+      ? data.print_zones
+      : getDefaultPrintZones(dbCategory);
+
   return {
     id: data.id,
     category: data.print_type || "print",
     title: data.name,
     image: data.images?.[0] || "",
     description: data.description || "",
+    images: data.images || [],
     gallery: data.images?.length > 0 ? data.images : [],
     price: data.price,
     sizes: data.size_options || [],
@@ -39,8 +130,9 @@ function mapApiProduct(data) {
     quantities: parseOptions(data.quantity_options),
     shipping: parseOptions(data.shipping_options),
     ai_prompt_rules: data.ai_prompt_rules || null,
-    print_zones: data.print_zones || [],
-    dbCategory: data.category || "other",
+    print_zones: printZones,
+    dbCategory,
+    rawCategory: data.category || "other",
     quantity_mode: data.quantity_mode || "dropdown",
     quantity_count: data.quantity_count || null,
   };
@@ -97,12 +189,18 @@ function ProductDetail() {
   const [quoteSuccess, setQuoteSuccess] = useState(false);
   const [quoteError, setQuoteError] = useState("");
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
 
   // AI Builder
   const [activeDesign, setActiveDesign] = useState(null); // designMeta | null
   const storedUser = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem("user"));
+      const parsed = JSON.parse(localStorage.getItem("user") || "null");
+      const role = String(parsed?.role || "").toLowerCase();
+      if (!parsed?.id || role === "admin" || role === "staff" || role === "guest") {
+        return null;
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -160,6 +258,37 @@ function ProductDetail() {
     setIsVerified(false);
   }, [product]);
 
+  useEffect(() => {
+    if (!product?.id) return;
+
+    try {
+      const viewed = JSON.parse(
+        localStorage.getItem(RECENTLY_VIEWED_KEY) || "[]",
+      );
+      const recentProduct = {
+        id: product.id,
+        name: product.title,
+        images: product.gallery?.length ? product.gallery : product.images || [],
+        image: product.image,
+        price: product.price,
+        viewedAt: Date.now(),
+      };
+      const nextViewed = [
+        recentProduct,
+        ...(Array.isArray(viewed)
+          ? viewed.filter((item) => String(item.id) !== String(product.id))
+          : []),
+      ].slice(0, RECENTLY_VIEWED_LIMIT);
+
+      localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(nextViewed));
+      setRecentlyViewed(
+        nextViewed.filter((item) => String(item.id) !== String(product.id)),
+      );
+    } catch {
+      // Recently viewed is a convenience feature; product viewing should still work.
+    }
+  }, [product]);
+
   // Keep quote form quantity in sync with the selected quantity control
   useEffect(() => {
     if (!product) return;
@@ -170,7 +299,7 @@ function ProductDetail() {
       // For dropdown mode, mirror the selectedQty label
       setQuoteForm((prev) => ({ ...prev, quantity: selectedQty?.label || "" }));
     }
-  }, [selectedQty, customQty, product?.quantity_mode]);
+  }, [selectedQty, customQty, product]);
 
   const handleQuoteChange = (e) => {
     const { name, value } = e.target;
@@ -187,8 +316,7 @@ function ProductDetail() {
     setQuoteError("");
 
     try {
-      const storedUser = localStorage.getItem("user");
-      const userId = storedUser ? JSON.parse(storedUser).id : null;
+      const userId = storedUser?.id || null;
 
       const res = await fetch(buildApiUrl("/api/inquiries"), {
         method: "POST",
@@ -492,7 +620,95 @@ function ProductDetail() {
                     onDesignReady={(meta) => setActiveDesign(meta)}
                     onClear={() => setActiveDesign(null)}
                   />
+                  );
+                })()}
+              </div>
+            )}
+
+            {!customSizeSelected && (
+              <div className="pd-order-card">
+                <div className="pd-order-head">
+                  <span>Ready to print</span>
+                  <strong>{formatPrice(
+                    extractNumericPrice(selectedQty?.price) +
+                    extractNumericPrice(selectedShipping?.price),
+                  )}</strong>
+                </div>
+
+                <div className="pd-order-details">
+                  <span>
+                    <strong>Size</strong>
+                    {selectedSize || "Select one"}
+                  </span>
+                  <span>
+                    <strong>Material</strong>
+                    {selectedMaterial || "Select one"}
+                  </span>
+                  <span>
+                    <strong>Print</strong>
+                    {selectedSide || "Select one"}
+                  </span>
+                  <span>
+                    <strong>Qty</strong>
+                    {selectedQty?.label || customQty || "Select one"}
+                  </span>
+                </div>
+
+                <div className="pd-order-price-lines">
+                  <p>
+                    <span>Product</span>
+                    <strong>{selectedQty?.price}</strong>
+                  </p>
+                  <p>
+                    <span>Delivery</span>
+                    <strong>{selectedShipping?.price}</strong>
+                  </p>
+                </div>
+
+                {successMessage && (
+                  <div className="pd-success-message">
+                    <FaCheckCircle /> {successMessage}
+                  </div>
                 )}
+                {activeDesign && (
+                  <div className="pd-design-attached">
+                    {Object.values(activeDesign.zones || {})
+                      .filter((z) => z?.imageUrl)
+                      .map((z, i) => (
+                        <img
+                          key={i}
+                          src={z.imageUrl}
+                          alt={`design zone ${i + 1}`}
+                          className="pd-design-thumb"
+                        />
+                      ))}
+                    {!Object.values(activeDesign.zones || {}).some(
+                      (z) => z?.imageUrl,
+                    ) &&
+                      activeDesign.generatedImageUrl && (
+                        <img
+                          src={activeDesign.generatedImageUrl}
+                          alt="design preview"
+                          className="pd-design-thumb"
+                        />
+                      )}
+                    <span>AI design attached</span>
+                    <button
+                      type="button"
+                      className="pd-design-remove"
+                      onClick={() => setActiveDesign(null)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="pd-cart-btn"
+                  onClick={handleAddToCart}
+                >
+                  ADD TO CART
+                </button>
               </div>
             )}
           </div>
@@ -502,11 +718,11 @@ function ProductDetail() {
           <section className="pd-section">
             <h2>1. Select size</h2>
 
-            <div className="pd-card-options">
+            <div className="pd-line-options">
               {product.sizes.map((size) => (
                 <label
                   key={size}
-                  className={`pd-option-card ${selectedSize === size && !customSizeSelected ? "selected" : ""}`}
+                  className={`pd-line-option ${selectedSize === size && !customSizeSelected ? "selected" : ""}`}
                 >
                   <input
                     type="radio"
@@ -518,52 +734,28 @@ function ProductDetail() {
                       setCustomSizeSelected(false);
                     }}
                   />
-
-                  <div className="pd-option-inner">
-                    <div className="pd-option-logo">
-                      <FaIdCard />
-                    </div>
-                    <div className="pd-option-title">Standard</div>
-                    <div className="pd-option-sub">
-                      {size.includes("(")
-                        ? size.split("(")[1].replace(")", "")
-                        : size}
-                    </div>
-                  </div>
-
-                  {selectedSize === size && !customSizeSelected && (
-                    <div className="pd-check-badge">
-                      <FaCheck />
-                    </div>
-                  )}
+                  <span>
+                    {size.includes("(")
+                      ? size.split("(")[1].replace(")", "")
+                      : size}
+                  </span>
                 </label>
               ))}
 
-              <button
-                type="button"
-                className={`pd-option-card pd-option-card-contact ${customSizeSelected ? "selected" : ""}`}
-                onClick={() => {
-                  setCustomSizeSelected(true);
-                  scrollToQuote();
-                }}
+              <label
+                className={`pd-line-option pd-size-contact-option ${customSizeSelected ? "selected" : ""}`}
               >
-                <div className="pd-option-inner">
-                  <div className="pd-option-logo pd-option-logo-contact">
-                    <FaHeadset />
-                  </div>
-                  <div className="pd-option-title">
-                    Looking for something else? ...
-                  </div>
-                  <div className="pd-option-sub pd-option-sub-strong">
-                    Contact Us!
-                  </div>
-                </div>
-                {customSizeSelected && (
-                  <div className="pd-check-badge">
-                    <FaCheck />
-                  </div>
-                )}
-              </button>
+                <input
+                  type="radio"
+                  name="size"
+                  checked={customSizeSelected}
+                  onChange={() => {
+                    setCustomSizeSelected(true);
+                    scrollToQuote();
+                  }}
+                />
+                <span>Looking for something else? Contact Us!</span>
+              </label>
             </div>
           </section>
 
@@ -676,9 +868,8 @@ function ProductDetail() {
                   product.quantities.map((qty) => (
                     <label
                       key={qty.label}
-                      className={`pd-line-option pd-price-option ${
-                        selectedQty?.label === qty.label ? "selected" : ""
-                      }`}
+                      className={`pd-line-option pd-price-option ${selectedQty?.label === qty.label ? "selected" : ""
+                        }`}
                     >
                       <input
                         type="radio"
@@ -698,9 +889,8 @@ function ProductDetail() {
                 {product.shipping.map((ship) => (
                   <label
                     key={ship.label}
-                    className={`pd-line-option pd-price-option ${
-                      selectedShipping?.label === ship.label ? "selected" : ""
-                    }`}
+                    className={`pd-line-option pd-price-option ${selectedShipping?.label === ship.label ? "selected" : ""
+                      }`}
                   >
                     <input
                       type="radio"
@@ -955,99 +1145,6 @@ function ProductDetail() {
             </section>
           )}
 
-          {!customSizeSelected && (
-            <section className="pd-summary">
-              <h2>Your product</h2>
-              <div className="pd-summary-box">
-                <div>
-                  <h3>{product.title}</h3>
-                  <p>
-                    <strong>Size:</strong> {selectedSize}
-                  </p>
-                  <p>
-                    <strong>Material:</strong> {selectedMaterial}
-                  </p>
-                  <p>
-                    <strong>Print:</strong> {selectedSide}
-                  </p>
-                  <p>
-                    <strong>Finishing:</strong> {selectedFinish}
-                  </p>
-                  <p>
-                    <strong>Quantity:</strong> {selectedQty?.label}
-                  </p>
-                  <p>
-                    <strong>Shipping:</strong> {selectedShipping?.label}
-                  </p>
-                </div>
-
-                <div className="pd-total">
-                  <p>
-                    <span>Product</span>
-                    <strong>{selectedQty?.price}</strong>
-                  </p>
-                  <p>
-                    <span>Delivery</span>
-                    <strong>{selectedShipping?.price}</strong>
-                  </p>
-                  <hr />
-                  <p className="grand-total">
-                    <span>Total</span>
-                    <strong>
-                      {formatPrice(
-                        extractNumericPrice(selectedQty?.price) +
-                          extractNumericPrice(selectedShipping?.price),
-                      )}
-                    </strong>
-                  </p>
-                  {successMessage && (
-                    <div className="pd-success-message">
-                      <FaCheckCircle /> {successMessage}
-                    </div>
-                  )}
-                  {activeDesign && (
-                    <div className="pd-design-attached">
-                      {Object.values(activeDesign.zones || {})
-                        .filter((z) => z?.imageUrl)
-                        .map((z, i) => (
-                          <img
-                            key={i}
-                            src={z.imageUrl}
-                            alt={`design zone ${i + 1}`}
-                            className="pd-design-thumb"
-                          />
-                        ))}
-                      {!Object.values(activeDesign.zones || {}).some(
-                        (z) => z?.imageUrl,
-                      ) &&
-                        activeDesign.generatedImageUrl && (
-                          <img
-                            src={activeDesign.generatedImageUrl}
-                            alt="design preview"
-                            className="pd-design-thumb"
-                          />
-                        )}
-                      <span>AI design attached</span>
-                      <button
-                        type="button"
-                        className="pd-design-remove"
-                        onClick={() => setActiveDesign(null)}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    className="pd-cart-btn"
-                    onClick={handleAddToCart}
-                  >
-                    ADD TO CART
-                  </button>
-                </div>
-              </div>
-            </section>
-          )}
         </div>
 
         {/* Mobile sticky Add to Cart — sits above bottom nav */}
@@ -1061,6 +1158,45 @@ function ProductDetail() {
               Add to Cart
             </button>
           </div>
+        {recentlyViewed.length > 0 && (
+          <section className="pd-recently-viewed">
+            <div className="pd-recently-head">
+              <h2>Your recently viewed items</h2>
+              <p>Products you opened earlier will stay here for quick access.</p>
+            </div>
+            <div className="pd-recently-grid">
+              {recentlyViewed.slice(0, 4).map((item) => {
+                const image =
+                  item.images?.[0] ||
+                  item.image ||
+                  "https://via.placeholder.com/300x200?text=No+Image";
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="pd-recent-card"
+                    onClick={() => navigate(`/product/${item.id}`)}
+                  >
+                    <span className="pd-recent-heart" aria-hidden="true">
+                      ♡
+                    </span>
+                    <img
+                      src={image}
+                      alt={item.name}
+                      onError={(e) => {
+                        e.target.src =
+                          "https://via.placeholder.com/300x200?text=No+Image";
+                      }}
+                    />
+                    <strong>{item.name}</strong>
+                    {formatRecentPrice(item.price) ? (
+                      <span>From {formatRecentPrice(item.price)}</span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
         )}
       </div>
     </div>

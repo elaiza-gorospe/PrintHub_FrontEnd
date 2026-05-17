@@ -353,6 +353,10 @@ function UserPasswordSecurityPage() {
             className="otp-modal-card"
             onMouseDown={(e) => e.stopPropagation()}
           >
+            <div className="otp-icon">
+              <FaShieldAlt />
+            </div>
+
             <div className="otp-modal-header">
               <h2>Email Verification</h2>
               <p>
@@ -367,7 +371,8 @@ function UserPasswordSecurityPage() {
               <input
                 type="text"
                 className="otp-input"
-                placeholder="● ● ● ● ● ●"
+                inputMode="numeric"
+                placeholder="000000"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                 maxLength={6}
@@ -399,7 +404,7 @@ function UserPasswordSecurityPage() {
             </div>
 
             <div className="otp-footer">
-              Didn’t receive the code? Check spam.
+              Didn't receive the code? Check spam.
             </div>
           </div>
         </div>

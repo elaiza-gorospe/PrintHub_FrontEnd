@@ -1,0 +1,209 @@
+.upay-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8f6f1 0%, #eef3f0 100%);
+  padding: 30px 20px 70px;
+}
+
+.upay-top,
+.upay-list,
+.upay-state {
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.upay-top {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 26px;
+}
+
+.upay-top h1 {
+  margin: 0;
+  color: #2f3a45;
+  font-size: 34px;
+  font-weight: 800;
+}
+
+.upay-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: #455073;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.upay-state {
+  background: #fff;
+  border: 1px solid #e1e8e6;
+  border-radius: 12px;
+  color: #3f505c;
+  padding: 42px 24px;
+  text-align: center;
+}
+
+.upay-error {
+  color: #c0392b;
+  border-color: rgba(192, 57, 43, 0.24);
+}
+
+.upay-list {
+  display: grid;
+  gap: 16px;
+}
+
+.upay-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  background: #fff;
+  border: 1px solid #e1e8e6;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 26px rgba(31, 42, 47, 0.08);
+}
+
+.upay-card h2 {
+  margin: 10px 0 6px;
+  color: #2f3a45;
+}
+
+.upay-card p {
+  margin: 4px 0;
+  color: #667085;
+}
+
+.upay-pill {
+  display: inline-flex;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 10px;
+  text-transform: uppercase;
+}
+
+.upay-pill.paid {
+  background: #27ae60;
+}
+
+.upay-pill.pending {
+  background: #e67e22;
+}
+
+.upay-card-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+}
+
+.upay-card-side strong {
+  color: #0f352a;
+  font-size: 22px;
+}
+
+.upay-card-side button {
+  border: 0;
+  border-radius: 8px;
+  background: #455073;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 10px 16px;
+}
+
+.upay-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  background: rgba(31, 40, 56, 0.58);
+  padding: 20px;
+}
+
+.upay-receipt {
+  width: min(680px, 100%);
+  max-height: 88vh;
+  overflow: auto;
+  position: relative;
+  background: #fffdf8;
+  border-radius: 12px;
+  border: 1px solid rgba(69, 80, 115, 0.14);
+  padding: 28px;
+  box-shadow: 0 28px 70px rgba(31, 40, 56, 0.24);
+}
+
+.upay-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  border: 0;
+  background: #f3eee0;
+  border-radius: 8px;
+  cursor: pointer;
+  height: 34px;
+  width: 34px;
+}
+
+.upay-receipt h2 {
+  margin: 0 0 16px;
+  color: #343d5c;
+}
+
+.upay-receipt-meta,
+.upay-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #343d5c;
+  font-weight: 800;
+}
+
+.upay-items {
+  border-top: 1px solid #e1e8e6;
+  border-bottom: 1px solid #e1e8e6;
+  margin: 18px 0;
+  padding: 12px 0;
+}
+
+.upay-items div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.upay-email {
+  display: flex;
+  gap: 14px;
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 10px;
+  background: #f5f1e8;
+  color: #455073;
+}
+
+.upay-email p {
+  margin: 4px 0;
+}
+
+@media (max-width: 640px) {
+  .upay-top,
+  .upay-card,
+  .upay-card-side {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .upay-top h1 {
+    font-size: 26px;
+  }
+}

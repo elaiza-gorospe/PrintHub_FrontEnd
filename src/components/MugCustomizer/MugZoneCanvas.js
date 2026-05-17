@@ -15,8 +15,8 @@ import "../TshirtCustomizer/TshirtCustomizer.css";
 
 const ZONE_META = [
   { id: "front", label: "FRONT", col: 1, row: 1 },
-  { id: "back",  label: "BACK",  col: 2, row: 1 },
-  { id: "wrap",  label: "WRAP",  col: 1, row: 2 },
+  { id: "back", label: "BACK", col: 2, row: 1 },
+  { id: "wrap", label: "WRAP", col: 1, row: 2 },
 ];
 
 function ZoneBox({ meta, design, isActive, onSelect, onDesignChange }) {

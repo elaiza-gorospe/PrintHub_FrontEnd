@@ -16,15 +16,26 @@ import { CATEGORY_DEFAULTS, CATEGORY_NAMES } from "../config/categoryDefaults";
 
 const CATEGORY_ZONES = {
   tshirt: ["front", "back", "left_sleeve", "right_sleeve"],
+  jersey: ["front", "back", "left_sleeve", "right_sleeve"],
+  jersery: ["front", "back", "left_sleeve", "right_sleeve"],
+  cap: ["front", "back", "left_sleeve", "right_sleeve"],
   notebook: ["front_cover", "back_cover"],
   calling_card: ["front", "back"],
-  mug: ["front"],
-  banners:   ["front"],
-  stickers:  ["front"],
+  business_card: ["front", "back"],
+  mug: ["front", "back"],
+  banners: ["front"],
+  poster: ["front"],
+  posters: ["front"],
+  flyers: ["front", "back"],
+  thank_you_card: ["front", "back"],
+  stickers: ["front"],
   hang_tags: ["front", "back"],
-  brochures: ["outside", "inside"],
-  other: [],
+  brochures: ["front", "back"],
+  other: ["front", "back"],
 };
+
+const getCategoryZones = (category) =>
+  CATEGORY_ZONES[category] || CATEGORY_ZONES.other;
 
 function AdminProducts({
   refreshTrigger = 0,
@@ -111,7 +122,10 @@ function AdminProducts({
               ? "print"
               : "service",
           price: parseFloat(product.price),
-          stock: product.stock || 0,
+          stock:
+            product.stock !== undefined && product.stock !== null
+              ? product.stock
+              : 0,
           status: product.active ? "active" : "inactive",
           dbId: product.id,
           material: product.material,
@@ -264,7 +278,10 @@ function AdminProducts({
           ? String(fullProduct.quantity_count)
           : "",
       shipping_options: fullProduct.shipping_options || [],
-      print_zones: fullProduct.print_zones || [],
+      print_zones:
+        fullProduct.print_zones?.length > 0
+          ? fullProduct.print_zones
+          : getCategoryZones(fullProduct.category || "other"),
       category: fullProduct.category || "other",
     });
     setTagInputs({
@@ -341,7 +358,7 @@ function AdminProducts({
             quantity_options: editForm.quantity_options,
             shipping_options: editForm.shipping_options,
             category: editForm.category,
-            print_zones: CATEGORY_ZONES[editForm.category] || [],
+            print_zones: getCategoryZones(editForm.category),
           }),
         },
       );
@@ -795,7 +812,7 @@ function AdminProducts({
                 </td>
                 <td data-label="Price">₱ {p.price.toLocaleString()}</td>
                 <td data-label="Stock">
-                  {p.category === "service" ? "—" : p.stock}
+                  {p.stock !== undefined && p.stock !== null ? p.stock : "—"}
                 </td>
                 <td data-label="Status">
                   <button
@@ -1165,6 +1182,9 @@ function AdminProducts({
                     }}
                   >
                     <option value="tshirt">T-shirts</option>
+                    <option value="jersery">Jersey</option>
+                    <option value="cap">Cap</option>
+                    <option value="mugs">Mugs</option>
                     <option value="notebook">Notebook</option>
                     <option value="calling_card">Business Card</option>
                     <option value="banners">Banners</option>

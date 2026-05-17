@@ -6,9 +6,9 @@ import "../TshirtCustomizer/TshirtCustomizer.css";
 
 // Zone plane config: offsets as fraction of bounding-box size, plus Y rotation
 const ZONE_PLANE = {
-  front: { ox: 0, oy: 0.05, oz: 1,  ry: 0,          sw: 0.45, sh: 0.45 },
-  back:  { ox: 0, oy: 0.05, oz: -1, ry: Math.PI,     sw: 0.45, sh: 0.45 },
-  wrap:  { ox: 0, oy: 0,    oz: 1,  ry: 0,           sw: 0.85, sh: 0.55 },
+  front: { ox: 0, oy: 0.05, oz: 1, ry: 0, sw: 0.45, sh: 0.45 },
+  back: { ox: 0, oy: 0.05, oz: -1, ry: Math.PI, sw: 0.45, sh: 0.45 },
+  wrap: { ox: 0, oy: 0, oz: 1, ry: 0, sw: 0.85, sh: 0.55 },
 };
 
 export default function MugPreview3D({
@@ -149,9 +149,7 @@ export default function MugPreview3D({
       undefined,
       (err) => {
         console.warn("GLB load failed:", err);
-        setError(
-          "Failed to load 3D model. Place mug.glb in public/models/.",
-        );
+        setError("Failed to load 3D model. Place mug.glb in public/models/.");
       },
     );
 

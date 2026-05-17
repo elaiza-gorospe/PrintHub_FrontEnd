@@ -248,7 +248,9 @@ function AdminOrders() {
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
             <option value="processing">Processing</option>
+            <option value="delivered">Delivered</option>
             <option value="completed">Completed</option>
+            <option value="return_requested">Return Requested</option>
             <option value="cancelled">Cancelled</option>
           </select>
 
@@ -299,10 +301,13 @@ function AdminOrders() {
                       {o.status === "completed" && (
                         <FaCheckCircle style={{ marginRight: 6 }} />
                       )}
+                      {o.status === "return_requested" && (
+                        <FaExclamationTriangle style={{ marginRight: 6 }} />
+                      )}
                       {o.status === "cancelled" && (
                         <FaExclamationTriangle style={{ marginRight: 6 }} />
                       )}
-                      {o.status}
+                      {o.status.replace(/_/g, " ")}
                     </span>
                   </td>
                   <td data-label="Date">{o.date}</td>
@@ -525,6 +530,7 @@ function AdminOrders() {
                                     setAiPreviewModal({
                                       imageUrl: design.generatedImageUrl,
                                       productName,
+                                      design,
                                     })
                                   }
                                   title="Click to preview AI design"
@@ -813,6 +819,7 @@ function AdminOrders() {
                             setAiPreviewModal({
                               imageUrl: design.generatedImageUrl,
                               productName,
+                              design,
                             })
                           }
                           title="Click to preview AI design"
@@ -1048,6 +1055,7 @@ function AdminOrders() {
                   setAi3DPreviewModal({
                     imageUrl: aiPreviewModal.imageUrl,
                     productName: aiPreviewModal.productName,
+                    design: aiPreviewModal.design,
                   });
                 }}
                 style={{
@@ -1164,7 +1172,17 @@ function AdminOrders() {
             >
               <TshirtPreview3D
                 modelPath="/models/tshirt.glb"
-                zoneDesigns={{ front: { imageUrl: ai3DPreviewModal.imageUrl } }}
+                shirtColor={
+                  ai3DPreviewModal.design?.shirtColor ||
+                  ai3DPreviewModal.design?.productColor ||
+                  ai3DPreviewModal.design?.baseColor ||
+                  "#ffffff"
+                }
+                zoneDesigns={
+                  ai3DPreviewModal.design?.zones || {
+                    front: { imageUrl: ai3DPreviewModal.imageUrl },
+                  }
+                }
               />
             </div>
 

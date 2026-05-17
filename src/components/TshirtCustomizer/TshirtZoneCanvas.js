@@ -18,6 +18,10 @@ const ZONE_META = [
   { id: "right_sleeve", label: "RIGHT SLEEVE", col: 2, row: 1 },
   { id: "front", label: "FRONT", col: 1, row: 2 },
   { id: "back", label: "BACK", col: 2, row: 2 },
+  { id: "outside", label: "OUTSIDE", col: 1, row: 3 },
+  { id: "inside", label: "INSIDE", col: 2, row: 3 },
+  { id: "front_cover", label: "FRONT COVER", col: 1, row: 4 },
+  { id: "back_cover", label: "BACK COVER", col: 2, row: 4 },
 ];
 
 function ZoneBox({ meta, design, isActive, onSelect, onDesignChange }) {

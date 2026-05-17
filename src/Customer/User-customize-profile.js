@@ -3,6 +3,13 @@ import { useNavigate } from "react-router-dom";
 import "./User-customize-profile.css";
 import { buildApiUrl } from "../config/api";
 
+const syncAvatarToLocalStorage = (avatarUrl) => {
+  if (avatarUrl) {
+    localStorage.setItem('userAvatar', avatarUrl);
+  }
+};
+
+
 function UserCustomizeProfile() {
   const navigate = useNavigate();
 
@@ -13,6 +20,8 @@ function UserCustomizeProfile() {
     phone: "+63",
     address: "",
   });
+
+  const [isEditing, setIsEditing] = useState(false);
 
   const [initialForm, setInitialForm] = useState({
     name: "",
@@ -83,6 +92,7 @@ function UserCustomizeProfile() {
         setForm(loaded);
         setInitialForm(loaded);
         setAvatarPreview(loaded.avatar_url || "");
+        syncAvatarToLocalStorage(loaded.avatar_url || "");
       })
       .catch((err) => {
         console.error(err);
@@ -97,7 +107,8 @@ function UserCustomizeProfile() {
       normalize(form.birthday) !== normalize(initialForm.birthday) ||
       normalize(form.gender) !== normalize(initialForm.gender) ||
       normalize(form.phone) !== normalize(initialForm.phone) ||
-      normalize(form.address) !== normalize(initialForm.address)
+      normalize(form.address) !== normalize(initialForm.address) ||
+      normalize(form.avatar_url) !== normalize(initialForm.avatar_url)
     );
   }, [form, initialForm]);
 
@@ -107,6 +118,12 @@ function UserCustomizeProfile() {
     const birthday = String(form.birthday || "").trim();
 
     if (!name) return "Name is required.";
+
+    const nameParts = name.split(/\s+/);
+    if (nameParts.length < 2) {
+      return "Please provide both first name and surname.";
+    }
+
     if (!/^[A-Za-z.\-\s]+$/.test(name)) {
       return "Name must not contain numbers or special characters.";
     }
@@ -150,7 +167,7 @@ function UserCustomizeProfile() {
       const res = await fetch(buildApiUrl(`/api/user-profile/${userId}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(form), // This now includes avatar_url
       });
 
       const data = await res.json();
@@ -164,7 +181,10 @@ function UserCustomizeProfile() {
       }
 
       showToast("success", "Profile updated!");
+      // Dispatch event to update header
+      window.dispatchEvent(new CustomEvent('avatarUpdated', { detail: { avatarUrl: form.avatar_url } }));
       setInitialForm({ ...form });
+      setIsEditing(false);
     } catch (err) {
       console.error(err);
       setError(err.message || "Error updating profile");
@@ -173,6 +193,7 @@ function UserCustomizeProfile() {
   };
 
   const handleAvatarClick = () => {
+    if (!isEditing) return;
     const inp = document.getElementById("ucp-avatar-input");
     if (inp) inp.click();
   };
@@ -209,22 +230,10 @@ function UserCustomizeProfile() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Upload failed");
 
-      // update preview and form
+      // ONLY update preview and form state - NO SAVING TO BACKEND
       setAvatarPreview(data.url || "");
       setForm((prev) => ({ ...prev, avatar_url: data.url }));
 
-      // try to persist to profile (best-effort)
-      if (userId) {
-        try {
-          await fetch(buildApiUrl(`/api/user-profile/${userId}`), {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...form, avatar_url: data.url }),
-          });
-        } catch (err) {
-          // ignore; we still show uploaded avatar locally
-        }
-      }
     } catch (err) {
       console.error(err);
       setAvatarError(err.message || "Upload failed");
@@ -236,12 +245,17 @@ function UserCustomizeProfile() {
 
   const handleDiscard = () => {
     setShowDiscardModal(false);
+    setIsEditing(false);
     setForm(initialForm);
+    setAvatarPreview(initialForm.avatar_url || ""); // Reset avatar preview to original
   };
 
   const handleBackOrCancel = () => {
-    if (isDirty) {
+    if (isEditing && isDirty) {
       setShowDiscardModal(true);
+    } else if (isEditing && !isDirty) {
+      setIsEditing(false);
+      setForm(initialForm);
     } else {
       navigate(-1);
     }
@@ -255,154 +269,172 @@ function UserCustomizeProfile() {
 
       <div className="ucp-profile-card">
         <div className="ucp-profile-top">
-          <div
-            className="ucp-profile-avatar"
-            onClick={handleAvatarClick}
-            role="button"
-            aria-label="Change avatar"
-          >
-            {avatarPreview ? <img src={avatarPreview} alt="avatar" /> : "👤"}
+          <div className="ucp-profile-avatar-wrapper">
+            <div
+              className="ucp-profile-avatar"
+              onClick={handleAvatarClick}
+              role="button"
+              aria-label={isEditing ? "Change avatar" : ""}
+              style={{ cursor: isEditing ? "pointer" : "default" }}
+            >
+              {avatarPreview ? <img src={avatarPreview} alt="avatar" /> : "👤"}
 
-            <input
-              id="ucp-avatar-input"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              onChange={handleAvatarUpload}
-              style={{ display: "none" }}
-            />
+              {isEditing && (
+                <>
+                  <input
+                    id="ucp-avatar-input"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleAvatarUpload}
+                    style={{ display: "none" }}
+                  />
+                  <div className="ucp-avatar-overlay" aria-hidden>
+                    Edit
+                  </div>
+                </>
+              )}
 
-            <div className="ucp-avatar-overlay" aria-hidden>
-              ✏️ Edit
+              {avatarUploading && (
+                <div className="ucp-avatar-loading">Uploading...</div>
+              )}
             </div>
-
-            {avatarUploading && (
-              <div className="ucp-avatar-loading">Uploading...</div>
-            )}
           </div>
-          <div>
+          <div className="ucp-profile-info">
             <h2 className="ucp-profile-name">{form.name || "Your Name"}</h2>
             <p className="ucp-profile-role">Customer</p>
           </div>
+          {!isEditing && (
+            <button className="ucp-edit-button" onClick={() => setIsEditing(true)}>
+              Edit Profile
+            </button>
+          )}
         </div>
 
-        <div className="ucp-profile-actions">
-          <button className="ucp-cancel-button" onClick={handleBackOrCancel}>
-            Cancel
-          </button>
+        {!isEditing ? (
+          <>
+            <div className="ucp-profile-details">
+              <div className="ucp-detail-row">
+                <label>Name</label>
+                <span>{form.name || "—"}</span>
+              </div>
+              <div className="ucp-detail-row">
+                <label>Birthday</label>
+                <span>{form.birthday || "—"}</span>
+              </div>
+              <div className="ucp-detail-row">
+                <label>Gender</label>
+                <span>{form.gender || "—"}</span>
+              </div>
+              <div className="ucp-detail-row">
+                <label>Phone Number</label>
+                <span>{form.phone || "—"}</span>
+              </div>
+              <div className="ucp-detail-row">
+                <label>Address</label>
+                <span>{form.address || "—"}</span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="ucp-profile-form">
+              <div className="ucp-form-row">
+                <label>Name</label>
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="Enter your full name (first name and surname)"
+                />
+              </div>
 
-          <button
-            className="ucp-save-button"
-            onClick={handleSave}
-            disabled={!isDirty}
-            style={!isDirty ? { opacity: 0.6 } : {}}
-          >
-            Save Changes
-          </button>
-        </div>
+              <div className="ucp-form-row">
+                <label>Birthday</label>
+                <input
+                  type="date"
+                  value={form.birthday}
+                  max="2011-12-31"
+                  onChange={(e) => setForm({ ...form, birthday: e.target.value })}
+                />
+              </div>
 
-        {error && <div className="ucp-message ucp-message-error">{error}</div>}
-        {success && (
-          <div className="ucp-message ucp-message-success">{success}</div>
+              <div className="ucp-form-row">
+                <label>Gender</label>
+                <select
+                  value={form.gender}
+                  onChange={(e) => setForm({ ...form, gender: e.target.value })}
+                >
+                  <option value="">Select...</option>
+                  <option>Female</option>
+                  <option>Male</option>
+                  <option>Prefer not to say</option>
+                  <option>Other</option>
+                </select>
+              </div>
+
+              <div className="ucp-form-row">
+                <label>Phone Number</label>
+                <input
+                  value={form.phone}
+                  inputMode="numeric"
+                  onChange={(e) => {
+                    let val = e.target.value.replace(/[^0-9+]/g, "");
+                    if (!val.startsWith("+63")) val = "+63";
+                    if (val.length > 13) return;
+                    setForm({ ...form, phone: val });
+                  }}
+                  placeholder="+63XXXXXXXXXX"
+                />
+              </div>
+
+              <div className="ucp-form-row ucp-form-row-textarea">
+                <label>Address</label>
+                <textarea
+                  value={form.address}
+                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                  placeholder="House No., Street, Barangay, City, Province"
+                />
+              </div>
+            </div>
+
+            <div className="ucp-profile-actions">
+              <button className="ucp-cancel-button" onClick={() => {
+                if (isDirty) {
+                  setShowDiscardModal(true);
+                } else {
+                  setIsEditing(false);
+                  setForm(initialForm);
+                  setAvatarPreview(initialForm.avatar_url || ""); // Reset avatar preview
+                }
+              }}>
+                Cancel
+              </button>
+              <button className="ucp-save-button" onClick={handleSave}>
+                Save Changes
+              </button>
+            </div>
+          </>
         )}
 
-        <div className="ucp-profile-form">
-          <div className="ucp-form-row">
-            <label>Name</label>
-            <input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Enter your full name"
-            />
-          </div>
-
-          <div className="ucp-form-row">
-            <label>Birthday</label>
-            <input
-              type="date"
-              value={form.birthday}
-              max="2011-12-31"
-              onChange={(e) => setForm({ ...form, birthday: e.target.value })}
-            />
-          </div>
-
-          <div className="ucp-form-row">
-            <label>Gender</label>
-            <select
-              value={form.gender}
-              onChange={(e) => setForm({ ...form, gender: e.target.value })}
-            >
-              <option value="">Select...</option>
-              <option>Female</option>
-              <option>Male</option>
-              <option>Prefer not to say</option>
-              <option>Other</option>
-            </select>
-          </div>
-
-          <div className="ucp-form-row">
-            <label>Phone Number</label>
-            <input
-              value={form.phone}
-              inputMode="numeric"
-              onChange={(e) => {
-                let val = e.target.value.replace(/[^0-9+]/g, "");
-                if (!val.startsWith("+63")) val = "+63";
-                if (val.length > 13) return;
-                setForm({ ...form, phone: val });
-              }}
-              placeholder="+63XXXXXXXXXX"
-            />
-          </div>
-
-          <div className="ucp-form-row ucp-form-row-textarea">
-            <label>Address</label>
-            <textarea
-              value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
-              placeholder="House No., Street, Barangay, City, Province"
-            />
-          </div>
-        </div>
+        {error && <div className="ucp-message ucp-message-error">{error}</div>}
+        {success && <div className="ucp-message ucp-message-success">{success}</div>}
       </div>
 
       {toast.show && (
-        <div
-          className={`ucp-toast ${
-            toast.type === "error" ? "ucp-toast-error" : "ucp-toast-success"
-          }`}
-        >
+        <div className={`ucp-toast ${toast.type === "error" ? "ucp-toast-error" : "ucp-toast-success"}`}>
           {toast.message}
         </div>
       )}
 
       {showDiscardModal && (
-        <div
-          className="ucp-discard-overlay"
-          onClick={() => setShowDiscardModal(false)}
-        >
-          <div
-            className="ucp-discard-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="ucp-discard-overlay" onClick={() => setShowDiscardModal(false)}>
+          <div className="ucp-discard-modal" onClick={(e) => e.stopPropagation()}>
             <h3 className="ucp-discard-title">Discard changes?</h3>
-            <p className="ucp-discard-text">
-              Your unsaved changes will be lost.
-            </p>
-
+            <p className="ucp-discard-text">Your unsaved changes will be lost.</p>
             <div className="ucp-discard-actions">
-              <button
-                type="button"
-                className="ucp-discard-cancel"
-                onClick={() => setShowDiscardModal(false)}
-              >
+              <button type="button" className="ucp-discard-cancel" onClick={() => setShowDiscardModal(false)}>
                 Stay
               </button>
-
-              <button
-                type="button"
-                className="ucp-discard-confirm"
-                onClick={handleDiscard}
-              >
+              <button type="button" className="ucp-discard-confirm" onClick={handleDiscard}>
                 Discard
               </button>
             </div>
