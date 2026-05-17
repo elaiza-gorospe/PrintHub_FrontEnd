@@ -10,6 +10,12 @@ const FLAT_CONFIG = {
   stickers:     { ar: 1.0  },  // square sticker
   hang_tags:    { ar: 0.5  },  // tall/narrow hang tag
   brochures:    { ar: 1.41 },  // A4 folded brochure
+  business_card: { ar: 1.75 },
+  thank_you_card: { ar: 1.75 },
+  poster: { ar: 0.707 },
+  posters: { ar: 0.707 },
+  flyer: { ar: 0.707 },
+  flyers: { ar: 0.707 },
 };
 
 // Zone plane offsets — fraction of box face dimensions
@@ -64,8 +70,14 @@ export default function FlatPreview3D({
           if (!sceneRef.current) return;
           tex.colorSpace = THREE.SRGBColorSpace;
 
-          const pw = w * cfg.sw;
-          const ph = h * cfg.sh;
+          const zoneW = w * cfg.sw;
+          const zoneH = h * cfg.sh;
+          const designX = design.x ?? 10;
+          const designY = design.y ?? 10;
+          const designW = design.w ?? 80;
+          const designH = design.h ?? 80;
+          const pw = zoneW * (designW / 100);
+          const ph = zoneH * (designH / 100);
           const geo = new THREE.PlaneGeometry(pw, ph);
           const mat = new THREE.MeshBasicMaterial({
             map: tex,
@@ -77,8 +89,9 @@ export default function FlatPreview3D({
             polygonOffsetUnits: -4,
           });
           const mesh = new THREE.Mesh(geo, mat);
-          // Place plane on front or back face of the box
-          mesh.position.set(0, 0, cfg.oz * (d / 2 + 0.001));
+          const offsetX = ((designX + designW / 2) / 100 - 0.5) * zoneW;
+          const offsetY = (0.5 - (designY + designH / 2) / 100) * zoneH;
+          mesh.position.set(offsetX, offsetY, cfg.oz * (d / 2 + 0.001));
           mesh.rotation.y = cfg.ry;
           sceneRef.current.add(mesh);
           planeMeshesRef.current.push(mesh);

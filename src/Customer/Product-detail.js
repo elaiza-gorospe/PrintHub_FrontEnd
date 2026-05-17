@@ -18,6 +18,7 @@ import MugCustomizerPanel from "../components/MugCustomizer/MugCustomizerPanel";
 import PosterCustomizerPanel from "../components/PosterCustomizer/PosterCustomizerPanel";
 import FlyerCustomizerPanel from "../components/FlyerCustomizer/FlyerCustomizerPanel";
 import ThankYouCardCustomizerPanel from "../components/ThankYouCardCustomizer/ThankYouCardCustomizerPanel";
+import FlatCustomizerPanel from "../components/FlatCustomizer/FlatCustomizerPanel";
 
 const RECENTLY_VIEWED_KEY = "printhub_recently_viewed_products";
 const RECENTLY_VIEWED_LIMIT = 8;
@@ -69,6 +70,9 @@ function inferCustomizerCategory({ category, name, title }) {
     return "business_card";
   }
   if (label.includes("thank you")) return "thank_you_card";
+  if (label.includes("sticker") || label.includes("label")) return "stickers";
+  if (label.includes("hang tag") || label.includes("hangtag"))
+    return "hang_tags";
   if (label.includes("brochure")) return "brochures";
   if (label.includes("notebook")) return "notebook";
   if (label.includes("jersey")) return "jersey";
@@ -96,6 +100,8 @@ function getCustomizerPanel(category) {
   if (normalized === "poster" || normalized === "posters")
     return PosterCustomizerPanel;
   if (normalized === "thank_you_card") return ThankYouCardCustomizerPanel;
+  if (normalized === "stickers" || normalized === "hang_tags")
+    return FlatCustomizerPanel;
   if (normalized === "cap") return CapCustomizerPanel;
   if (normalized === "jersey" || normalized === "jersery")
     return JerseyCustomizerPanel;
@@ -617,6 +623,62 @@ function ProductDetail() {
                   />
                 ) : product.dbCategory === "mug" ? (
                   <MugCustomizerPanel
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
+                ) : product.dbCategory === "cap" ? (
+                  <CapCustomizerPanel
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
+                ) : product.dbCategory === "thank_you_card" ? (
+                  <ThankYouCardCustomizerPanel
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
+                ) : ["business_card", "calling_card"].includes(product.dbCategory) ? (
+                  <BusinessCardCustomizerPanel
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
+                ) : ["poster", "posters"].includes(product.dbCategory) ? (
+                  <PosterCustomizerPanel
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
+                ) : ["flyer", "flyers"].includes(product.dbCategory) ? (
+                  <FlyerCustomizerPanel
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
+                ) : product.dbCategory === "brochures" ? (
+                  <BrochureCustomizerPanel
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
+                ) : ["stickers", "hang_tags"].includes(product.dbCategory) ? (
+                  <FlatCustomizerPanel
+                    product={product}
+                    activeDesign={activeDesign}
+                    onDesignReady={(meta) => setActiveDesign(meta)}
+                    onClear={() => setActiveDesign(null)}
+                  />
+                ) : ["jersey", "jersery"].includes(product.dbCategory) ? (
+                  <JerseyCustomizerPanel
                     product={product}
                     activeDesign={activeDesign}
                     onDesignReady={(meta) => setActiveDesign(meta)}
