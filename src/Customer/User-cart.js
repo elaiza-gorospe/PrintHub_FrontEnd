@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./User-cart.css";
-import {
-  FaArrowLeft,
-  FaTrash,
-  FaMinus,
-  FaPlus,
-} from "react-icons/fa";
+import { FaArrowLeft, FaTrash, FaMinus, FaPlus } from "react-icons/fa";
 import CheckoutModal from "./CheckoutModal";
 import { useCart } from "../hooks/useCart";
 import { extractNumericPrice } from "../utils/priceUtils";
@@ -46,9 +41,9 @@ function UserCartPage() {
   const userRole = String(storedUser?.role || "").toLowerCase();
   const isCustomer = Boolean(
     storedUser?.id &&
-      userRole !== "admin" &&
-      userRole !== "staff" &&
-      userRole !== "guest",
+    userRole !== "admin" &&
+    userRole !== "staff" &&
+    userRole !== "guest",
   );
   const userId = isCustomer ? parseInt(storedUser.id, 10) : null;
 
@@ -110,34 +105,17 @@ function UserCartPage() {
         <Header />
         <div className="ucart-page">
           <div className="ucart-topbar-alt">
-            <button class="uo-back" type="button" onClick={() => navigate(-1)}>
-              <svg
-                stroke="currentColor"
-                fill="currentColor"
-                stroke-width="0"
-                viewBox="0 0 448 512"
-                height="1em"
-                width="1em"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path>
-              </svg>{" "}
-              Back
+            <button className="uo-back" type="button" onClick={() => navigate(-1)}>
+              <FaArrowLeft /> Back
             </button>
-            <h1 class="uo-title">My Orders</h1>
+            <h1 className="uo-title">My Cart</h1>
           </div>
           <div className="ucart-wrap">
             <div
               className="ucart-card"
               style={{ textAlign: "center", padding: "60px 20px" }}
             >
-              <p
-                style={{
-                  fontSize: "18px",
-                  color: "#666",
-                  marginBottom: "20px",
-                }}
-              >
+              <p style={{ fontSize: "18px", color: "#666", marginBottom: "20px" }}>
                 Your cart is empty
               </p>
               <button
@@ -158,217 +136,92 @@ function UserCartPage() {
     <div>
       <Header />
       <div className="ucart-page">
-        {/* TOP BAR */}
         <div className="ucart-topbar-alt">
-          <button
-            className="ucart-back"
-            type="button"
-            onClick={() => navigate(-1)}
-          >
+          <button className="uo-back" type="button" onClick={() => navigate(-1)}>
             <FaArrowLeft /> Back
           </button>
-
-          <h1>Your Cart</h1>
+          <h1 className="uo-title">My Cart</h1>
         </div>
 
         <div className="ucart-wrap">
-          {/* LEFT: CART ITEMS */}
+          {/* Cart items */}
           <div className="ucart-card">
-            <h2 className="ucart-section-title">Items ({cartItems.length})</h2>
+            <h2 className="ucart-section-title">
+              Cart Items ({cartItems.length})
+            </h2>
 
             {cartItems.map((item) => (
               <div key={item.id} className="ucart-item">
-                <div className="ucart-thumb">
-                  {(() => {
-                    const zoneImgs = Object.values(
-                      item.customizations?.design?.zones || {},
-                    )
-                      .filter((z) => z?.imageUrl)
-                      .map((z) => z.imageUrl);
-                    const fallback =
-                      item.customizations?.design?.generatedImageUrl ||
-                      item.productImage ||
-                      item.images?.[0] ||
-                      item.product?.images?.[0] ||
-                      item.customizations?.design?.sourceAssetUrls?.[0];
-                    const imgs = zoneImgs.length
-                      ? zoneImgs
-                      : fallback
-                        ? [fallback]
-                        : [];
-                    if (!imgs.length) return null;
-                    if (imgs.length === 1) {
-                      return (
-                        <img
-                          src={imgs[0]}
-                          alt={item.title || "Design"}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                            borderRadius: 10,
-                          }}
-                        />
-                      );
-                    }
-                    return (
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gridTemplateRows: "1fr 1fr",
-                          width: "100%",
-                          height: "100%",
-                          borderRadius: 10,
-                          overflow: "hidden",
-                          gap: 1,
-                        }}
-                      >
-                        {imgs.slice(0, 4).map((src, i) => (
-                          <img
-                            key={i}
-                            src={src}
-                            alt={`zone ${i + 1}`}
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                            }}
-                          />
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </div>
-
+                <img
+                  className="ucart-thumb"
+                  src={
+                    item.image ||
+                    item.images?.[0] ||
+                    "https://via.placeholder.com/70"
+                  }
+                  alt={item.name}
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      "https://via.placeholder.com/70";
+                  }}
+                />
                 <div className="ucart-info">
-                  <div className="ucart-name">
-                    {item.title}
-                    {item.customizations?.design && (
-                      <span
-                        style={{
-                          marginLeft: 8,
-                          fontSize: 11,
-                          background: "#455073",
-                          color: "#fff",
-                          borderRadius: 20,
-                          padding: "2px 8px",
-                          fontWeight: 700,
-                          letterSpacing: "0.4px",
-                          verticalAlign: "middle",
-                        }}
-                      >
-                        AI Design
-                      </span>
-                    )}
-                  </div>
-                  <div className="ucart-desc">
-                    {item.desc ||
-                      (item.customizations && (
-                        <>
-                          <div style={{ fontSize: "12px", color: "#666" }}>
-                            Size: {item.customizations.size}
-                          </div>
-                          <div style={{ fontSize: "12px", color: "#666" }}>
-                            {item.customizations.quantity}
-                          </div>
-                          {item.customizations.design?.prompt && (
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "#888",
-                                marginTop: 2,
-                              }}
-                            >
-                              Prompt: "
-                              {item.customizations.design.prompt.slice(0, 60)}
-                              {item.customizations.design.prompt.length > 60
-                                ? "…"
-                                : ""}
-                              "
-                            </div>
-                          )}
-                        </>
-                      ))}
-                  </div>
+                  <div className="ucart-name">{item.name}</div>
+                  {item.customizations && (
+                    <div className="ucart-desc">
+                      {[
+                        item.customizations.size &&
+                          `Size: ${item.customizations.size}`,
+                        item.customizations.material &&
+                          `Material: ${item.customizations.material}`,
+                        item.customizations.finish &&
+                          `Finish: ${item.customizations.finish}`,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </div>
+                  )}
                   <div className="ucart-price">{formatPeso(item.price)}</div>
                 </div>
-
                 <div className="ucart-controls">
                   <div className="ucart-qty">
                     <button
                       className="ucart-qty-btn"
                       type="button"
-                      title="Decrease"
-                      onClick={() => {
-                        const newQty = Math.max(1, item.qty - 1);
-                        updateQty(item.id, newQty);
-                        setEditQtyMap((m) => ({
-                          ...m,
-                          [item.id]: String(newQty),
-                        }));
-                      }}
+                      onClick={() => updateQty(item.id, Math.max(1, item.qty - 1))}
                     >
                       <FaMinus />
                     </button>
-
                     <input
                       className="ucart-qty-num"
                       type="number"
                       min="1"
-                      step="1"
-                      value={editQtyMap[item.id] ?? String(item.qty)}
+                      value={editQtyMap[item.id] ?? item.qty}
                       onChange={(e) => {
-                        const v = e.target.value;
-                        // allow empty string while typing
-                        setEditQtyMap((m) => ({ ...m, [item.id]: v }));
+                        const val = e.target.value;
+                        setEditQtyMap((prev) => ({ ...prev, [item.id]: val }));
                       }}
-                      onBlur={() => {
-                        const raw = editQtyMap[item.id];
-                        const parsed = parseInt(String(raw), 10);
-                        const final =
-                          isNaN(parsed) || parsed < 1 ? 1 : Math.floor(parsed);
-                        updateQty(item.id, final);
-                        setEditQtyMap((m) => ({
-                          ...m,
-                          [item.id]: String(final),
-                        }));
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.currentTarget.blur();
-                        }
-                        if (e.key === "Escape") {
-                          // revert to current item.qty
-                          setEditQtyMap((m) => ({
-                            ...m,
+                      onBlur={(e) => {
+                        const num = parseInt(e.target.value, 10);
+                        if (num >= 1) updateQty(item.id, num);
+                        else
+                          setEditQtyMap((prev) => ({
+                            ...prev,
                             [item.id]: String(item.qty),
                           }));
-                        }
                       }}
                     />
-
                     <button
                       className="ucart-qty-btn"
                       type="button"
-                      title="Increase"
-                      onClick={() => {
-                        const newQty = item.qty + 1;
-                        updateQty(item.id, newQty);
-                        setEditQtyMap((m) => ({
-                          ...m,
-                          [item.id]: String(newQty),
-                        }));
-                      }}
+                      onClick={() => updateQty(item.id, item.qty + 1)}
                     >
                       <FaPlus />
                     </button>
                   </div>
-
                   <button
                     className="ucart-remove"
                     type="button"
-                    title="Remove item"
                     onClick={() => removeItem(item.id)}
                   >
                     <FaTrash />
@@ -378,27 +231,22 @@ function UserCartPage() {
             ))}
           </div>
 
-          {/* RIGHT: SUMMARY */}
+          {/* Order summary */}
           <div className="ucart-summary">
             <h2 className="ucart-section-title">Order Summary</h2>
-
             <div className="ucart-row">
               <span>Subtotal</span>
               <span>{formatPeso(subtotal)}</span>
             </div>
-
             <div className="ucart-row">
               <span>Shipping</span>
-              <span>{formatPeso(shipping)}</span>
+              <span>{shipping > 0 ? formatPeso(shipping) : "Free"}</span>
             </div>
-
             <div className="ucart-divider" />
-
             <div className="ucart-total">
               <span>Total</span>
               <span>{formatPeso(total)}</span>
             </div>
-
             <button
               className="ucart-checkout"
               type="button"
@@ -406,7 +254,6 @@ function UserCartPage() {
             >
               Proceed to Checkout
             </button>
-
             <button
               className="ucart-continue"
               type="button"
@@ -417,30 +264,26 @@ function UserCartPage() {
           </div>
         </div>
 
-        {/* CHECKOUT MODAL */}
+        {/* Checkout modal */}
         {showCheckout && (
           <CheckoutModal
-            userId={userId}
             cartItems={cartItems}
             total={total}
-            shipping={shipping}
-            subtotal={subtotal}
+            userId={userId}
             onClose={() => setShowCheckout(false)}
-            onSuccess={handleCheckoutComplete}
+            onComplete={handleCheckoutComplete}
           />
         )}
 
+        {/* Auth prompt modal */}
         {showCheckoutAuthModal && (
-          <div className="ucart-auth-modal-overlay" role="presentation">
-            <div
-              className="ucart-auth-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="ucart-auth-modal-title"
-            >
-              <h2 id="ucart-auth-modal-title">Checkout requires an account</h2>
-              <p>Log in or register to proceed to checkout.</p>
-
+          <div className="ucart-auth-modal-overlay">
+            <div className="ucart-auth-modal">
+              <h2>Sign in to checkout</h2>
+              <p>
+                You need an account to place an order. Register or log in to
+                continue.
+              </p>
               <div className="ucart-auth-modal-actions">
                 <button
                   className="ucart-auth-modal-cancel"
@@ -454,7 +297,7 @@ function UserCartPage() {
                   type="button"
                   onClick={handleCheckoutAuthConfirm}
                 >
-                  Register
+                  Register / Login
                 </button>
               </div>
             </div>

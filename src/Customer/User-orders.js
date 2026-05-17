@@ -38,7 +38,7 @@ function UserOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeFilter, setActiveFilter] = useState("all");
   const [cancellingId, setCancellingId] = useState(null);
   const [payingId, setPayingId] = useState(null);
   const [receipt, setReceipt] = useState(null);
@@ -93,9 +93,9 @@ function UserOrders() {
   }, [navigate]);
 
   const filteredOrders = useMemo(() => {
-    if (activeTab === "all") return orders;
-    return orders.filter((order) => getOrderBucket(order) === activeTab);
-  }, [activeTab, orders]);
+    if (activeFilter === "all") return orders;
+    return orders.filter((order) => getOrderBucket(order) === activeFilter);
+  }, [activeFilter, orders]);
 
   const tabCounts = useMemo(() => {
     return ORDER_TABS.reduce((acc, tab) => {
@@ -405,8 +405,8 @@ function UserOrders() {
             <button
               key={tab.key}
               type="button"
-              className={`uo-tab ${activeTab === tab.key ? "active" : ""}`}
-              onClick={() => setActiveTab(tab.key)}
+              className={`uo-tab ${activeFilter === tab.key ? "active" : ""}`}
+              onClick={() => setActiveFilter(tab.key)}
             >
               {tab.label}
               <span>{tabCounts[tab.key] || 0}</span>

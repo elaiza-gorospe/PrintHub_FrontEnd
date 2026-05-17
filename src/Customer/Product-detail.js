@@ -25,7 +25,9 @@ const RECENTLY_VIEWED_LIMIT = 8;
 function formatRecentPrice(price) {
   if (price === null || price === undefined || price === "") return "";
   const numeric = Number(price);
-  return Number.isFinite(numeric) ? `₱${numeric.toLocaleString()}` : String(price);
+  return Number.isFinite(numeric)
+    ? `₱${numeric.toLocaleString()}`
+    : String(price);
 }
 
 const DEFAULT_PRODUCT_ZONES = {
@@ -72,7 +74,11 @@ function inferCustomizerCategory({ category, name, title }) {
   if (label.includes("jersey")) return "jersey";
   if (label.includes("cap") || label.includes("hat")) return "cap";
   if (label.includes("mug") || label.includes("cup")) return "mug";
-  if (label.includes("shirt") || label.includes("t-shirt") || label.includes("tshirt")) {
+  if (
+    label.includes("shirt") ||
+    label.includes("t-shirt") ||
+    label.includes("tshirt")
+  ) {
     return "tshirt";
   }
   return rawCategory || "other";
@@ -85,11 +91,14 @@ function getCustomizerPanel(category) {
     return BusinessCardCustomizerPanel;
   }
   if (normalized === "brochures") return BrochureCustomizerPanel;
-  if (normalized === "flyer" || normalized === "flyers") return FlyerCustomizerPanel;
-  if (normalized === "poster" || normalized === "posters") return PosterCustomizerPanel;
+  if (normalized === "flyer" || normalized === "flyers")
+    return FlyerCustomizerPanel;
+  if (normalized === "poster" || normalized === "posters")
+    return PosterCustomizerPanel;
   if (normalized === "thank_you_card") return ThankYouCardCustomizerPanel;
   if (normalized === "cap") return CapCustomizerPanel;
-  if (normalized === "jersey" || normalized === "jersery") return JerseyCustomizerPanel;
+  if (normalized === "jersey" || normalized === "jersery")
+    return JerseyCustomizerPanel;
   if (normalized === "mug") return MugCustomizerPanel;
   return TshirtCustomizerPanel;
 }
@@ -197,7 +206,12 @@ function ProductDetail() {
     try {
       const parsed = JSON.parse(localStorage.getItem("user") || "null");
       const role = String(parsed?.role || "").toLowerCase();
-      if (!parsed?.id || role === "admin" || role === "staff" || role === "guest") {
+      if (
+        !parsed?.id ||
+        role === "admin" ||
+        role === "staff" ||
+        role === "guest"
+      ) {
         return null;
       }
       return parsed;
@@ -268,7 +282,9 @@ function ProductDetail() {
       const recentProduct = {
         id: product.id,
         name: product.title,
-        images: product.gallery?.length ? product.gallery : product.images || [],
+        images: product.gallery?.length
+          ? product.gallery
+          : product.images || [],
         image: product.image,
         price: product.price,
         viewedAt: Date.now(),
@@ -606,13 +622,6 @@ function ProductDetail() {
                     onDesignReady={(meta) => setActiveDesign(meta)}
                     onClear={() => setActiveDesign(null)}
                   />
-                ) : ["calling_card", "banners", "stickers", "hang_tags", "brochures"].includes(product.dbCategory) ? (
-                  <FlatCustomizerPanel
-                    product={product}
-                    activeDesign={activeDesign}
-                    onDesignReady={(meta) => setActiveDesign(meta)}
-                    onClear={() => setActiveDesign(null)}
-                  />
                 ) : (
                   <TshirtCustomizerPanel
                     product={product}
@@ -620,8 +629,7 @@ function ProductDetail() {
                     onDesignReady={(meta) => setActiveDesign(meta)}
                     onClear={() => setActiveDesign(null)}
                   />
-                  );
-                })()}
+                )}
               </div>
             )}
 
@@ -629,10 +637,12 @@ function ProductDetail() {
               <div className="pd-order-card">
                 <div className="pd-order-head">
                   <span>Ready to print</span>
-                  <strong>{formatPrice(
-                    extractNumericPrice(selectedQty?.price) +
-                    extractNumericPrice(selectedShipping?.price),
-                  )}</strong>
+                  <strong>
+                    {formatPrice(
+                      extractNumericPrice(selectedQty?.price) +
+                        extractNumericPrice(selectedShipping?.price),
+                    )}
+                  </strong>
                 </div>
 
                 <div className="pd-order-details">
@@ -868,8 +878,9 @@ function ProductDetail() {
                   product.quantities.map((qty) => (
                     <label
                       key={qty.label}
-                      className={`pd-line-option pd-price-option ${selectedQty?.label === qty.label ? "selected" : ""
-                        }`}
+                      className={`pd-line-option pd-price-option ${
+                        selectedQty?.label === qty.label ? "selected" : ""
+                      }`}
                     >
                       <input
                         type="radio"
@@ -889,8 +900,9 @@ function ProductDetail() {
                 {product.shipping.map((ship) => (
                   <label
                     key={ship.label}
-                    className={`pd-line-option pd-price-option ${selectedShipping?.label === ship.label ? "selected" : ""
-                      }`}
+                    className={`pd-line-option pd-price-option ${
+                      selectedShipping?.label === ship.label ? "selected" : ""
+                    }`}
                   >
                     <input
                       type="radio"
@@ -1144,7 +1156,6 @@ function ProductDetail() {
               </form>
             </section>
           )}
-
         </div>
 
         {/* Mobile sticky Add to Cart — sits above bottom nav */}
@@ -1158,11 +1169,14 @@ function ProductDetail() {
               Add to Cart
             </button>
           </div>
+        )}
         {recentlyViewed.length > 0 && (
           <section className="pd-recently-viewed">
             <div className="pd-recently-head">
               <h2>Your recently viewed items</h2>
-              <p>Products you opened earlier will stay here for quick access.</p>
+              <p>
+                Products you opened earlier will stay here for quick access.
+              </p>
             </div>
             <div className="pd-recently-grid">
               {recentlyViewed.slice(0, 4).map((item) => {
