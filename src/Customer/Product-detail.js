@@ -18,6 +18,7 @@ import MugCustomizerPanel from "../components/MugCustomizer/MugCustomizerPanel";
 import PosterCustomizerPanel from "../components/PosterCustomizer/PosterCustomizerPanel";
 import FlyerCustomizerPanel from "../components/FlyerCustomizer/FlyerCustomizerPanel";
 import ThankYouCardCustomizerPanel from "../components/ThankYouCardCustomizer/ThankYouCardCustomizerPanel";
+import AppModal from "../components/AppModal";
 
 const RECENTLY_VIEWED_KEY = "printhub_recently_viewed_products";
 const RECENTLY_VIEWED_LIMIT = 8;
@@ -187,6 +188,7 @@ function ProductDetail() {
   const [quoteError, setQuoteError] = useState("");
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const [noticeModal, setNoticeModal] = useState(null);
 
   // AI Builder
   const [activeDesign, setActiveDesign] = useState(null); // designMeta | null
@@ -364,7 +366,11 @@ function ProductDetail() {
 
   const handleAddToCart = () => {
     if (!selectedQty || !selectedShipping) {
-      alert("Please select quantity and shipping before adding to cart.");
+      setNoticeModal({
+        title: "Complete your options",
+        message: "Please select quantity and shipping before adding to cart.",
+        tone: "info",
+      });
       return;
     }
 
@@ -1125,6 +1131,13 @@ function ProductDetail() {
           </section>
         )}
       </div>
+      <AppModal
+        open={Boolean(noticeModal)}
+        title={noticeModal?.title}
+        message={noticeModal?.message}
+        tone={noticeModal?.tone}
+        onConfirm={() => setNoticeModal(null)}
+      />
     </div>
   );
 }

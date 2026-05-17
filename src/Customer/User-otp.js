@@ -8,11 +8,13 @@ import {
 } from "react-icons/fa";
 import "./User-otp.css";
 import { buildApiUrl } from "../config/api";
+import AppModal from "../components/AppModal";
 
 function UserOtpPage() {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -88,8 +90,7 @@ function UserOtpPage() {
 
       localStorage.removeItem("pending_registration");
 
-      alert("Account verified successfully!");
-      navigate("/user-login");
+      setSuccessModal(true);
     } catch (err) {
       setError("Network error");
     } finally {
@@ -168,6 +169,13 @@ function UserOtpPage() {
           Didn't receive the code? Check your spam folder.
         </div>
       </div>
+      <AppModal
+        open={successModal}
+        title="Account verified"
+        message="Your PMG account is ready. Please login to continue."
+        tone="success"
+        onConfirm={() => navigate("/user-login")}
+      />
     </div>
   );
 }

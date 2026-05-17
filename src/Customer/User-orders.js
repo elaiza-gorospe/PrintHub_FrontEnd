@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import { FaArrowLeft } from "react-icons/fa";
 import { buildApiUrl } from "../config/api";
 import { Capacitor } from "@capacitor/core";
+import AppModal from "../components/AppModal";
 
 const ORDER_TABS = [
   { key: "all", label: "All" },
@@ -44,6 +45,8 @@ function UserOrders() {
   const [complaintReason, setComplaintReason] = useState("");
   const [complaintDetails, setComplaintDetails] = useState("");
   const [submittingComplaint, setSubmittingComplaint] = useState(false);
+  const [noticeModal, setNoticeModal] = useState(null);
+  const [cancelTargetId, setCancelTargetId] = useState(null);
 
   const currentUser = useMemo(() => {
     try {
@@ -97,8 +100,8 @@ function UserOrders() {
     }, {});
   }, [orders]);
 
-  const handleCancelOrder = async (orderId) => {
-    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+  const performCancelOrder = async (orderId) => {
+    setCancelTargetId(null);
     setCancellingId(orderId);
     try {
       const res = await fetch(buildApiUrl(`/api/orders/${orderId}`), {
@@ -111,11 +114,24 @@ function UserOrders() {
       setOrders((prev) =>
         prev.map((o) => (o.id === orderId ? { ...o, status: "cancelled" } : o)),
       );
+      setNoticeModal({
+        title: "Order cancelled",
+        message: "Your order has been cancelled.",
+        tone: "success",
+      });
     } catch (err) {
-      alert(err.message || "Could not cancel order. Please try again.");
+      setNoticeModal({
+        title: "Could not cancel order",
+        message: err.message || "Please try again.",
+        tone: "danger",
+      });
     } finally {
       setCancellingId(null);
     }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    setCancelTargetId(orderId);
   };
 
   const handlePayNow = async (order) => {
@@ -134,7 +150,11 @@ function UserOrders() {
         throw new Error(data.message || "Failed to create payment session");
       window.location.assign(data.checkout_url);
     } catch (err) {
-      alert(err.message || "Could not initiate payment. Please try again.");
+      setNoticeModal({
+        title: "Payment could not start",
+        message: err.message || "Could not initiate payment. Please try again.",
+        tone: "danger",
+      });
       setPayingId(null);
     }
   };
@@ -146,7 +166,11 @@ function UserOrders() {
       if (!res.ok) throw new Error(data.message || "Failed to load receipt");
       setReceipt(data);
     } catch (err) {
-      alert(err.message || "Could not load e-receipt.");
+      setNoticeModal({
+        title: "Receipt unavailable",
+        message: err.message || "Could not load e-receipt.",
+        tone: "danger",
+      });
     }
   };
 
@@ -179,11 +203,17 @@ function UserOrders() {
       setComplaintOrder(null);
       setComplaintReason("");
       setComplaintDetails("");
-      alert(
-        `${data.message}. Mock email: ${data.mockEmail?.subject || "received"}`,
-      );
+      setNoticeModal({
+        title: "Return request submitted",
+        message: `${data.message}. Mock email: ${data.mockEmail?.subject || "received"}`,
+        tone: "success",
+      });
     } catch (err) {
-      alert(err.message || "Could not submit return complaint.");
+      setNoticeModal({
+        title: "Could not submit return",
+        message: err.message || "Could not submit return complaint.",
+        tone: "danger",
+      });
     } finally {
       setSubmittingComplaint(false);
     }
@@ -512,6 +542,25 @@ function UserOrders() {
           </form>
         </div>
       )}
+
+      <AppModal
+        open={Boolean(cancelTargetId)}
+        title="Cancel this order?"
+        message="This will mark the order as cancelled. You can place a new order anytime."
+        tone="danger"
+        confirmText="Cancel Order"
+        cancelText="Keep Order"
+        onCancel={() => setCancelTargetId(null)}
+        onConfirm={() => performCancelOrder(cancelTargetId)}
+      />
+
+      <AppModal
+        open={Boolean(noticeModal)}
+        title={noticeModal?.title}
+        message={noticeModal?.message}
+        tone={noticeModal?.tone}
+        onConfirm={() => setNoticeModal(null)}
+      />
     </>
   );
 }

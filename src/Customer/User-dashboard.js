@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './User-dashboard.css';
+import AppModal from '../components/AppModal';
 
 function CustomerDashboard() {
     const navigate = useNavigate();
@@ -10,6 +11,7 @@ function CustomerDashboard() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
+    const [noticeModal, setNoticeModal] = useState(null);
 
     // swipe tracking
     let touchStartX = 0;
@@ -80,11 +82,11 @@ function CustomerDashboard() {
         setIsCollapsed(false);
         setIsMobileOpen(false);
 
-        setTimeout(() => {
-            navigate('/');
-        }, 100);
-
-        alert('You have been logged out successfully!');
+        setNoticeModal({
+            title: 'Logged out',
+            message: 'You have been logged out successfully.',
+            tone: 'success',
+        });
     };
 
     // swipe handlers
@@ -296,6 +298,16 @@ function CustomerDashboard() {
                     </div>
                 </div>
             </main>
+            <AppModal
+                open={Boolean(noticeModal)}
+                title={noticeModal?.title}
+                message={noticeModal?.message}
+                tone={noticeModal?.tone}
+                onConfirm={() => {
+                    setNoticeModal(null);
+                    navigate('/');
+                }}
+            />
         </div>
     );
 }

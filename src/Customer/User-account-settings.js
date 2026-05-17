@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./User-account-settings.css";
 import { buildApiUrl } from "../config/api";
+import AppModal from "../components/AppModal";
 
 function UserAccountSettings() {
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState("notifications");
+  const [noticeModal, setNoticeModal] = useState(null);
 
   const menuItems = [
     { id: "notifications", label: "Notifications" },
@@ -69,8 +71,12 @@ function UserAccountSettings() {
         .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
 
-    setTimeout(() => navigate("/user-login"), 100);
-    alert("You have been logged out successfully!");
+    setNoticeModal({
+      title: "Logged out",
+      message: "You have been logged out successfully.",
+      tone: "success",
+      afterClose: () => navigate("/user-login"),
+    });
   };
 
   return (
@@ -320,7 +326,13 @@ function UserAccountSettings() {
                 <button
                   className="us-danger-btn"
                   type="button"
-                  onClick={() => alert("Deactivate (connect to backend later)")}
+                  onClick={() =>
+                    setNoticeModal({
+                      title: "Deactivate account",
+                      message: "Deactivate account will be connected to the backend later.",
+                      tone: "info",
+                    })
+                  }
                 >
                   Deactivate
                 </button>
@@ -334,7 +346,13 @@ function UserAccountSettings() {
                 <button
                   className="us-danger-btn"
                   type="button"
-                  onClick={() => alert("Delete (connect to backend later)")}
+                  onClick={() =>
+                    setNoticeModal({
+                      title: "Delete account",
+                      message: "Delete account will be connected to the backend later.",
+                      tone: "danger",
+                    })
+                  }
                 >
                   Delete Account
                 </button>
@@ -343,6 +361,17 @@ function UserAccountSettings() {
           )}
         </div>
       </main>
+      <AppModal
+        open={Boolean(noticeModal)}
+        title={noticeModal?.title}
+        message={noticeModal?.message}
+        tone={noticeModal?.tone}
+        onConfirm={() => {
+          const afterClose = noticeModal?.afterClose;
+          setNoticeModal(null);
+          if (afterClose) afterClose();
+        }}
+      />
     </div>
   );
 }

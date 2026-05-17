@@ -6,6 +6,7 @@ import {
   FaTrash,
   FaMinus,
   FaPlus,
+  FaShoppingBag,
 } from "react-icons/fa";
 import CheckoutModal from "./CheckoutModal";
 import { useCart } from "../hooks/useCart";
@@ -109,37 +110,25 @@ function UserCartPage() {
       <div>
         <Header />
         <div className="ucart-page">
+          <div className="ucart-moving-bg" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
           <div className="ucart-topbar-alt">
-            <button class="uo-back" type="button" onClick={() => navigate(-1)}>
-              <svg
-                stroke="currentColor"
-                fill="currentColor"
-                stroke-width="0"
-                viewBox="0 0 448 512"
-                height="1em"
-                width="1em"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path>
-              </svg>{" "}
+            <button className="ucart-back" type="button" onClick={() => navigate(-1)}>
+              <FaArrowLeft />
               Back
             </button>
-            <h1 class="uo-title">My Orders</h1>
+            <h1 className="ucart-empty-title">My Cart</h1>
           </div>
-          <div className="ucart-wrap">
-            <div
-              className="ucart-card"
-              style={{ textAlign: "center", padding: "60px 20px" }}
-            >
-              <p
-                style={{
-                  fontSize: "18px",
-                  color: "#666",
-                  marginBottom: "20px",
-                }}
-              >
-                Your cart is empty
-              </p>
+          <div className="ucart-empty-wrap">
+            <div className="ucart-empty-card">
+              <div className="ucart-empty-icon">
+                <FaShoppingBag />
+              </div>
+              <h2>Your cart is empty</h2>
+              <p>Start adding products to your cart and they will appear here.</p>
               <button
                 className="ucart-continue"
                 type="button"
@@ -158,6 +147,11 @@ function UserCartPage() {
     <div>
       <Header />
       <div className="ucart-page">
+        <div className="ucart-moving-bg" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
         {/* TOP BAR */}
         <div className="ucart-topbar-alt">
           <button

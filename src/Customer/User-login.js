@@ -4,6 +4,7 @@ import "./User-login.css";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import backgroundImage from "../assets/images/pmg-image.jpg";
 import { buildApiUrl } from "../config/api";
+import AppModal from "../components/AppModal";
 
 function UserLoginPage() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ function UserLoginPage() {
   const [showReactivateModal, setShowReactivateModal] = useState(false);
   const [reactivateOtp, setReactivateOtp] = useState("");
   const [reactivateMsg, setReactivateMsg] = useState("");
+  const [noticeModal, setNoticeModal] = useState(null);
 
   const blockClipboard = (e) => {
     e.preventDefault();
@@ -147,7 +149,11 @@ function UserLoginPage() {
       setReactivateMsg("");
       setError("");
 
-      alert("Account reactivated! Please login again.");
+      setNoticeModal({
+        title: "Account reactivated",
+        message: "Please login again.",
+        tone: "success",
+      });
     } catch (e) {
       setError("Network error");
     }
@@ -155,16 +161,34 @@ function UserLoginPage() {
 
   return (
     <div className="user-login-container">
-      <button className="back-button" onClick={() => navigate("/")}>
-        Back
+      <div className="auth-ink-drops" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
+
+      <button
+        className="back-button auth-back-button"
+        onClick={() => {
+          if (window.history.length > 1) navigate(-1);
+          else navigate("/");
+        }}
+      >
+        ← Back
       </button>
 
       <div className="login-split">
         <div className="login-form-section">
           <div className="login-card">
+            <div className="auth-mini-brand">
+              <span>P</span>
+              <strong>PrintHub</strong>
+            </div>
             <div className="login-header">
-              <h1>Login</h1>
-              <p>Sign in to your account</p>
+              <h1>Welcome Back</h1>
+              <p>Sign in and keep your print orders moving.</p>
             </div>
 
             {error && <div className="error-message">{error}</div>}
@@ -232,9 +256,13 @@ function UserLoginPage() {
             <div className="login-footer">
               <p>
                 Don't have an account?{" "}
-                <a onClick={() => navigate("/user-register")}>
+                <button
+                  type="button"
+                  className="auth-text-link"
+                  onClick={() => navigate("/user-register")}
+                >
                   Create one here
-                </a>
+                </button>
               </p>
             </div>
           </div>
@@ -247,7 +275,23 @@ function UserLoginPage() {
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
-        />
+        >
+          <div className="auth-visual-card">
+            <span>PMG PRINTING HOUSE</span>
+            <h2>Print-ready ideas, made local.</h2>
+            <p>
+              Custom shirts, signage, paper prints, IDs, mugs, machines, and
+              supplies in one hands-on printing shop.
+            </p>
+            <div className="auth-color-row" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
+          </div>
+        </div>
       </div>
 
       {showForgotModal && (
@@ -322,6 +366,14 @@ function UserLoginPage() {
           </div>
         </div>
       )}
+
+      <AppModal
+        open={Boolean(noticeModal)}
+        title={noticeModal?.title}
+        message={noticeModal?.message}
+        tone={noticeModal?.tone}
+        onConfirm={() => setNoticeModal(null)}
+      />
     </div>
   );
 }
