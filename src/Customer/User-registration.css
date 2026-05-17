@@ -173,6 +173,29 @@
   box-shadow: 0 0 0 4px rgba(77, 88, 124, 0.12);
 }
 
+.form-group.field-missing label {
+  color: #9f1d1d;
+}
+
+.form-group.field-missing input {
+  border-color: #c21111;
+  background: #fff7f7;
+  box-shadow: 0 0 0 4px rgba(194, 17, 17, 0.12);
+}
+
+.form-group.field-missing::after {
+  content: "Required";
+  position: absolute;
+  right: 10px;
+  top: 2px;
+  color: #9f1d1d;
+  background: #ffe1e1;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .form-group input::placeholder {
   color: #999;
 }

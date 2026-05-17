@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -34,6 +34,15 @@ import UserPasswordSecurityPage from "./Customer/User-password-security";
 import ProductDetail from "./Customer/Product-detail";
 import { buildApiUrl } from "./config/api";
 import PrintHubChatbot from './components/PrintHubChatbot';
+
+const RECENTLY_VIEWED_KEY = "printhub_recently_viewed_products";
+const fallbackProductImage = "https://via.placeholder.com/300x200?text=No+Image";
+
+function formatHomePrice(price) {
+  if (price === null || price === undefined || price === "") return "";
+  const numeric = Number(price);
+  return Number.isFinite(numeric) ? `₱${numeric.toLocaleString()}` : String(price);
+}
 
 // ✅ PROTECTED ROUTE - Only admins and staff can access
 function ProtectedAdminRoute({ children }) {
@@ -238,10 +247,184 @@ function NavbarComponent() {
   );
 }
 
+function HomeProductRail({ title, subtitle, products, emptyText, navigate }) {
+  const [startIndex, setStartIndex] = useState(0);
+  const visibleCount = 4;
+  const canMove = products.length > visibleCount;
+  const visibleProducts = useMemo(() => {
+    if (products.length <= visibleCount) return products;
+    return Array.from({ length: visibleCount }, (_, offset) => {
+      const index = (startIndex + offset) % products.length;
+      return products[index];
+    });
+  }, [products, startIndex]);
+
+  useEffect(() => {
+    setStartIndex(0);
+  }, [products.length]);
+
+  const moveRail = (direction) => {
+    if (!canMove) return;
+    setStartIndex((current) =>
+      direction === "next"
+        ? (current + 1) % products.length
+        : (current - 1 + products.length) % products.length,
+    );
+  };
+
+  return (
+    <div className="home-product-rail">
+      <div className="home-rail-heading">
+        <div>
+          <h3>{title}</h3>
+          {subtitle && <p>{subtitle}</p>}
+        </div>
+        {canMove && (
+          <div className="home-rail-controls" aria-label={`${title} controls`}>
+            <button type="button" onClick={() => moveRail("prev")} aria-label="Previous products">
+              ‹
+            </button>
+            <button type="button" onClick={() => moveRail("next")} aria-label="Next products">
+              ›
+            </button>
+          </div>
+        )}
+      </div>
+
+      {products.length === 0 ? (
+        <p className="home-rail-empty">{emptyText}</p>
+      ) : (
+        <div className="home-rail-window">
+          {visibleProducts.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => navigate(`/product/${item.id}`)}
+              className="product-card"
+            >
+              <div className="product-card-media">
+                <img
+                  src={item.images?.[0] || item.image || fallbackProductImage}
+                  alt={item.name}
+                  onError={(e) => {
+                    e.target.src = fallbackProductImage;
+                  }}
+                />
+              </div>
+              <div className="product-card-title">{item.name}</div>
+              {formatHomePrice(item.price) ? (
+                <div className="product-card-price">From {formatHomePrice(item.price)}</div>
+              ) : null}
+              <div className="product-card-action">View details</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BestSellerCarousel({ products, navigate }) {
+  const bestSellers = useMemo(() => products.slice(0, 4), [products]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeProduct = bestSellers[activeIndex] || null;
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [bestSellers.length]);
+
+  if (!activeProduct) return null;
+
+  const moveSlide = (direction) => {
+    setActiveIndex((current) =>
+      direction === "next"
+        ? (current + 1) % bestSellers.length
+        : (current - 1 + bestSellers.length) % bestSellers.length,
+    );
+  };
+
+  return (
+    <section className="content-section bestseller-section reveal-on-scroll">
+      <div className="bestseller-copy">
+        <span>Top 4 Best Sellers</span>
+        <h2>Customer favorites ready for your next print run.</h2>
+        <p>
+          Browse PMG's most requested products, compare the quick notes, then
+          jump straight to the product page when one fits your order.
+        </p>
+      </div>
+
+      <div className="bestseller-carousel">
+        <button
+          type="button"
+          className="bestseller-arrow"
+          onClick={() => moveSlide("prev")}
+          aria-label="Previous best seller"
+        >
+          ‹
+        </button>
+
+        <div className="bestseller-card">
+          <div className="bestseller-image">
+            <img
+              src={activeProduct.images?.[0] || fallbackProductImage}
+              alt={activeProduct.name}
+              onError={(e) => {
+                e.target.src = fallbackProductImage;
+              }}
+            />
+          </div>
+          <div className="bestseller-info">
+            <div className="bestseller-rank">Best seller #{activeIndex + 1}</div>
+            <h3>{activeProduct.name}</h3>
+            <p>
+              A reliable pick for fast custom printing, everyday branding, and
+              polished customer-ready output.
+            </p>
+            <div className="bestseller-meta">
+              <span>{activeProduct.stock ? `${activeProduct.stock} in stock` : "Made to order"}</span>
+              {formatHomePrice(activeProduct.price) ? <span>Starts at {formatHomePrice(activeProduct.price)}</span> : null}
+            </div>
+            <button
+              type="button"
+              className="bestseller-button"
+              onClick={() => navigate(`/product/${activeProduct.id}`)}
+            >
+              View Product
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="bestseller-arrow"
+          onClick={() => moveSlide("next")}
+          aria-label="Next best seller"
+        >
+          ›
+        </button>
+      </div>
+
+      <div className="bestseller-dots">
+        {bestSellers.map((item, index) => (
+          <button
+            key={item.id}
+            type="button"
+            className={activeIndex === index ? "active" : ""}
+            onClick={() => setActiveIndex(index)}
+            aria-label={`Show ${item.name}`}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 /* ---------- HOME ---------- */
 function HomePage() {
   const location = useLocation();
   const [products, setProducts] = useState([]);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [productsError, setProductsError] = useState(null);
   const navigate = useNavigate();
@@ -273,6 +456,28 @@ function HomePage() {
       if (el) el.scrollIntoView({ behavior: "smooth" });
     }
   }, [location]);
+
+  useEffect(() => {
+    const loadRecentlyViewed = () => {
+      try {
+        const viewed = JSON.parse(
+          localStorage.getItem(RECENTLY_VIEWED_KEY) || "[]",
+        );
+        setRecentlyViewed(Array.isArray(viewed) ? viewed.slice(0, 8) : []);
+      } catch {
+        setRecentlyViewed([]);
+      }
+    };
+
+    loadRecentlyViewed();
+    window.addEventListener("focus", loadRecentlyViewed);
+    window.addEventListener("storage", loadRecentlyViewed);
+
+    return () => {
+      window.removeEventListener("focus", loadRecentlyViewed);
+      window.removeEventListener("storage", loadRecentlyViewed);
+    };
+  }, [location.pathname]);
 
   // Fetch home product list (minimal cards)
   useEffect(() => {
@@ -378,54 +583,49 @@ function HomePage() {
           </div>
         </section>
 
+        <BestSellerCarousel products={products} navigate={navigate} />
+
         {/* ✅ PRODUCT CATALOG */}
         <section className="content-section reveal-on-scroll">
           <h2>Product Catalog</h2>
           <p>Discover our bestselling print essentials for your business.</p>
 
-          <div className="product-grid">
-            {loadingProducts ? (
-              <p style={{ padding: "20px", textAlign: "center" }}>
-                Loading products...
-              </p>
-            ) : productsError ? (
-              <p
-                style={{
-                  padding: "20px",
-                  textAlign: "center",
-                  color: "#e74c3c",
-                }}
-              >
-                {productsError}
-              </p>
-            ) : (
-              products.map((item) => {
-                const fallbackImage =
-                  "https://via.placeholder.com/300x200?text=No+Image";
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => navigate(`/product/${item.id}`)}
-                    className="product-card"
-                  >
-                    <div className="product-card-media">
-                      <img
-                        src={item.images?.[0] || fallbackImage}
-                        alt={item.name}
-                        onError={(e) => {
-                          e.target.src = fallbackImage;
-                        }}
-                      />
-                    </div>
-                    <div className="product-card-title">{item.name}</div>
-                    <div className="product-card-action">View details</div>
-                  </button>
-                );
-              })
-            )}
-          </div>
+          {loadingProducts ? (
+            <p style={{ padding: "20px", textAlign: "center" }}>
+              Loading products...
+            </p>
+          ) : productsError ? (
+            <p
+              style={{
+                padding: "20px",
+                textAlign: "center",
+                color: "#e74c3c",
+              }}
+            >
+              {productsError}
+            </p>
+          ) : (
+            <HomeProductRail
+              title="Explore all categories"
+              subtitle="Tap the arrows to browse without a long page scroll."
+              products={products}
+              emptyText="No products available yet."
+              navigate={navigate}
+            />
+          )}
         </section>
+
+        {recentlyViewed.length > 0 && (
+          <section className="content-section reveal-on-scroll">
+            <HomeProductRail
+              title="Your Recently Viewed Items"
+              subtitle="Pick up where you left off."
+              products={recentlyViewed}
+              emptyText="Viewed products will appear here."
+              navigate={navigate}
+            />
+          </section>
+        )}
 
         {/* ✅ ABOUT */}
         <section className="content-section reveal-on-scroll" id="about">

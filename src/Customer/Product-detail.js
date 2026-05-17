@@ -19,6 +19,15 @@ import PosterCustomizerPanel from "../components/PosterCustomizer/PosterCustomiz
 import FlyerCustomizerPanel from "../components/FlyerCustomizer/FlyerCustomizerPanel";
 import ThankYouCardCustomizerPanel from "../components/ThankYouCardCustomizer/ThankYouCardCustomizerPanel";
 
+const RECENTLY_VIEWED_KEY = "printhub_recently_viewed_products";
+const RECENTLY_VIEWED_LIMIT = 8;
+
+function formatRecentPrice(price) {
+  if (price === null || price === undefined || price === "") return "";
+  const numeric = Number(price);
+  return Number.isFinite(numeric) ? `₱${numeric.toLocaleString()}` : String(price);
+}
+
 const DEFAULT_PRODUCT_ZONES = {
   notebook: ["front_cover", "back_cover"],
   tshirt: ["front", "back", "left_sleeve", "right_sleeve"],
@@ -109,6 +118,7 @@ function mapApiProduct(data) {
     title: data.name,
     image: data.images?.[0] || "",
     description: data.description || "",
+    images: data.images || [],
     gallery: data.images?.length > 0 ? data.images : [],
     price: data.price,
     sizes: data.size_options || [],
@@ -176,6 +186,7 @@ function ProductDetail() {
   const [quoteSuccess, setQuoteSuccess] = useState(false);
   const [quoteError, setQuoteError] = useState("");
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
 
   // AI Builder
   const [activeDesign, setActiveDesign] = useState(null); // designMeta | null
@@ -244,6 +255,37 @@ function ProductDetail() {
     setIsVerified(false);
   }, [product]);
 
+  useEffect(() => {
+    if (!product?.id) return;
+
+    try {
+      const viewed = JSON.parse(
+        localStorage.getItem(RECENTLY_VIEWED_KEY) || "[]",
+      );
+      const recentProduct = {
+        id: product.id,
+        name: product.title,
+        images: product.gallery?.length ? product.gallery : product.images || [],
+        image: product.image,
+        price: product.price,
+        viewedAt: Date.now(),
+      };
+      const nextViewed = [
+        recentProduct,
+        ...(Array.isArray(viewed)
+          ? viewed.filter((item) => String(item.id) !== String(product.id))
+          : []),
+      ].slice(0, RECENTLY_VIEWED_LIMIT);
+
+      localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(nextViewed));
+      setRecentlyViewed(
+        nextViewed.filter((item) => String(item.id) !== String(product.id)),
+      );
+    } catch {
+      // Recently viewed is a convenience feature; product viewing should still work.
+    }
+  }, [product]);
+
   // Keep quote form quantity in sync with the selected quantity control
   useEffect(() => {
     if (!product) return;
@@ -254,7 +296,7 @@ function ProductDetail() {
       // For dropdown mode, mirror the selectedQty label
       setQuoteForm((prev) => ({ ...prev, quantity: selectedQty?.label || "" }));
     }
-  }, [selectedQty, customQty, product?.quantity_mode]);
+  }, [selectedQty, customQty, product]);
 
   const handleQuoteChange = (e) => {
     const { name, value } = e.target;
@@ -517,6 +559,93 @@ function ProductDetail() {
                   />
                   );
                 })()}
+              </div>
+            )}
+
+            {!customSizeSelected && (
+              <div className="pd-order-card">
+                <div className="pd-order-head">
+                  <span>Ready to print</span>
+                  <strong>{formatPrice(
+                    extractNumericPrice(selectedQty?.price) +
+                    extractNumericPrice(selectedShipping?.price),
+                  )}</strong>
+                </div>
+
+                <div className="pd-order-details">
+                  <span>
+                    <strong>Size</strong>
+                    {selectedSize || "Select one"}
+                  </span>
+                  <span>
+                    <strong>Material</strong>
+                    {selectedMaterial || "Select one"}
+                  </span>
+                  <span>
+                    <strong>Print</strong>
+                    {selectedSide || "Select one"}
+                  </span>
+                  <span>
+                    <strong>Qty</strong>
+                    {selectedQty?.label || customQty || "Select one"}
+                  </span>
+                </div>
+
+                <div className="pd-order-price-lines">
+                  <p>
+                    <span>Product</span>
+                    <strong>{selectedQty?.price}</strong>
+                  </p>
+                  <p>
+                    <span>Delivery</span>
+                    <strong>{selectedShipping?.price}</strong>
+                  </p>
+                </div>
+
+                {successMessage && (
+                  <div className="pd-success-message">
+                    <FaCheckCircle /> {successMessage}
+                  </div>
+                )}
+                {activeDesign && (
+                  <div className="pd-design-attached">
+                    {Object.values(activeDesign.zones || {})
+                      .filter((z) => z?.imageUrl)
+                      .map((z, i) => (
+                        <img
+                          key={i}
+                          src={z.imageUrl}
+                          alt={`design zone ${i + 1}`}
+                          className="pd-design-thumb"
+                        />
+                      ))}
+                    {!Object.values(activeDesign.zones || {}).some(
+                      (z) => z?.imageUrl,
+                    ) &&
+                      activeDesign.generatedImageUrl && (
+                        <img
+                          src={activeDesign.generatedImageUrl}
+                          alt="design preview"
+                          className="pd-design-thumb"
+                        />
+                      )}
+                    <span>AI design attached</span>
+                    <button
+                      type="button"
+                      className="pd-design-remove"
+                      onClick={() => setActiveDesign(null)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="pd-cart-btn"
+                  onClick={handleAddToCart}
+                >
+                  ADD TO CART
+                </button>
               </div>
             )}
           </div>
@@ -953,100 +1082,48 @@ function ProductDetail() {
             </section>
           )}
 
-          {!customSizeSelected && (
-            <section className="pd-summary">
-              <h2>Your product</h2>
-              <div className="pd-summary-box">
-                <div>
-                  <h3>{product.title}</h3>
-                  <p>
-                    <strong>Size:</strong> {selectedSize}
-                  </p>
-                  <p>
-                    <strong>Material:</strong> {selectedMaterial}
-                  </p>
-                  <p>
-                    <strong>Print:</strong> {selectedSide}
-                  </p>
-                  <p>
-                    <strong>Finishing:</strong> {selectedFinish}
-                  </p>
-                  <p>
-                    <strong>Quantity:</strong> {selectedQty?.label}
-                  </p>
-                  <p>
-                    <strong>Shipping:</strong> {selectedShipping?.label}
-                  </p>
-                </div>
-
-                <div className="pd-total">
-                  <p>
-                    <span>Product</span>
-                    <strong>{selectedQty?.price}</strong>
-                  </p>
-                  <p>
-                    <span>Delivery</span>
-                    <strong>{selectedShipping?.price}</strong>
-                  </p>
-                  <hr />
-                  <p className="grand-total">
-                    <span>Total</span>
-                    <strong>
-                      {formatPrice(
-                        extractNumericPrice(selectedQty?.price) +
-                        extractNumericPrice(selectedShipping?.price),
-                      )}
-                    </strong>
-                  </p>
-                  {successMessage && (
-                    <div className="pd-success-message">
-                      <FaCheckCircle /> {successMessage}
-                    </div>
-                  )}
-                  {activeDesign && (
-                    <div className="pd-design-attached">
-                      {Object.values(activeDesign.zones || {})
-                        .filter((z) => z?.imageUrl)
-                        .map((z, i) => (
-                          <img
-                            key={i}
-                            src={z.imageUrl}
-                            alt={`design zone ${i + 1}`}
-                            className="pd-design-thumb"
-                          />
-                        ))}
-                      {!Object.values(activeDesign.zones || {}).some(
-                        (z) => z?.imageUrl,
-                      ) &&
-                        activeDesign.generatedImageUrl && (
-                          <img
-                            src={activeDesign.generatedImageUrl}
-                            alt="design preview"
-                            className="pd-design-thumb"
-                          />
-                        )}
-                      <span>AI design attached</span>
-                      <button
-                        type="button"
-                        className="pd-design-remove"
-                        onClick={() => setActiveDesign(null)}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    className="pd-cart-btn"
-                    onClick={handleAddToCart}
-                  >
-                    ADD TO CART
-                  </button>
-                </div>
-              </div>
-            </section>
-          )}
         </div>
+
+        {recentlyViewed.length > 0 && (
+          <section className="pd-recently-viewed">
+            <div className="pd-recently-head">
+              <h2>Your recently viewed items</h2>
+              <p>Products you opened earlier will stay here for quick access.</p>
+            </div>
+            <div className="pd-recently-grid">
+              {recentlyViewed.slice(0, 4).map((item) => {
+                const image =
+                  item.images?.[0] ||
+                  item.image ||
+                  "https://via.placeholder.com/300x200?text=No+Image";
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="pd-recent-card"
+                    onClick={() => navigate(`/product/${item.id}`)}
+                  >
+                    <span className="pd-recent-heart" aria-hidden="true">
+                      ♡
+                    </span>
+                    <img
+                      src={image}
+                      alt={item.name}
+                      onError={(e) => {
+                        e.target.src =
+                          "https://via.placeholder.com/300x200?text=No+Image";
+                      }}
+                    />
+                    <strong>{item.name}</strong>
+                    {formatRecentPrice(item.price) ? (
+                      <span>From {formatRecentPrice(item.price)}</span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
