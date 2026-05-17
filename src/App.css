@@ -101,21 +101,19 @@ body {
   position: relative;
   z-index: 1;
   text-align: center;
-  padding: 28px;
+  padding: 0 28px;
+  margin-top: -6vh;
   animation: pmgSplashCenterIn 0.6s ease 0.3s both;
 }
 
 .pmg-splash-icon {
-  width: 128px;
-  height: 128px;
-  margin: 0 auto 24px;
-  border-radius: 30px;
+  width: min(360px, 74vw);
+  height: auto;
+  margin: 0 auto 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #06b6d4, #3b82f6);
-  box-shadow: 0 28px 60px rgba(59, 130, 246, 0.32);
-  animation: pmgSplashIconSpin 2s ease-in-out 0.3s 2;
+  animation: pmgSplashCenterIn 0.7s ease 0.3s both;
 }
 
 .pmg-splash-icon span {
@@ -127,21 +125,20 @@ body {
 }
 
 .pmg-splash-icon img {
-  width: 92%;
-  height: 92%;
+  width: 100%;
+  height: auto;
   object-fit: contain;
+  filter: drop-shadow(0 24px 34px rgba(15, 23, 42, 0.18));
 }
 
 .pmg-splash-center h1 {
   margin: 0 0 14px;
-  font-size: clamp(40px, 8vw, 82px);
+  font-size: clamp(46px, 8.6vw, 92px);
   line-height: 0.95;
-  font-weight: 900;
-  letter-spacing: 0;
-  background: linear-gradient(90deg, #0891b2, #2563eb, #7c3aed);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-weight: 1000;
+  letter-spacing: 0.02em;
+  color: #0f172a;
+  text-shadow: 0 5px 0 rgba(255, 255, 255, 0.75), 0 16px 36px rgba(15, 23, 42, 0.26);
   animation: pmgSplashTextIn 0.6s ease 0.6s both;
 }
 
@@ -900,17 +897,20 @@ textarea:focus {
 
 .navbar-container {
   max-width: 100%;
-  height: 90px;
-  padding: 0 30px;
+  height: 84px;
+  padding: 0 24px;
+  gap: 16px;
 }
 
 .navbar-logo {
   display: inline-flex;
   align-items: center;
+  align-self: center;
   gap: 12px;
   color: #ffffff;
   font-size: 30px;
   font-weight: 900;
+  line-height: 1;
 }
 
 .navbar-logo-mark {
@@ -926,34 +926,38 @@ textarea:focus {
 }
 
 .navbar-logo-mark.brand-image {
-  width: 230px;
-  height: 64px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 18px 42px rgba(6, 182, 212, 0.16);
+  width: 300px;
+  height: 76px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .navbar-logo-mark.brand-image img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 5px 8px;
+  padding: 0;
 }
 
 .navbar-menu {
-  gap: 22px;
+  gap: 10px;
+  align-items: center;
+  height: 100%;
 }
 
 .navbar-menu .navlink-btn {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  min-height: 52px;
-  padding: 0 22px;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 14px;
   border-radius: 999px;
   color: rgba(255, 255, 255, 0.82);
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
+  line-height: 1;
 }
 
 .navbar-menu .navlink-btn::after {
@@ -962,20 +966,20 @@ textarea:focus {
 
 .navbar-menu .navlink-btn:hover,
 .navbar-menu li:first-child .navlink-btn {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .navbar-login {
-  min-height: 50px;
-  padding: 0 22px !important;
+  min-height: 44px;
+  padding: 0 18px !important;
   border-radius: 8px;
   font-size: 16px;
 }
 
 .App-header {
-  min-height: calc(100vh - 90px);
+  min-height: calc(100vh - 84px);
   align-items: center;
   justify-content: center;
   padding: 90px 28px;
@@ -1932,8 +1936,8 @@ textarea:focus {
   }
 
   .navbar-logo-mark.brand-image {
-    width: 116px;
-    height: 48px;
+    width: 190px;
+    height: 58px;
   }
 
   .navbar-menu {
@@ -2271,8 +2275,8 @@ textarea:focus {
 
 .about-showcase {
   background:
-    radial-gradient(circle at 10% 22%, rgba(6, 182, 212, 0.12), transparent 20%),
-    radial-gradient(circle at 86% 14%, rgba(139, 92, 246, 0.12), transparent 20%),
+    radial-gradient(circle at 10% 22%, rgba(6, 182, 212, 0.08), transparent 20%),
+    radial-gradient(circle at 86% 14%, rgba(6, 182, 212, 0.08), transparent 20%),
     #ffffff;
 }
 
@@ -2346,17 +2350,17 @@ textarea:focus {
 
 .about-story-card h3 {
   max-width: 520px;
-  margin: 0 0 20px;
+  margin: 0 0 16px;
   color: #0f172a;
-  font-size: clamp(30px, 3vw, 46px);
+  font-size: clamp(24px, 2.5vw, 36px);
   line-height: 1.12;
 }
 
 .about-story-card p,
 .about-story-card li {
   color: #475569;
-  font-size: 18px;
-  line-height: 1.62;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 .about-story-card .home-info-list {
@@ -2380,19 +2384,11 @@ textarea:focus {
 .contact-showcase {
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(6, 182, 212, 0.22), transparent 18%),
-    radial-gradient(circle at 80% 8%, rgba(139, 92, 246, 0.22), transparent 20%),
-    linear-gradient(135deg, #101b2e 0%, #17253c 100%);
+  background: #0f172a;
 }
 
 .contact-showcase::before {
-  content: "";
-  position: absolute;
-  inset: auto 0 0;
-  height: 180px;
-  background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6);
-  opacity: 0.85;
+  display: none;
 }
 
 .contact-intro,
@@ -2401,12 +2397,22 @@ textarea:focus {
   z-index: 1;
 }
 
+.about-intro h2,
+.contact-intro h2 {
+  font-size: clamp(36px, 5.2vw, 66px);
+}
+
+.about-intro p,
+.contact-intro p {
+  font-size: clamp(14px, 1.5vw, 18px);
+}
+
 .contact-intro h2 {
   color: #ffffff;
 }
 
 .contact-intro p {
-  color: rgba(255, 255, 255, 0.76);
+  color: rgba(255, 255, 255, 0.74);
 }
 
 .contact-links {
@@ -2418,17 +2424,17 @@ textarea:focus {
 }
 
 .contact-links a {
-  min-height: 150px;
+  min-height: 132px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 10px;
-  padding: 26px;
+  gap: 9px;
+  padding: 22px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
-  font-size: 18px;
+  font-size: 15px;
   overflow-wrap: anywhere;
   box-shadow: none;
   backdrop-filter: blur(16px);
@@ -2437,11 +2443,11 @@ textarea:focus {
 .contact-links a span {
   display: inline-flex;
   width: fit-content;
-  padding: 7px 12px;
+  padding: 6px 11px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.14);
   color: #bfdbfe;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
   text-transform: uppercase;
 }
@@ -2456,6 +2462,146 @@ textarea:focus {
 .contact-links a:hover span {
   color: #ffffff;
   background: linear-gradient(90deg, #06b6d4, #3b82f6);
+}
+
+@keyframes contactStripFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.recently-viewed-section {
+  position: relative;
+  max-width: none;
+  margin: 0;
+  padding: 96px max(24px, calc((100vw - 1320px) / 2));
+  overflow: hidden;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 10% 18%, rgba(6, 182, 212, 0.2), transparent 22%),
+    radial-gradient(circle at 90% 10%, rgba(200, 162, 74, 0.18), transparent 20%),
+    linear-gradient(135deg, #101b2e 0%, #17253c 56%, #0f172a 100%);
+  box-shadow: none;
+}
+
+.recently-viewed-section::before,
+.recently-viewed-section::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.recently-viewed-section::before {
+  width: 260px;
+  height: 260px;
+  left: -80px;
+  bottom: -110px;
+  background: rgba(6, 182, 212, 0.16);
+  filter: blur(2px);
+  animation: floatBlob 8s ease-in-out infinite alternate;
+}
+
+.recently-viewed-section::after {
+  width: 180px;
+  height: 180px;
+  right: 8%;
+  top: 24px;
+  border: 26px solid rgba(200, 162, 74, 0.16);
+  animation: slowSpin 18s linear infinite;
+}
+
+.recently-viewed-section .home-product-rail {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+
+.recently-viewed-section .home-rail-heading h3 {
+  color: #ffffff;
+  font-size: clamp(34px, 4vw, 62px);
+  letter-spacing: -0.04em;
+}
+
+.recently-viewed-section .home-rail-heading p,
+.recently-viewed-section .home-rail-empty {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.recently-viewed-section .home-rail-window {
+  align-items: stretch;
+}
+
+.recently-viewed-section .product-card {
+  min-height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(18px);
+  animation: cardFloatIn 0.6s ease both;
+}
+
+.recently-viewed-section .product-card:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.recently-viewed-section .product-card:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+.recently-viewed-section .product-card:nth-child(4) {
+  animation-delay: 0.24s;
+}
+
+.recently-viewed-section .product-card:hover {
+  border-color: rgba(200, 162, 74, 0.56);
+  transform: translateY(-14px) rotate(-1deg);
+  box-shadow: 0 34px 76px rgba(0, 0, 0, 0.32);
+}
+
+.recently-viewed-section .product-card-media {
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.recently-viewed-section .product-card-title,
+.recently-viewed-section .product-card-price,
+.recently-viewed-section .product-card-action {
+  color: #ffffff;
+}
+
+@keyframes floatBlob {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(40px, -28px, 0) scale(1.15);
+  }
+}
+
+@keyframes slowSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cardFloatIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (max-width: 1180px) {

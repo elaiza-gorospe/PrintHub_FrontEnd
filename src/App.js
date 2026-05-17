@@ -909,18 +909,6 @@ function HomePage() {
 
         <FeaturesSection />
 
-        {recentlyViewed.length > 0 && (
-          <section className="content-section reveal-on-scroll">
-            <HomeProductRail
-              title="Your Recently Viewed Items"
-              subtitle="Pick up where you left off."
-              products={recentlyViewed}
-              emptyText="Viewed products will appear here."
-              navigate={navigate}
-            />
-          </section>
-        )}
-
         {/* ✅ ABOUT */}
         <section className="about-showcase reveal-on-scroll" id="about">
           <div className="home-section-intro about-intro">
@@ -1002,6 +990,18 @@ function HomePage() {
             </a>
           </div>
         </section>
+
+        {recentlyViewed.length > 0 && (
+          <section className="content-section recently-viewed-section reveal-on-scroll">
+            <HomeProductRail
+              title="Your Recently Viewed Items"
+              subtitle="Pick up where you left off."
+              products={recentlyViewed}
+              emptyText="Viewed products will appear here."
+              navigate={navigate}
+            />
+          </section>
+        )}
       </main>
     </div>
   );

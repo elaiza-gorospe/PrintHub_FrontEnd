@@ -10,7 +10,6 @@ import {
 } from "react-icons/fa";
 import CheckoutModal from "./CheckoutModal";
 import { useCart } from "../hooks/useCart";
-import { extractNumericPrice } from "../utils/priceUtils";
 import Header from "../components/Header";
 
 function UserCartPage() {
@@ -57,17 +56,7 @@ function UserCartPage() {
     (acc, item) => acc + item.price * item.qty,
     0,
   );
-  // Get shipping cost from first item's customizations (all items should have same shipping)
-  let shipping = 0;
-  if (cartItems.length > 0) {
-    const shippingPrice = cartItems[0].customizations?.shippingPrice;
-    shipping = extractNumericPrice(shippingPrice);
-    // Ensure shipping is a valid number, not NaN
-    if (isNaN(shipping)) {
-      shipping = 0;
-    }
-  }
-  const total = subtotal + shipping;
+  const total = subtotal;
 
   const formatPeso = (n) =>
     new Intl.NumberFormat("en-PH", {
@@ -381,11 +370,6 @@ function UserCartPage() {
               <span>{formatPeso(subtotal)}</span>
             </div>
 
-            <div className="ucart-row">
-              <span>Shipping</span>
-              <span>{formatPeso(shipping)}</span>
-            </div>
-
             <div className="ucart-divider" />
 
             <div className="ucart-total">
@@ -417,7 +401,6 @@ function UserCartPage() {
             userId={userId}
             cartItems={cartItems}
             total={total}
-            shipping={shipping}
             subtotal={subtotal}
             onClose={() => setShowCheckout(false)}
             onSuccess={handleCheckoutComplete}

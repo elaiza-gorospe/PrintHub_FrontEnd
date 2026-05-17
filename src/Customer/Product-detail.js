@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaCheckCircle } from "react-icons/fa";
 import "./Product-detail.css";
-import ReCAPTCHA from "react-google-recaptcha";
 import { useCart } from "../hooks/useCart";
 import { extractNumericPrice, formatPrice } from "../utils/priceUtils";
 import Header from "../components/Header";
@@ -30,6 +29,7 @@ function formatRecentPrice(price) {
 }
 
 const DEFAULT_PRODUCT_ZONES = {
+
   notebook: ["front_cover", "back_cover"],
   tshirt: ["front", "back", "left_sleeve", "right_sleeve"],
   jersey: ["front", "back", "left_sleeve", "right_sleeve"],
@@ -99,10 +99,12 @@ function getCustomizerPanel(category) {
 function mapApiProduct(data) {
   const parseOptions = (arr) =>
     (arr || []).map((opt) => {
-      const idx = opt.indexOf("|");
-      if (idx === -1) return { label: opt, price: "" };
-      return { label: opt.slice(0, idx), price: opt.slice(idx + 1) };
+      const value = String(opt || "");
+      const idx = value.indexOf("|");
+      if (idx === -1) return { label: value, price: "" };
+      return { label: value.slice(0, idx), price: value.slice(idx + 1) };
     });
+
 
   const dbCategory = inferCustomizerCategory({
     category: data.category,
@@ -123,13 +125,12 @@ function mapApiProduct(data) {
     gallery: data.images?.length > 0 ? data.images : [],
     price: data.price,
     sizes: data.size_options || [],
-    materials: data.material_options || [],
+    materials: parseOptions(data.material_options),
     sides: data.side_options || [],
     finishing: data.finishing_options || [],
     colors: data.color_options || [],
     processing: data.processing_options || [],
     quantities: parseOptions(data.quantity_options),
-    shipping: parseOptions(data.shipping_options),
     ai_prompt_rules: data.ai_prompt_rules || null,
     print_zones: printZones,
     dbCategory,
@@ -168,7 +169,7 @@ function ProductDetail() {
   );
   const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || "");
   const [selectedMaterial, setSelectedMaterial] = useState(
-    product?.materials?.[0] || "",
+    product?.materials?.[0] || null,
   );
   const [selectedSide, setSelectedSide] = useState(product?.sides?.[0] || "");
   const [selectedFinish, setSelectedFinish] = useState(
@@ -178,9 +179,6 @@ function ProductDetail() {
     product?.quantities?.[0] || null,
   );
   const [customQty, setCustomQty] = useState("");
-  const [selectedShipping, setSelectedShipping] = useState(
-    product?.shipping?.[0] || null,
-  );
   const [activeTab, setActiveTab] = useState("product");
   const [successMessage, setSuccessMessage] = useState("");
   const [customSizeSelected, setCustomSizeSelected] = useState(false);
@@ -204,8 +202,6 @@ function ProductDetail() {
       return null;
     }
   }, []);
-  const isLoggedIn = Boolean(storedUser?.id);
-
   const [quoteForm, setQuoteForm] = useState({
     subject: "",
     name: "",
@@ -217,23 +213,19 @@ function ProductDetail() {
     finishing: "",
     printing: "",
     processing: "",
-    delivery: "",
     other: "",
   });
-
-  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
     if (!product) return;
 
     setSelectedImage(product.gallery?.[0] || "");
     setSelectedSize(product.sizes?.[0] || "");
-    setSelectedMaterial(product.materials?.[0] || "");
+    setSelectedMaterial(product.materials?.[0] || null);
     setSelectedSide(product.sides?.[0] || "");
     setSelectedFinish(product.finishing?.[0] || "");
     setSelectedQty(product.quantities?.[0] || null);
     setCustomQty("");
-    setSelectedShipping(product.shipping?.[0] || null);
     setCustomSizeSelected(false);
 
     setQuoteForm({
@@ -246,15 +238,14 @@ function ProductDetail() {
           : product.quantities?.[0]?.label || "",
       size: product.sizes?.[0] || "",
       color: product.colors?.[0] || "",
-      material: product.materials?.[0] || "",
+      material: product.materials?.[0]?.label || "",
       finishing: product.finishing?.[0] || "",
       printing: product.sides?.[0] || "",
       processing: product.processing?.[0] || "",
-      delivery: product.shipping?.[0]?.label || "",
       other: "",
     });
 
-    setIsVerified(false);
+
   }, [product]);
 
   useEffect(() => {
@@ -300,12 +291,31 @@ function ProductDetail() {
     }
   }, [selectedQty, customQty, product]);
 
+  const materialSurcharge = useMemo(
+    () => extractNumericPrice(selectedMaterial?.price),
+    [selectedMaterial],
+  );
+
+  const quantityPrice = useMemo(
+    () => extractNumericPrice(selectedQty?.price),
+    [selectedQty],
+  );
+
+  const grandTotal = useMemo(
+    () => quantityPrice + materialSurcharge,
+    [quantityPrice, materialSurcharge],
+  );
+
+  const materialDisplayPrice = useMemo(() => {
+    if (!selectedMaterial?.price) return "Included";
+    const numeric = extractNumericPrice(selectedMaterial.price);
+    if (!numeric) return "Included";
+    return `+ ${formatPrice(numeric)}`;
+  }, [selectedMaterial]);
+
   const handleQuoteChange = (e) => {
     const { name, value } = e.target;
-    setQuoteForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setQuoteForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleQuoteSubmit = async (e) => {
@@ -333,7 +343,6 @@ function ProductDetail() {
           finishing: quoteForm.finishing,
           printing: quoteForm.printing,
           processing: quoteForm.processing,
-          delivery: quoteForm.delivery,
           other: quoteForm.other,
         }),
       });
@@ -365,10 +374,10 @@ function ProductDetail() {
   };
 
   const handleAddToCart = () => {
-    if (!selectedQty || !selectedShipping) {
+    if (!selectedQty) {
       setNoticeModal({
         title: "Complete your options",
-        message: "Please select quantity and shipping before adding to cart.",
+        message: "Please select quantity before adding to cart.",
         tone: "info",
       });
       return;
@@ -378,16 +387,19 @@ function ProductDetail() {
       id: product.id,
       productId: product.id,
       title: product.title,
-      price: extractNumericPrice(selectedQty.price),
+      price: grandTotal,
       size: selectedSize,
-      material: selectedMaterial,
+      material: {
+        label: selectedMaterial?.label || "",
+        price: selectedMaterial?.price || "",
+      },
       sides: selectedSide,
       finishing: selectedFinish,
       quantity: selectedQty,
-      shipping: selectedShipping,
       design: activeDesign || null,
       images: product.images,
     });
+
 
     setSuccessMessage("✓ Added to cart!");
     setTimeout(() => {
@@ -497,9 +509,9 @@ function ProductDetail() {
               <div className="pd-tab-content">
                 <ul className="pd-features">
                   <li>
-                    <strong>Free delivery</strong>
+                    <strong>Fast in-store pickup</strong>
                   </li>
-                  <li>Printed locally, fast delivery</li>
+                  <li>Printed locally with premium finish</li>
                   <li>Choose from premium print options</li>
                 </ul>
 
@@ -568,92 +580,7 @@ function ProductDetail() {
               </div>
             )}
 
-            {!customSizeSelected && (
-              <div className="pd-order-card">
-                <div className="pd-order-head">
-                  <span>Ready to print</span>
-                  <strong>{formatPrice(
-                    extractNumericPrice(selectedQty?.price) +
-                    extractNumericPrice(selectedShipping?.price),
-                  )}</strong>
-                </div>
 
-                <div className="pd-order-details">
-                  <span>
-                    <strong>Size</strong>
-                    {selectedSize || "Select one"}
-                  </span>
-                  <span>
-                    <strong>Material</strong>
-                    {selectedMaterial || "Select one"}
-                  </span>
-                  <span>
-                    <strong>Print</strong>
-                    {selectedSide || "Select one"}
-                  </span>
-                  <span>
-                    <strong>Qty</strong>
-                    {selectedQty?.label || customQty || "Select one"}
-                  </span>
-                </div>
-
-                <div className="pd-order-price-lines">
-                  <p>
-                    <span>Product</span>
-                    <strong>{selectedQty?.price}</strong>
-                  </p>
-                  <p>
-                    <span>Delivery</span>
-                    <strong>{selectedShipping?.price}</strong>
-                  </p>
-                </div>
-
-                {successMessage && (
-                  <div className="pd-success-message">
-                    <FaCheckCircle /> {successMessage}
-                  </div>
-                )}
-                {activeDesign && (
-                  <div className="pd-design-attached">
-                    {Object.values(activeDesign.zones || {})
-                      .filter((z) => z?.imageUrl)
-                      .map((z, i) => (
-                        <img
-                          key={i}
-                          src={z.imageUrl}
-                          alt={`design zone ${i + 1}`}
-                          className="pd-design-thumb"
-                        />
-                      ))}
-                    {!Object.values(activeDesign.zones || {}).some(
-                      (z) => z?.imageUrl,
-                    ) &&
-                      activeDesign.generatedImageUrl && (
-                        <img
-                          src={activeDesign.generatedImageUrl}
-                          alt="design preview"
-                          className="pd-design-thumb"
-                        />
-                      )}
-                    <span>AI design attached</span>
-                    <button
-                      type="button"
-                      className="pd-design-remove"
-                      onClick={() => setActiveDesign(null)}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  className="pd-cart-btn"
-                  onClick={handleAddToCart}
-                >
-                  ADD TO CART
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
@@ -708,17 +635,22 @@ function ProductDetail() {
                 <h2>2. Select material</h2>
                 {product.materials.map((material) => (
                   <label
-                    key={material}
-                    className={`pd-line-option ${selectedMaterial === material ? "selected" : ""}`}
+                    key={`${material.label}-${material.price}`}
+                    className={`pd-line-option pd-price-option ${selectedMaterial?.label === material.label ? "selected" : ""}`}
                   >
                     <input
                       type="radio"
                       name="material"
-                      value={material}
-                      checked={selectedMaterial === material}
+                      value={material.label}
+                      checked={selectedMaterial?.label === material.label}
                       onChange={() => setSelectedMaterial(material)}
                     />
-                    <span>{material}</span>
+                    <span>{material.label}</span>
+                    <strong>
+                      {material.price
+                        ? `+ ${formatPrice(extractNumericPrice(material.price))}`
+                        : "Included"}
+                    </strong>
                   </label>
                 ))}
               </section>
@@ -761,90 +693,149 @@ function ProductDetail() {
                 ))}
               </section>
 
-              <section className="pd-section">
-                <h2>5. Select quantity</h2>
+              <section className="pd-section pd-quantity-stage">
+                <div className="pd-quantity-head">
+                  <h2>5. Select quantity</h2>
+                  <span className="pd-stage-pill">Final step before cart</span>
+                </div>
+
                 {product.quantity_mode === "text" ? (
-                  <div
-                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                  >
+                  <div className="pd-qty-custom-wrap">
                     <input
                       type="number"
                       min={1}
+                      className="pd-qty-custom-input"
                       value={customQty}
                       onChange={(e) => {
                         const v = e.target.value;
                         setCustomQty(v);
-                        const n = parseInt(v) || 0;
+                        const n = parseInt(v, 10) || 0;
                         if (n <= 0) return;
-                        // If threshold is set and exceeded -> auto-select contact/quote
-                        if (
-                          product.quantity_count &&
-                          n > product.quantity_count
-                        ) {
+
+                        if (product.quantity_count && n > product.quantity_count) {
                           setCustomSizeSelected(true);
                           scrollToQuote();
                         } else {
-                          // synthesize a selectedQty object so summary and add-to-cart work
                           setSelectedQty({
                             label: `${n} pcs`,
-                            price: formatPrice((product.price || 0) * n),
+                            price: formatPrice(extractNumericPrice(product.price) * n),
                             quantityNumber: n,
                           });
                           setCustomSizeSelected(false);
                         }
                       }}
                       placeholder="Enter quantity (e.g., 10)"
-                      style={{
-                        padding: "8px 10px",
-                        borderRadius: 6,
-                        border: "1px solid #d1d5db",
-                      }}
                     />
                     {product.quantity_count ? (
-                      <div style={{ fontSize: 12, color: "#6b7280" }}>
-                        Quantities greater than {product.quantity_count} will be
-                        handled via Quote/Contact.
+                      <div className="pd-qty-note">
+                        Quantities greater than {product.quantity_count} will be handled via
+                        Quote/Contact.
                       </div>
                     ) : null}
                   </div>
                 ) : (
-                  product.quantities.map((qty) => (
-                    <label
-                      key={qty.label}
-                      className={`pd-line-option pd-price-option ${selectedQty?.label === qty.label ? "selected" : ""
+                  <div className="pd-qty-grid">
+                    {product.quantities.map((qty) => (
+                      <label
+                        key={qty.label}
+                        className={`pd-line-option pd-price-option ${
+                          selectedQty?.label === qty.label ? "selected" : ""
                         }`}
-                    >
-                      <input
-                        type="radio"
-                        name="quantity"
-                        checked={selectedQty?.label === qty.label}
-                        onChange={() => setSelectedQty(qty)}
-                      />
-                      <span>{qty.label}</span>
-                      <strong>{qty.price}</strong>
-                    </label>
-                  ))
+                      >
+                        <input
+                          type="radio"
+                          name="quantity"
+                          checked={selectedQty?.label === qty.label}
+                          onChange={() => setSelectedQty(qty)}
+                        />
+                        <span>{qty.label}</span>
+                        <strong>{qty.price}</strong>
+                      </label>
+                    ))}
+                  </div>
                 )}
-              </section>
 
-              <section className="pd-section">
-                <h2>6. Select shipping</h2>
-                {product.shipping.map((ship) => (
-                  <label
-                    key={ship.label}
-                    className={`pd-line-option pd-price-option ${selectedShipping?.label === ship.label ? "selected" : ""
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="shipping"
-                      checked={selectedShipping?.label === ship.label}
-                      onChange={() => setSelectedShipping(ship)}
-                    />
-                    <span>{ship.label}</span>
-                    <strong>{ship.price}</strong>
-                  </label>
-                ))}
+                <div className="pd-order-card pd-order-card-inline">
+                  <div className="pd-order-head">
+                    <span>Ready to print</span>
+                    <strong>{formatPrice(grandTotal)}</strong>
+                  </div>
+
+                  <div className="pd-order-details">
+                    <span>
+                      <strong>Size</strong>
+                      {selectedSize || "Select one"}
+                    </span>
+                    <span>
+                      <strong>Material</strong>
+                      {selectedMaterial?.label || "Select one"}
+                    </span>
+                    <span>
+                      <strong>Print</strong>
+                      {selectedSide || "Select one"}
+                    </span>
+                    <span>
+                      <strong>Qty</strong>
+                      {selectedQty?.label || customQty || "Select one"}
+                    </span>
+                  </div>
+
+                  <div className="pd-order-price-lines">
+                    <p>
+                      <span>Quantity price</span>
+                      <strong>{selectedQty?.price || formatPrice(0)}</strong>
+                    </p>
+                    <p>
+                      <span>Material add-on</span>
+                      <strong>{materialDisplayPrice}</strong>
+                    </p>
+                    <p className="pd-order-total-line">
+                      <span>Total</span>
+                      <strong>{formatPrice(grandTotal)}</strong>
+                    </p>
+                  </div>
+
+                  {successMessage && (
+                    <div className="pd-success-message">
+                      <FaCheckCircle /> {successMessage}
+                    </div>
+                  )}
+
+                  {activeDesign && (
+                    <div className="pd-design-attached">
+                      {Object.values(activeDesign.zones || {})
+                        .filter((z) => z?.imageUrl)
+                        .map((z, i) => (
+                          <img
+                            key={i}
+                            src={z.imageUrl}
+                            alt={`design zone ${i + 1}`}
+                            className="pd-design-thumb"
+                          />
+                        ))}
+                      {!Object.values(activeDesign.zones || {}).some((z) => z?.imageUrl) &&
+                        activeDesign.generatedImageUrl && (
+                          <img
+                            src={activeDesign.generatedImageUrl}
+                            alt="design preview"
+                            className="pd-design-thumb"
+                          />
+                        )}
+                      <span>AI design attached</span>
+                      <button
+                        type="button"
+                        className="pd-design-remove"
+                        onClick={() => setActiveDesign(null)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+
+                  <button type="button" className="pd-cart-btn" onClick={handleAddToCart}>
+                    ADD TO CART
+                  </button>
+                </div>
               </section>
             </>
           )}
@@ -852,17 +843,18 @@ function ProductDetail() {
           {customSizeSelected && (
             <section className="pd-section pd-quote-section" ref={quoteRef}>
               <h2 className="pd-quote-title">Request a quote.</h2>
-              <p className="pd-quote-desc">
-                Are you looking for a product that is not on our website? Or
-                have you found a product on our website, but it doesn't quite
-                fit your needs? Let our team of experts send you a quote that
-                matches your expectations in terms of price, quality and
-                delivery time. Simply fill in the form below and we will quickly
-                send you a quote.
-              </p>
+                <p className="pd-quote-desc">
+                  Are you looking for a product that is not on our website? Or
+                  have you found a product on our website, but it doesn't quite
+                  fit your needs? Let our team of experts send you a quote that
+                  matches your expectations in terms of price and quality.
+                  Simply fill in the form below and we will quickly send you a
+                  quote.
+                </p>
+
 
               <form className="pd-quote-box" onSubmit={handleQuoteSubmit}>
-                <div className="pd-quote-row">
+                <div className="pd-quote-row pd-quote-row-wide">
                   <label htmlFor="subject">Subject:</label>
                   <input
                     id="subject"
@@ -983,8 +975,8 @@ function ProductDetail() {
                     onChange={handleQuoteChange}
                   >
                     {product.materials.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
+                      <option key={m.label} value={m.label}>
+                        {m.label}
                       </option>
                     ))}
                   </select>
@@ -1038,23 +1030,8 @@ function ProductDetail() {
                   </select>
                 </div>
 
-                <div className="pd-quote-row">
-                  <label htmlFor="delivery">Delivery:</label>
-                  <select
-                    id="delivery"
-                    name="delivery"
-                    value={quoteForm.delivery}
-                    onChange={handleQuoteChange}
-                  >
-                    {product.shipping.map((s) => (
-                      <option key={s.label} value={s.label}>
-                        {s.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
 
-                <div className="pd-quote-row pd-quote-row-top">
+                <div className="pd-quote-row pd-quote-row-wide pd-quote-row-top">
                   <label htmlFor="other">Other:</label>
                   <textarea
                     id="other"

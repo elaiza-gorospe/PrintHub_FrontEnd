@@ -3,12 +3,12 @@
   position: sticky;
   top: 0;
   z-index: 2000;
-  min-height: 94px;
+  min-height: 92px;
   display: grid;
-  grid-template-columns: auto minmax(360px, 1fr) auto;
+  grid-template-columns: auto minmax(300px, 1fr) auto;
   align-items: center;
-  gap: 28px;
-  padding: 16px 36px;
+  gap: 16px;
+  padding: 0 28px;
   background:
     radial-gradient(circle at 6% 50%, rgba(6, 182, 212, 0.18), transparent 18%),
     linear-gradient(135deg, #111c2f, #17253c);
@@ -42,10 +42,11 @@
 
 .uh-back-btn {
   min-height: 46px;
+  width: 46px;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 0 16px;
+  justify-content: center;
+  padding: 0;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.82);
@@ -73,22 +74,19 @@
 }
 
 .uh-logo-mark {
-  width: 224px;
-  height: 72px;
+  width: 380px;
+  height: 88px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 20px 45px rgba(6, 182, 212, 0.16);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .uh-logo-mark img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 5px 8px;
+  padding: 0;
 }
 
 .uh-logo-word {
@@ -100,20 +98,22 @@
 
 .uh-center-nav {
   justify-content: center;
-  gap: 18px;
+  gap: 10px;
+  height: 100%;
 }
 
 .uh-nav-pill {
-  min-height: 56px;
+  min-height: 46px;
   display: inline-flex;
   align-items: center;
-  gap: 11px;
-  padding: 0 24px;
+  gap: 8px;
+  padding: 0 14px;
   border-radius: 999px;
   background: transparent;
   color: rgba(255, 255, 255, 0.78);
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 900;
+  line-height: 1;
 }
 
 .uh-nav-pill:hover,
@@ -125,7 +125,7 @@
 
 .uh-actions {
   justify-content: flex-end;
-  gap: 18px;
+  gap: 10px;
 }
 
 .uh-icon-btn {
@@ -164,12 +164,16 @@
 
 .uh-link {
   min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0 10px;
   border-radius: 999px;
   background: transparent;
   color: rgba(255, 255, 255, 0.82);
   font-size: 18px;
   font-weight: 850;
+  line-height: 1;
 }
 
 .uh-link:hover {
@@ -179,12 +183,12 @@
 }
 
 .uh-login-btn {
-  min-height: 62px;
-  padding: 0 28px;
+  min-height: 50px;
+  padding: 0 20px;
   border-radius: 9px;
   background: #fffdf8;
   color: #17253c;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
 }
 
@@ -384,6 +388,11 @@
   .uh-mobile-only {
     display: grid;
   }
+
+  .uh-logo-mark {
+    width: 280px;
+    height: 72px;
+  }
 }
 
 @media (max-width: 760px) {
@@ -406,9 +415,8 @@
   }
 
   .uh-logo-mark {
-    width: 112px;
-    height: 50px;
-    border-radius: 16px;
+    width: 172px;
+    height: 62px;
   }
 
   .uh-actions {

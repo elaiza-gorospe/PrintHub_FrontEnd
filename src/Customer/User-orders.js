@@ -394,6 +394,7 @@ function UserOrders() {
             <FaArrowLeft /> Back
           </button>
           <h1 className="uo-title">My Orders</h1>
+          <p className="uo-subtitle">Track every print job from checkout to pickup in one colorful workspace.</p>
         </div>
 
         <div className="uo-tabs">

@@ -1,5 +1,4 @@
 import React, { createContext, useState, useEffect } from "react";
-import { extractNumericPrice } from "../utils/priceUtils";
 import { buildApiUrl } from "../config/api";
 
 const CartContext = createContext();
@@ -14,13 +13,19 @@ const initializeCart = () => {
 
     const cart = JSON.parse(stored);
 
-    // Migrate old cart items: ensure shippingPrice is numeric
     return cart.map((item) => {
-      const shippingPrice = extractNumericPrice(
-        item.customizations?.shippingPrice,
-      );
+      const rawMaterial = item.customizations?.material;
+      const normalizedMaterial =
+        rawMaterial && typeof rawMaterial === "object"
+          ? {
+              label: String(rawMaterial.label || ""),
+              price: String(rawMaterial.price || ""),
+            }
+          : {
+              label: rawMaterial ? String(rawMaterial) : "",
+              price: "",
+            };
 
-      // Attempt to populate a product image fallback for older cart items
       const existingProductImage =
         item.productImage ||
         (item.product && item.product.images && item.product.images[0]) ||
@@ -28,10 +33,6 @@ const initializeCart = () => {
         item.customizations?.design?.generatedImageUrl ||
         null;
 
-      // If this cart item was created under the old behavior where qty
-      // was set to the numeric pieces (e.g., qty=5 for a "5 pcs" option),
-      // normalize it so that qty represents number of packs (default 1)
-      // and keep the original label in customizations.quantity.
       const migrated = { ...item };
       const qtyLabel = item.customizations?.quantity;
       const match = qtyLabel ? String(qtyLabel).match(/(\d+)/) : null;
@@ -45,7 +46,7 @@ const initializeCart = () => {
         productImage: existingProductImage,
         customizations: {
           ...item.customizations,
-          shippingPrice,
+          material: normalizedMaterial,
         },
       };
     });
@@ -116,7 +117,6 @@ export function CartProvider({ children }) {
   // Add item to cart
   const addToCart = (product) => {
     const {
-      id,
       productId,
       title,
       price,
@@ -125,41 +125,38 @@ export function CartProvider({ children }) {
       sides,
       finishing,
       quantity,
-      shipping,
       design,
       images,
       productImage,
     } = product;
 
-    // Extract numeric quantity from label (e.g., "500 pcs" -> 500, "1000" -> 1000)
-    const extractQuantityValue = (quantityLabel) => {
-      if (!quantityLabel) return 1;
-      const match = quantityLabel.toString().match(/(\d+)/);
-      return match ? parseInt(match[1], 10) : 1;
-    };
+    const normalizedMaterial =
+      material && typeof material === "object"
+        ? {
+            label: String(material.label || ""),
+            price: String(material.price || ""),
+          }
+        : {
+            label: material ? String(material) : "",
+            price: "",
+          };
 
     setCartItems((prevItems) => {
-      const qtyValue = extractQuantityValue(quantity?.label);
-
-      // Interpretation: quantity option label indicates pieces per pack (e.g. "5 pcs").
-      // Cart `qty` should represent number of packs selected (default 1), while
-      // the label is preserved in customizations. This ensures the cart counter
-      // shows "1" for a 5-piece pack rather than 5.
       const packQty = 1;
 
-      // Items with a design are always distinct — never merge them
       if (!design) {
-        // Check if item with same customizations already exists (no design)
         const existingItem = prevItems.find(
           (item) =>
             item.productId === productId &&
             !item.customizations?.design &&
             item.customizations?.size === size &&
-            item.customizations?.material === material &&
+            (item.customizations?.material?.label || "") ===
+              normalizedMaterial.label &&
+            (item.customizations?.material?.price || "") ===
+              normalizedMaterial.price &&
             item.customizations?.sides === sides &&
             item.customizations?.finishing === finishing &&
-            item.customizations?.quantity === quantity?.label &&
-            item.customizations?.shipping === shipping?.label,
+            item.customizations?.quantity === quantity?.label,
         );
 
         if (existingItem) {
@@ -171,23 +168,20 @@ export function CartProvider({ children }) {
         }
       }
 
-      // Add new item with quantity = 1 pack (pack size kept in customizations)
       const newItem = {
         id: Date.now(),
         productId,
         title,
-        price: price,
+        price,
         qty: packQty,
         productImage: productImage || (images && images[0]) || null,
         customizations: {
           size,
-          material,
+          material: normalizedMaterial,
           sides,
           finishing,
           quantity: quantity?.label,
           quantityPrice: quantity?.price,
-          shipping: shipping?.label,
-          shippingPrice: extractNumericPrice(shipping?.price),
           ...(design ? { design } : {}),
         },
       };

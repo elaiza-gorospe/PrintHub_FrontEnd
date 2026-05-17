@@ -17,6 +17,8 @@
     linear-gradient(180deg, #fffdf8 0%, var(--bg) 42%, #f8f4e8 100%);
   padding: 30px 40px 60px;
   color: var(--text);
+  display: flex;
+  flex-direction: column;
 }
 
 .pd-breadcrumb {
@@ -85,7 +87,7 @@
 
 .pd-main-image {
   background: #ffffff;
-  min-height: 520px;
+  min-height: 500px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -110,9 +112,9 @@
 }
 
 .pd-info h1 {
-  font-size: 42px;
+  font-size: 36px;
   line-height: 1.05;
-  margin: 0 0 24px;
+  margin: 0 0 16px;
   color: var(--text);
 }
 
@@ -128,12 +130,19 @@
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 10px 14px;
-  font-size: 16px;
+  padding: 9px 13px;
+  font-size: 14px;
   cursor: pointer;
   font-weight: 700;
   color: var(--muted);
   margin-bottom: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.pd-tabs button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(69, 80, 115, 0.42);
+  box-shadow: 0 8px 20px rgba(69, 80, 115, 0.12);
 }
 
 .pd-tabs button.active {
@@ -253,16 +262,30 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: 16px;
   align-items: start;
 }
 
 .pd-recently-viewed {
   max-width: 1400px;
-  margin: 0 auto 38px;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 30px 0;
+  margin: auto auto 0;
+  border: 1px solid rgba(69, 80, 115, 0.18);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(240, 244, 252, 0.88));
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pd-recently-viewed::before {
+  content: "";
+  position: absolute;
+  inset: -30% auto auto -14%;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.2), transparent 66%);
+  pointer-events: none;
 }
 
 .pd-recently-head {
@@ -270,14 +293,15 @@
 }
 
 .pd-recently-head h2 {
-  margin: 0 0 8px;
-  font-size: 28px;
+  margin: 0 0 6px;
+  font-size: 24px;
   color: var(--text);
 }
 
 .pd-recently-head p {
   margin: 0;
   color: var(--muted);
+  font-size: 14px;
 }
 
 .pd-recently-grid {
@@ -352,9 +376,9 @@
 
 .pd-section {
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px;
-  background: rgba(255, 255, 255, 0.82);
+  border-radius: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.84);
   box-shadow: 0 10px 24px rgba(47, 58, 69, 0.05);
   transition:
     border-color 0.2s ease,
@@ -369,8 +393,8 @@
 }
 
 .pd-section h2 {
-  font-size: 17px;
-  margin: 0 0 12px;
+  font-size: 14px;
+  margin: 0 0 10px;
   color: var(--text);
 }
 
@@ -482,15 +506,15 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
-  padding: 10px 12px;
+  min-height: 40px;
+  padding: 8px 10px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   background: #fff;
   color: var(--text);
-  font-size: 14px;
-  line-height: 1.25;
+  font-size: 13px;
+  line-height: 1.2;
   transition:
     background 0.2s ease,
     color 0.2s ease,
@@ -533,7 +557,92 @@
 
 .pd-price-option {
   justify-content: space-between;
-  min-width: min(230px, 100%);
+  min-width: min(220px, 100%);
+}
+
+.pd-quantity-stage {
+  grid-column: 1 / -1;
+  border: 1px solid rgba(69, 80, 115, 0.35);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(236, 245, 255, 0.92));
+  position: relative;
+  overflow: hidden;
+}
+
+.pd-quantity-stage::before {
+  content: "";
+  position: absolute;
+  inset: -120px -80px auto auto;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.20), transparent 68%);
+  pointer-events: none;
+}
+
+.pd-quantity-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.pd-stage-pill {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: linear-gradient(135deg, #455073, #2b3654);
+  border-radius: 999px;
+  padding: 6px 10px;
+  animation: pdPulse 1.9s ease-in-out infinite;
+}
+
+@keyframes pdPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.04); opacity: 0.9; }
+}
+
+.pd-qty-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.pd-qty-custom-wrap { display: grid; gap: 8px; }
+
+.pd-qty-custom-input {
+  width: min(360px, 100%);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #cfd8e3;
+}
+
+.pd-qty-note { font-size: 12px; color: var(--muted); }
+
+.pd-order-card-inline {
+  position: relative;
+  top: auto;
+  margin-top: 14px;
+  animation: pdOrderEnter 0.35s ease both;
+}
+
+@keyframes pdOrderEnter {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.pd-order-total-line {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(69, 80, 115, 0.3);
+  font-weight: 800;
+}
+
+.pd-order-card-inline .pd-cart-btn {
+  background: linear-gradient(135deg, #17253c, #2f4c7a);
+  box-shadow: 0 14px 30px rgba(23, 37, 60, 0.22);
 }
 
 .pd-price-option span {
@@ -541,40 +650,45 @@
   margin-left: 10px;
 }
 
+
 .pd-quote-section {
   grid-column: 1 / -1;
-  padding: 40px 0 10px;
+  padding: 16px 0 10px;
 }
 
 .pd-quote-title {
-  font-size: 38px;
+  font-size: 27px;
   font-weight: 700;
-  margin: 0 0 14px;
+  margin: 0 0 8px;
   color: var(--text);
 }
 
 .pd-quote-desc {
-  max-width: 1320px;
-  font-size: 16px;
-  line-height: 1.7;
+  max-width: 1220px;
+  font-size: 14px;
+  line-height: 1.45;
   color: var(--text);
-  margin: 0 0 28px;
+  margin: 0 0 14px;
 }
 
 .pd-quote-box {
-  max-width: 1320px;
-  background: #f1f1f1;
-  border: 1px solid #ececec;
-  padding: 28px;
-  border-radius: 2px;
+  max-width: 1220px;
+  background: linear-gradient(180deg, #f9fafb, #eef2f7);
+  border: 1px solid #dbe2eb;
+  padding: 16px 18px;
+  border-radius: 16px;
 }
 
 .pd-quote-row {
   display: grid;
-  grid-template-columns: 180px minmax(0, 620px);
-  gap: 24px;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 14px;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
+}
+
+.pd-quote-row-wide {
+  grid-template-columns: 130px minmax(0, 780px);
 }
 
 .pd-quote-row-top {
@@ -582,7 +696,7 @@
 }
 
 .pd-quote-row label {
-  font-size: 16px;
+  font-size: 13px;
   color: var(--text);
   text-align: right;
   padding-top: 2px;
@@ -592,10 +706,11 @@
 .pd-quote-row textarea,
 .pd-quote-row select {
   width: 100%;
-  border: 1px solid #cfcfcf;
+  border: 1px solid #cfd8e3;
+  border-radius: 10px;
   background: #fff;
-  padding: 12px 14px;
-  font-size: 15px;
+  padding: 9px 11px;
+  font-size: 13px;
   color: var(--text);
   outline: none;
   font-family: inherit;
@@ -607,12 +722,36 @@
 }
 
 .pd-quote-readonly {
-  padding: 12px 14px;
-  font-size: 15px;
+  padding: 9px 11px;
+  font-size: 13px;
   color: var(--text);
   font-weight: 600;
-  border: 1px solid #e8e8e8;
-  background: #f9f9f9;
+  border: 1px solid #e3e9f1;
+  border-radius: 10px;
+  background: #f7f9fc;
+}
+
+.pd-quote-row textarea {
+  resize: vertical;
+  min-height: 72px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.pd-quote-actions {
+  margin-top: 12px;
+  margin-left: 144px;
+}
+
+.pd-quote-btn {
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1f2937, #0f172a);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 11px 20px;
+  cursor: pointer;
 }
 
 .pd-quote-row textarea {
@@ -815,13 +954,13 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .pd-quote-row {
-    grid-template-columns: 160px minmax(0, 1fr);
+  .pd-quote-row,
+  .pd-quote-row-wide {
+    grid-template-columns: 120px minmax(0, 1fr);
   }
 
-  .pd-recaptcha-box,
   .pd-quote-actions {
-    margin-left: 184px;
+    margin-left: 134px;
   }
 }
 
@@ -840,7 +979,7 @@
   }
 
   .pd-info h1 {
-    font-size: 32px;
+    font-size: 28px;
   }
 
   .pd-main-image {
@@ -870,10 +1009,11 @@
   }
 
   .pd-quote-title {
-    font-size: 30px;
+    font-size: 24px;
   }
 
-  .pd-quote-row {
+  .pd-quote-row,
+  .pd-quote-row-wide {
     grid-template-columns: 1fr;
     gap: 8px;
   }
@@ -883,12 +1023,15 @@
   }
 
   .pd-quote-box {
-    padding: 18px;
+    padding: 14px;
   }
 
-  .pd-recaptcha-box,
   .pd-quote-actions {
     margin-left: 0;
+    width: 100%;
+  }
+
+  .pd-quote-btn {
     width: 100%;
   }
 }

@@ -8,7 +8,6 @@ function CheckoutModal({
   userId,
   cartItems,
   total,
-  shipping,
   subtotal,
   onClose,
   onSuccess,
@@ -82,19 +81,13 @@ function CheckoutModal({
           null,
       }));
 
-      // Calculate order total: sum of all item prices (including qty) + shipping
+      // Calculate order total: sum of all item prices (including qty)
       const orderSubtotal = cartItems.reduce(
         (sum, item) => sum + extractNumericPrice(item.price) * item.qty,
         0,
       );
-
-      // Extract numeric shipping cost and ensure it's valid
-      let shippingCost = extractNumericPrice(shipping);
-      if (isNaN(shippingCost)) {
-        shippingCost = 0;
-      }
-
-      const orderTotal = orderSubtotal + shippingCost;
+      const shippingCost = 0;
+      const orderTotal = orderSubtotal;
 
       const payload = {
         userId,
@@ -252,10 +245,6 @@ function CheckoutModal({
                 <div className="review-row">
                   <span>Subtotal</span>
                   <span>{formatPeso(subtotal)}</span>
-                </div>
-                <div className="review-row">
-                  <span>Shipping</span>
-                  <span>{formatPeso(shipping)}</span>
                 </div>
                 <div className="review-total">
                   <span>Total Amount</span>

@@ -143,7 +143,6 @@ function Header() {
       <div className="uh-brand-row">
         <button className="uh-back-btn" type="button" onClick={handleBack}>
           <FaArrowLeft />
-          <span>Back</span>
         </button>
 
         <button className="uh-logo" type="button" onClick={handleLogoClick}>

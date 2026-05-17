@@ -128,14 +128,6 @@ function ProductOverview() {
       <div className="po-page">
         <div className="po-shell">
           <div className="po-top">
-            <button
-              className="po-back"
-              type="button"
-              onClick={() => navigate("/user-home")}
-            >
-              ← Back
-            </button>
-
             <div className="po-heading">
               <h1 className="po-title">
                 Product <span>Overview</span>
