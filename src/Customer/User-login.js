@@ -277,8 +277,24 @@ function UserLoginPage() {
           }}
         >
           <div className="auth-visual-card">
+            <div className="auth-bg-type" aria-hidden="true">PRINT CREATE DESIGN CUSTOMIZE</div>
+            <div className="auth-marquee" aria-hidden="true">
+              <span>CUSTOM APPAREL • PRINTING • PACKAGING • STICKERS • SIGNAGE • </span>
+              <span>CUSTOM APPAREL • PRINTING • PACKAGING • STICKERS • SIGNAGE • </span>
+            </div>
+            <div className="auth-product-cloud" aria-hidden="true">
+              <i className="auth-mock-shirt" />
+              <i className="auth-mock-card" />
+              <i className="auth-mock-sticker" />
+              <i className="auth-mock-dieline" />
+              <i className="auth-mock-brochure" />
+            </div>
             <span>PMG PRINTING HOUSE</span>
-            <h2>Print-ready ideas, made local.</h2>
+            <h2 className="auth-kinetic-title">
+              {["Print-ready", "ideas,", "made", "local."].map((word, index) => (
+                <b key={word} style={{ "--word-delay": `${index * 0.09}s` }}>{word}</b>
+              ))}
+            </h2>
             <p>
               Custom shirts, signage, paper prints, IDs, mugs, machines, and
               supplies in one hands-on printing shop.

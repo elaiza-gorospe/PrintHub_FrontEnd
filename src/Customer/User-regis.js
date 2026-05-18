@@ -681,8 +681,24 @@ function UserRegistrationPage() {
           }}
         >
           <div className="auth-visual-card">
+            <div className="auth-bg-type" aria-hidden="true">PRINT CREATE DESIGN CUSTOMIZE</div>
+            <div className="auth-marquee" aria-hidden="true">
+              <span>CUSTOM APPAREL • PRINTING • PACKAGING • STICKERS • SIGNAGE • </span>
+              <span>CUSTOM APPAREL • PRINTING • PACKAGING • STICKERS • SIGNAGE • </span>
+            </div>
+            <div className="auth-product-cloud" aria-hidden="true">
+              <i className="auth-mock-shirt" />
+              <i className="auth-mock-card" />
+              <i className="auth-mock-sticker" />
+              <i className="auth-mock-dieline" />
+              <i className="auth-mock-brochure" />
+            </div>
             <span>YOUR ONE STOP PRINTING SHOP</span>
-            <h2>Bring every idea into print.</h2>
+            <h2 className="auth-kinetic-title">
+              {["Bring", "every", "idea", "into", "print."].map((word, index) => (
+                <b key={word} style={{ "--word-delay": `${index * 0.09}s` }}>{word}</b>
+              ))}
+            </h2>
             <p>
               Build your account to browse products, customize orders, track
               payments, and message PMG from one place.

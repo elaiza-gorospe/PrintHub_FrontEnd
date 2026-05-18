@@ -74,12 +74,29 @@
 }
 
 .uh-logo-mark {
-  width: 380px;
-  height: 88px;
+  width: 560px;
+  height: 116px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   overflow: visible;
+  position: relative;
+  filter: drop-shadow(0 14px 26px rgba(6, 182, 212, 0.26));
+  animation: navLogoFloat 4.6s ease-in-out infinite;
+}
+
+.uh-logo-mark::before {
+  content: "";
+  position: absolute;
+  inset: 14px 42px;
+  z-index: -1;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 24% 50%, rgba(6, 182, 212, 0.38), transparent 42%),
+    radial-gradient(circle at 76% 50%, rgba(236, 72, 153, 0.28), transparent 46%);
+  filter: blur(18px);
+  opacity: 0.82;
+  animation: navLogoGlow 3.8s ease-in-out infinite alternate;
 }
 
 .uh-logo-mark img {
@@ -87,6 +104,7 @@
   height: 100%;
   object-fit: contain;
   padding: 0;
+  transform: scale(1.32);
 }
 
 .uh-logo-word {
@@ -390,8 +408,8 @@
   }
 
   .uh-logo-mark {
-    width: 280px;
-    height: 72px;
+    width: 380px;
+    height: 88px;
   }
 }
 
@@ -415,8 +433,8 @@
   }
 
   .uh-logo-mark {
-    width: 172px;
-    height: 62px;
+    width: 240px;
+    height: 74px;
   }
 
   .uh-actions {
@@ -433,5 +451,26 @@
     min-height: 44px;
     padding: 0 16px;
     font-size: 14px;
+  }
+}
+
+@keyframes navLogoFloat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.025);
+  }
+}
+
+@keyframes navLogoGlow {
+  from {
+    opacity: 0.54;
+    transform: scaleX(0.94);
+  }
+  to {
+    opacity: 0.95;
+    transform: scaleX(1.08);
   }
 }

@@ -39,6 +39,27 @@ import pmgNavLogo from "./assets/brand/pmg-printing-house.png";
 
 const RECENTLY_VIEWED_KEY = "printhub_recently_viewed_products";
 const fallbackProductImage = "https://via.placeholder.com/300x200?text=No+Image";
+const homeHeroWords = ["Vision", "Packaging", "Merch", "Marketing"];
+
+function AnimatedWords({ text, highlight = "" }) {
+  return (
+    <>
+      {text.split(" ").map((word, index) => {
+        const cleanWord = word.replace(/[!.,]/g, "");
+        const isHighlight = cleanWord.toLowerCase() === highlight.toLowerCase();
+        return (
+          <span
+            className={`kinetic-word ${isHighlight ? "kinetic-highlight" : ""}`}
+            key={`${word}-${index}`}
+            style={{ "--word-delay": `${index * 0.075}s` }}
+          >
+            {word}
+          </span>
+        );
+      })}
+    </>
+  );
+}
 
 function formatHomePrice(price) {
   if (price === null || price === undefined || price === "") return "";
@@ -470,10 +491,25 @@ function BestSellerCarousel({ products, navigate }) {
   };
 
   return (
-    <section className="content-section bestseller-section reveal-on-scroll">
+    <section className="content-section bestseller-section reveal-on-scroll bestseller-cinematic">
+      <div className="bestseller-bg-type" aria-hidden="true">
+        <span>BEST</span>
+        <span>SELLERS</span>
+      </div>
+      <div className="bestseller-lighting" aria-hidden="true" />
+      <div className="bestseller-floaters" aria-hidden="true">
+        <span className="seller-tag">Fast pickup</span>
+        <span className="seller-tag">Premium finish</span>
+        <span className="seller-swatch" />
+        <span className="seller-swatch" />
+      </div>
       <div className="bestseller-copy">
         <span>Top 4 Best Sellers</span>
-        <h2>Customer favorites ready for your next print run.</h2>
+        <h2>
+          {["Customer", "favorites", "ready for your", "next print run."].map((line, index) => (
+            <b key={line} style={{ "--line-delay": `${index * 0.09}s` }}>{line}</b>
+          ))}
+        </h2>
         <p>
           Browse PMG's most requested products, compare the quick notes, then
           jump straight to the product page when one fits your order.
@@ -490,8 +526,10 @@ function BestSellerCarousel({ products, navigate }) {
           ‹
         </button>
 
-        <div className="bestseller-card">
+        <div className="bestseller-card" key={activeProduct.id}>
           <div className="bestseller-image">
+            <span className="product-aura" aria-hidden="true" />
+            <span className="product-reflection" aria-hidden="true" />
             <img
               src={activeProduct.images?.[0] || fallbackProductImage}
               alt={activeProduct.name}
@@ -539,7 +577,15 @@ function BestSellerCarousel({ products, navigate }) {
             className={activeIndex === index ? "active" : ""}
             onClick={() => setActiveIndex(index)}
             aria-label={`Show ${item.name}`}
-          />
+          >
+            <img
+              src={item.images?.[0] || fallbackProductImage}
+              alt=""
+              onError={(e) => {
+                e.target.src = fallbackProductImage;
+              }}
+            />
+          </button>
         ))}
       </div>
     </section>
@@ -575,9 +621,14 @@ function ServicesSection() {
   ];
 
   return (
-    <section className="home-services reveal-on-scroll">
+    <section className="home-services reveal-on-scroll cinematic-scene" data-scene-word="PRINT">
+      <div className="scene-floaters" aria-hidden="true">
+        <span className="mockup-shirt" />
+        <span className="mockup-card" />
+        <span className="mockup-sticker" />
+      </div>
       <div className="home-section-intro">
-        <h2>Our Services</h2>
+        <h2><AnimatedWords text="Our Services" /></h2>
         <p>Everything you need to make your brand stand out</p>
       </div>
 
@@ -588,6 +639,7 @@ function ServicesSection() {
             key={service.title}
             style={{ "--card-delay": `${index * 0.1}s` }}
           >
+            <span className="card-light" aria-hidden="true" />
             <span className="service-spill" aria-hidden="true" />
             <div className="home-service-icon" aria-hidden="true">
               {service.icon}
@@ -612,9 +664,16 @@ function PopularProductsSection({ navigate }) {
   ];
 
   return (
-    <section className="home-popular reveal-on-scroll">
+    <section className="home-popular reveal-on-scroll cinematic-scene" data-scene-word="CUSTOMIZE">
+      <div className="scene-floaters" aria-hidden="true">
+        <span className="mockup-sheet" />
+        <span className="mockup-card" />
+        <span className="mockup-dieline" />
+        <span className="mockup-jersey-outline" />
+        <span className="mockup-brochure" />
+      </div>
       <div className="home-section-intro dark">
-        <h2>Popular Products</h2>
+        <h2><AnimatedWords text="Popular Products" /></h2>
         <p>Explore our most loved printing options</p>
       </div>
 
@@ -627,6 +686,7 @@ function PopularProductsSection({ navigate }) {
             onClick={() => navigate("/product-overview")}
             style={{ "--card-delay": `${index * 0.06}s` }}
           >
+            <span className="card-light" aria-hidden="true" />
             <span className="popular-print-line" aria-hidden="true" />
             <span className="popular-icon" aria-hidden="true">
               {item.icon}
@@ -659,7 +719,11 @@ function FeaturesSection() {
   ];
 
   return (
-    <section className="home-features reveal-on-scroll">
+    <section className="home-features reveal-on-scroll cinematic-scene" data-scene-word="CREATE">
+      <div className="scene-floaters" aria-hidden="true">
+        <span className="mockup-card" />
+        <span className="mockup-sticker" />
+      </div>
       <div className="home-feature-grid">
         {features.map((feature, index) => (
           <article
@@ -667,6 +731,7 @@ function FeaturesSection() {
             key={feature.title}
             style={{ "--card-delay": `${index * 0.12}s` }}
           >
+            <span className="card-light" aria-hidden="true" />
             <div className="home-feature-icon" aria-hidden="true">
               {feature.icon}
             </div>
@@ -685,6 +750,8 @@ function HomePage() {
   const [products, setProducts] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeHeroWord, setActiveHeroWord] = useState(0);
+  const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -698,6 +765,20 @@ function HomePage() {
     handleScroll();
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handlePointerMove = (event) => {
+    setPointer({
+      x: (event.clientX / window.innerWidth - 0.5) * 2,
+      y: (event.clientY / window.innerHeight - 0.5) * 2,
+    });
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveHeroWord((current) => (current + 1) % homeHeroWords.length);
+    }, 2700);
+    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -774,7 +855,11 @@ function HomePage() {
   }, []);
 
   return (
-    <div className="App">
+    <div
+      className="App"
+      onMouseMove={handlePointerMove}
+      style={{ "--mouse-x": pointer.x, "--mouse-y": pointer.y }}
+    >
       <div
         className="home-scroll-progress"
         style={{ transform: `scaleX(${scrollProgress})` }}
@@ -828,11 +913,14 @@ function HomePage() {
 
         <div className="hero-copy">
           <h1>
-            Print Your <span>Vision</span>
+            Print Your{" "}
+            <span key={homeHeroWords[activeHeroWord]} className="home-hero-word">
+              {homeHeroWords[activeHeroWord]}
+            </span>
           </h1>
           <p>
-            Premium printing services that bring your ideas to life with
-            stunning quality and precision.
+            Premium printing services that bring every idea to life with
+            animated depth, sharp color, and production-ready precision.
           </p>
           <button
             type="button"
@@ -849,9 +937,14 @@ function HomePage() {
       <main className="main-content">
         {/* HOW TO ORDER (HTML/CSS) */}
         <section className="howto-wrap reveal-on-scroll">
+          <div className="howto-journey-line" aria-hidden="true" />
+          <div className="scene-floaters" aria-hidden="true">
+            <span className="mockup-card" />
+            <span className="mockup-sheet" />
+          </div>
           <div className="home-section-intro howto-intro">
             <h2>
-              Print Your Own Design With <span>PMG</span>!
+              <AnimatedWords text="Print Your Own Design With PMG!" highlight="PMG" />
             </h2>
             <p>A quick path from idea to finished print.</p>
           </div>
@@ -891,6 +984,7 @@ function HomePage() {
                 },
               ].map((s, idx) => (
                 <div className="howto-step" key={idx} style={{ "--card-delay": `${idx * 0.06}s` }}>
+                  <span className="card-light" aria-hidden="true" />
                   <div className="howto-step-top">
                     <span className="howto-step-label">{s.step}</span>
                     {idx !== 5 && <span className="howto-arrow">▶</span>}
@@ -910,14 +1004,19 @@ function HomePage() {
         <FeaturesSection />
 
         {/* ✅ ABOUT */}
-        <section className="about-showcase reveal-on-scroll" id="about">
+        <section className="about-showcase reveal-on-scroll cinematic-scene" id="about" data-scene-word="DESIGN">
+          <div className="scene-floaters" aria-hidden="true">
+            <span className="mockup-shirt" />
+            <span className="mockup-sheet" />
+          </div>
           <div className="home-section-intro about-intro">
-            <h2>About PMG Printing House</h2>
+            <h2><AnimatedWords text="About PMG Printing House" highlight="PMG" /></h2>
             <p>Your trusted one-stop printing shop</p>
           </div>
 
           <div className="about-story-grid">
             <article className="about-story-card about-main-card">
+              <span className="card-light" aria-hidden="true" />
               <span className="about-card-kicker">PMG</span>
               <h3>Printing made easy, complete, and reliable.</h3>
               <p>
@@ -932,6 +1031,7 @@ function HomePage() {
             </article>
 
             <article className="about-story-card">
+              <span className="card-light" aria-hidden="true" />
               <span className="about-card-kicker">Prints</span>
               <h3>What We Print And More</h3>
               <ul className="home-info-list">
@@ -945,6 +1045,7 @@ function HomePage() {
             </article>
 
             <article className="about-story-card">
+              <span className="card-light" aria-hidden="true" />
               <span className="about-card-kicker">Why PMG</span>
               <h3>Why Customers Come Back</h3>
               <ul className="home-info-list">
@@ -966,9 +1067,9 @@ function HomePage() {
         </section>
 
         {/* ✅ CONTACT */}
-        <section className="contact-showcase reveal-on-scroll" id="contact">
+        <section className="contact-showcase reveal-on-scroll cinematic-scene" id="contact" data-scene-word="CONNECT">
           <div className="home-section-intro contact-intro">
-            <h2>Contact</h2>
+            <h2><AnimatedWords text="Contact" /></h2>
             <p>Message PMG and start your next print project.</p>
           </div>
           <div className="contact-links">

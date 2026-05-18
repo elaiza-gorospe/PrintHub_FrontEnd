@@ -28,6 +28,36 @@ function formatRecentPrice(price) {
   return Number.isFinite(numeric) ? `₱${numeric.toLocaleString()}` : String(price);
 }
 
+function AnimatedPrice({ value }) {
+  const [displayValue, setDisplayValue] = useState(value || 0);
+  const previousValueRef = useRef(value || 0);
+
+  useEffect(() => {
+    const start = previousValueRef.current;
+    const end = Number(value || 0);
+    const duration = 420;
+    const startTime = performance.now();
+    let frameId;
+
+    const tick = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayValue(start + (end - start) * eased);
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(tick);
+      } else {
+        previousValueRef.current = end;
+      }
+    };
+
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [value]);
+
+  return <>{formatPrice(displayValue)}</>;
+}
+
 const DEFAULT_PRODUCT_ZONES = {
 
   notebook: ["front_cover", "back_cover"],
@@ -306,6 +336,50 @@ function ProductDetail() {
     [quantityPrice, materialSurcharge],
   );
 
+  const selectedSideLower = String(selectedSide || "").toLowerCase();
+  const selectedFinishLower = String(selectedFinish || "").toLowerCase();
+  const selectedMaterialLower = String(selectedMaterial?.label || "").toLowerCase();
+  const isJerseyProduct = String(product?.dbCategory || product?.title || "")
+    .toLowerCase()
+    .includes("jersey");
+  const previewSurface = selectedSideLower.includes("back")
+    ? "back"
+    : selectedSideLower.includes("sleeve")
+      ? "sleeve"
+      : "front";
+  const previewClasses = [
+    isJerseyProduct ? "pd-live-jersey" : "",
+    previewSurface === "back" ? "pd-preview-back" : "",
+    previewSurface === "sleeve" ? "pd-preview-sleeve" : "",
+    selectedSideLower.includes("front & back") ? "pd-preview-spin" : "",
+    selectedSideLower.includes("full sublimation") ||
+    selectedFinishLower.includes("sublimation") ||
+    selectedMaterialLower.includes("mesh")
+      ? "pd-preview-sublimation"
+      : "",
+    selectedFinishLower.includes("embroidery") ? "pd-preview-embroidery" : "",
+    selectedFinishLower.includes("screen") ? "pd-preview-screenprint" : "",
+    selectedFinishLower.includes("heat") ? "pd-preview-heat" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const progressSteps = [
+    { label: "Choose Size", complete: Boolean(selectedSize && !customSizeSelected) },
+    { label: "Choose Material", complete: Boolean(selectedMaterial) },
+    { label: "Choose Print", complete: Boolean(selectedSide && selectedFinish) },
+    { label: "Finalize Order", complete: Boolean(selectedQty || customQty) },
+  ];
+  const completedSteps = progressSteps.filter((step) => step.complete).length;
+
+  useEffect(() => {
+    if (!product?.gallery?.length) return;
+    if (selectedSideLower.includes("back") && product.gallery[1]) {
+      setSelectedImage(product.gallery[1]);
+    } else if (selectedSideLower.includes("front") && product.gallery[0]) {
+      setSelectedImage(product.gallery[0]);
+    }
+  }, [product, selectedSideLower]);
+
   const materialDisplayPrice = useMemo(() => {
     if (!selectedMaterial?.price) return "Included";
     const numeric = extractNumericPrice(selectedMaterial.price);
@@ -457,8 +531,23 @@ function ProductDetail() {
               ))}
             </div>
 
-            <div className="pd-main-image">
-              <img src={selectedImage} alt={product.title} />
+            <div className={`pd-main-image ${previewClasses}`}>
+              <div className="pd-preview-stage">
+                <img src={selectedImage} alt={product.title} />
+                {isJerseyProduct && (
+                  <>
+                    <span className="pd-print-zone pd-zone-front">Front print area</span>
+                    <span className="pd-print-zone pd-zone-back">Back print area</span>
+                    <span className="pd-print-zone pd-zone-sleeve">Sleeve print</span>
+                    <span className="pd-embroidery-badge">Embroidery</span>
+                    <span className="pd-fabric-shine" />
+                  </>
+                )}
+              </div>
+              <div className="pd-preview-status">
+                <span>{previewSurface === "back" ? "Back view" : previewSurface === "sleeve" ? "Sleeve focus" : "Front view"}</span>
+                <strong>{selectedFinish || "Standard finish"}</strong>
+              </div>
             </div>
           </div>
 
@@ -584,9 +673,29 @@ function ProductDetail() {
           </div>
         </div>
 
+        <div className="pd-progress-panel">
+          <div className="pd-progress-track">
+            <span style={{ width: `${(completedSteps / progressSteps.length) * 100}%` }} />
+          </div>
+          <div className="pd-progress-steps">
+            {progressSteps.map((step, index) => (
+              <div key={step.label} className={step.complete ? "complete" : index === completedSteps ? "current" : ""}>
+                <span>{step.complete ? "✓" : index + 1}</span>
+                {step.label}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="pd-floating-perks" aria-label="Product highlights">
+          {["Premium Fabric", "Fade Resistant", "Fast Production", "Locally Printed"].map((perk, index) => (
+            <span key={perk} style={{ "--perk-delay": `${index * 0.18}s` }}>{perk}</span>
+          ))}
+        </div>
+
         <div className="pd-sections">
-          <section className="pd-section">
-            <h2>1. Select size</h2>
+          <section className={`pd-section ${selectedSize && !customSizeSelected ? "pd-step-complete" : "pd-step-current"}`}>
+            <h2>1. Select size <span>{selectedSize && !customSizeSelected ? "✓" : ""}</span></h2>
 
             <div className="pd-line-options">
               {product.sizes.map((size) => (
@@ -631,12 +740,17 @@ function ProductDetail() {
 
           {!customSizeSelected && (
             <>
-              <section className="pd-section">
-                <h2>2. Select material</h2>
+              <section className={`pd-section ${selectedMaterial ? "pd-step-complete" : "pd-step-current"}`}>
+                <h2>2. Select material <span>{selectedMaterial ? "✓" : ""}</span></h2>
                 {product.materials.map((material) => (
                   <label
                     key={`${material.label}-${material.price}`}
                     className={`pd-line-option pd-price-option ${selectedMaterial?.label === material.label ? "selected" : ""}`}
+                    data-tip={
+                      String(material.label).toLowerCase().includes("mesh")
+                        ? "Breathable texture preview"
+                        : "Smooth premium fabric"
+                    }
                   >
                     <input
                       type="radio"
@@ -655,8 +769,8 @@ function ProductDetail() {
                 ))}
               </section>
 
-              <section className="pd-section">
-                <h2>3. Select printed sides</h2>
+              <section className={`pd-section ${selectedSide ? "pd-step-complete" : "pd-step-current"}`}>
+                <h2>3. Select printed sides <span>{selectedSide ? "✓" : ""}</span></h2>
                 {product.sides.map((side) => (
                   <label
                     key={side}
@@ -674,12 +788,21 @@ function ProductDetail() {
                 ))}
               </section>
 
-              <section className="pd-section">
-                <h2>4. Select finishing</h2>
+              <section className={`pd-section ${selectedFinish ? "pd-step-complete" : "pd-step-current"}`}>
+                <h2>4. Select finishing <span>{selectedFinish ? "✓" : ""}</span></h2>
                 {product.finishing.map((finish) => (
                   <label
                     key={finish}
                     className={`pd-line-option ${selectedFinish === finish ? "selected" : ""}`}
+                    data-tip={
+                      String(finish).toLowerCase().includes("embroider")
+                        ? "Raised stitched detail"
+                        : String(finish).toLowerCase().includes("sublimation")
+                          ? "All-over fabric color"
+                          : String(finish).toLowerCase().includes("screen")
+                            ? "Bold ink overlay"
+                            : "Clean standard finish"
+                    }
                   >
                     <input
                       type="radio"
@@ -758,7 +881,9 @@ function ProductDetail() {
                 <div className="pd-order-card pd-order-card-inline">
                   <div className="pd-order-head">
                     <span>Ready to print</span>
-                    <strong>{formatPrice(grandTotal)}</strong>
+                    <strong key={grandTotal} className="pd-animated-price">
+                      <AnimatedPrice value={grandTotal} />
+                    </strong>
                   </div>
 
                   <div className="pd-order-details">
@@ -791,7 +916,9 @@ function ProductDetail() {
                     </p>
                     <p className="pd-order-total-line">
                       <span>Total</span>
-                      <strong>{formatPrice(grandTotal)}</strong>
+                      <strong key={`total-${grandTotal}`} className="pd-animated-price">
+                        <AnimatedPrice value={grandTotal} />
+                      </strong>
                     </p>
                   </div>
 
