@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaCheckCircle } from "react-icons/fa";
 import "./Product-detail.css";
-import ReCAPTCHA from "react-google-recaptcha";
 import { useCart } from "../hooks/useCart";
 import { extractNumericPrice, formatPrice } from "../utils/priceUtils";
 import Header from "../components/Header";
@@ -18,7 +17,11 @@ import MugCustomizerPanel from "../components/MugCustomizer/MugCustomizerPanel";
 import PosterCustomizerPanel from "../components/PosterCustomizer/PosterCustomizerPanel";
 import FlyerCustomizerPanel from "../components/FlyerCustomizer/FlyerCustomizerPanel";
 import ThankYouCardCustomizerPanel from "../components/ThankYouCardCustomizer/ThankYouCardCustomizerPanel";
+import StickerCustomizerPanel from "../components/StickerCustomizer/StickerCustomizerPanel";
+import HangTagCustomizerPanel from "../components/HangTagCustomizer/HangTagCustomizerPanel";
+import TarpaulinCustomizerPanel from "../components/TarpaulinCustomizer/TarpaulinCustomizerPanel";
 import FlatCustomizerPanel from "../components/FlatCustomizer/FlatCustomizerPanel";
+import AppModal from "../components/AppModal";
 
 const RECENTLY_VIEWED_KEY = "printhub_recently_viewed_products";
 const RECENTLY_VIEWED_LIMIT = 8;
@@ -31,7 +34,38 @@ function formatRecentPrice(price) {
     : String(price);
 }
 
+function AnimatedPrice({ value }) {
+  const [displayValue, setDisplayValue] = useState(value || 0);
+  const previousValueRef = useRef(value || 0);
+
+  useEffect(() => {
+    const start = previousValueRef.current;
+    const end = Number(value || 0);
+    const duration = 420;
+    const startTime = performance.now();
+    let frameId;
+
+    const tick = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayValue(start + (end - start) * eased);
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(tick);
+      } else {
+        previousValueRef.current = end;
+      }
+    };
+
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [value]);
+
+  return <>{formatPrice(displayValue)}</>;
+}
+
 const DEFAULT_PRODUCT_ZONES = {
+
   notebook: ["front_cover", "back_cover"],
   tshirt: ["front", "back", "left_sleeve", "right_sleeve"],
   jersey: ["front", "back", "left_sleeve", "right_sleeve"],
@@ -46,6 +80,8 @@ const DEFAULT_PRODUCT_ZONES = {
   posters: ["front"],
   thank_you_card: ["front", "back"],
   banners: ["front"],
+  tarpaulin: ["front"],
+  tarpaulins: ["front"],
   stickers: ["front"],
   hang_tags: ["front", "back"],
   other: ["front", "back"],
@@ -62,10 +98,9 @@ function inferCustomizerCategory({ category, name, title }) {
 
   if (label.includes("flyer")) return "flyers";
   if (label.includes("poster")) return "posters";
-
-  if (rawCategory && !["service", "print", "other"].includes(rawCategory)) {
-    return rawCategory;
-  }
+  if (label.includes("sticker") || label.includes("label")) return "stickers";
+  if (label.includes("hang tag") || label.includes("hangtag")) return "hang_tags";
+  if (label.includes("tarpaulin") || label.includes("banner")) return "tarpaulin";
   if (label.includes("business card") || label.includes("calling card")) {
     return "business_card";
   }
@@ -74,6 +109,10 @@ function inferCustomizerCategory({ category, name, title }) {
   if (label.includes("hang tag") || label.includes("hangtag"))
     return "hang_tags";
   if (label.includes("brochure")) return "brochures";
+
+  if (rawCategory && !["service", "print", "other"].includes(rawCategory)) {
+    return rawCategory;
+  }
   if (label.includes("notebook")) return "notebook";
   if (label.includes("jersey")) return "jersey";
   if (label.includes("cap") || label.includes("hat")) return "cap";
@@ -100,8 +139,11 @@ function getCustomizerPanel(category) {
   if (normalized === "poster" || normalized === "posters")
     return PosterCustomizerPanel;
   if (normalized === "thank_you_card") return ThankYouCardCustomizerPanel;
-  if (normalized === "stickers" || normalized === "hang_tags")
-    return FlatCustomizerPanel;
+  if (normalized === "stickers") return StickerCustomizerPanel;
+  if (normalized === "hang_tags") return HangTagCustomizerPanel;
+  if (normalized === "tarpaulin" || normalized === "tarpaulins" || normalized === "banners") {
+    return TarpaulinCustomizerPanel;
+  }
   if (normalized === "cap") return CapCustomizerPanel;
   if (normalized === "jersey" || normalized === "jersery")
     return JerseyCustomizerPanel;
@@ -113,10 +155,12 @@ function getCustomizerPanel(category) {
 function mapApiProduct(data) {
   const parseOptions = (arr) =>
     (arr || []).map((opt) => {
-      const idx = opt.indexOf("|");
-      if (idx === -1) return { label: opt, price: "" };
-      return { label: opt.slice(0, idx), price: opt.slice(idx + 1) };
+      const value = String(opt || "");
+      const idx = value.indexOf("|");
+      if (idx === -1) return { label: value, price: "" };
+      return { label: value.slice(0, idx), price: value.slice(idx + 1) };
     });
+
 
   const dbCategory = inferCustomizerCategory({
     category: data.category,
@@ -137,13 +181,12 @@ function mapApiProduct(data) {
     gallery: data.images?.length > 0 ? data.images : [],
     price: data.price,
     sizes: data.size_options || [],
-    materials: data.material_options || [],
+    materials: parseOptions(data.material_options),
     sides: data.side_options || [],
     finishing: data.finishing_options || [],
     colors: data.color_options || [],
     processing: data.processing_options || [],
     quantities: parseOptions(data.quantity_options),
-    shipping: parseOptions(data.shipping_options),
     ai_prompt_rules: data.ai_prompt_rules || null,
     print_zones: printZones,
     dbCategory,
@@ -185,7 +228,7 @@ function ProductDetail() {
   );
   const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || "");
   const [selectedMaterial, setSelectedMaterial] = useState(
-    product?.materials?.[0] || "",
+    product?.materials?.[0] || null,
   );
   const [selectedSide, setSelectedSide] = useState(product?.sides?.[0] || "");
   const [selectedFinish, setSelectedFinish] = useState(
@@ -195,9 +238,6 @@ function ProductDetail() {
     product?.quantities?.[0] || null,
   );
   const [customQty, setCustomQty] = useState("");
-  const [selectedShipping, setSelectedShipping] = useState(
-    product?.shipping?.[0] || null,
-  );
   const [activeTab, setActiveTab] = useState("product");
   const [successMessage, setSuccessMessage] = useState("");
   const [customSizeSelected, setCustomSizeSelected] = useState(false);
@@ -205,6 +245,7 @@ function ProductDetail() {
   const [quoteError, setQuoteError] = useState("");
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const [noticeModal, setNoticeModal] = useState(null);
 
   // AI Builder
   const [activeDesign, setActiveDesign] = useState(null); // designMeta | null
@@ -225,8 +266,6 @@ function ProductDetail() {
       return null;
     }
   }, []);
-  const isLoggedIn = Boolean(storedUser?.id);
-
   const [quoteForm, setQuoteForm] = useState({
     subject: "",
     name: "",
@@ -238,23 +277,19 @@ function ProductDetail() {
     finishing: "",
     printing: "",
     processing: "",
-    delivery: "",
     other: "",
   });
-
-  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
     if (!product) return;
 
     setSelectedImage(product.gallery?.[0] || "");
     setSelectedSize(product.sizes?.[0] || "");
-    setSelectedMaterial(product.materials?.[0] || "");
+    setSelectedMaterial(product.materials?.[0] || null);
     setSelectedSide(product.sides?.[0] || "");
     setSelectedFinish(product.finishing?.[0] || "");
     setSelectedQty(product.quantities?.[0] || null);
     setCustomQty("");
-    setSelectedShipping(product.shipping?.[0] || null);
     setCustomSizeSelected(false);
 
     setQuoteForm({
@@ -267,15 +302,14 @@ function ProductDetail() {
           : product.quantities?.[0]?.label || "",
       size: product.sizes?.[0] || "",
       color: product.colors?.[0] || "",
-      material: product.materials?.[0] || "",
+      material: product.materials?.[0]?.label || "",
       finishing: product.finishing?.[0] || "",
       printing: product.sides?.[0] || "",
       processing: product.processing?.[0] || "",
-      delivery: product.shipping?.[0]?.label || "",
       other: "",
     });
 
-    setIsVerified(false);
+
   }, [product]);
 
   useEffect(() => {
@@ -323,12 +357,75 @@ function ProductDetail() {
     }
   }, [selectedQty, customQty, product]);
 
+  const materialSurcharge = useMemo(
+    () => extractNumericPrice(selectedMaterial?.price),
+    [selectedMaterial],
+  );
+
+  const quantityPrice = useMemo(
+    () => extractNumericPrice(selectedQty?.price),
+    [selectedQty],
+  );
+
+  const grandTotal = useMemo(
+    () => quantityPrice + materialSurcharge,
+    [quantityPrice, materialSurcharge],
+  );
+
+  const selectedSideLower = String(selectedSide || "").toLowerCase();
+  const selectedFinishLower = String(selectedFinish || "").toLowerCase();
+  const selectedMaterialLower = String(selectedMaterial?.label || "").toLowerCase();
+  const isJerseyProduct = String(product?.dbCategory || product?.title || "")
+    .toLowerCase()
+    .includes("jersey");
+  const previewSurface = selectedSideLower.includes("back")
+    ? "back"
+    : selectedSideLower.includes("sleeve")
+      ? "sleeve"
+      : "front";
+  const previewClasses = [
+    isJerseyProduct ? "pd-live-jersey" : "",
+    previewSurface === "back" ? "pd-preview-back" : "",
+    previewSurface === "sleeve" ? "pd-preview-sleeve" : "",
+    selectedSideLower.includes("front & back") ? "pd-preview-spin" : "",
+    selectedSideLower.includes("full sublimation") ||
+    selectedFinishLower.includes("sublimation") ||
+    selectedMaterialLower.includes("mesh")
+      ? "pd-preview-sublimation"
+      : "",
+    selectedFinishLower.includes("embroidery") ? "pd-preview-embroidery" : "",
+    selectedFinishLower.includes("screen") ? "pd-preview-screenprint" : "",
+    selectedFinishLower.includes("heat") ? "pd-preview-heat" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const progressSteps = [
+    { label: "Choose Size", complete: Boolean(selectedSize && !customSizeSelected) },
+    { label: "Choose Material", complete: Boolean(selectedMaterial) },
+    { label: "Choose Print", complete: Boolean(selectedSide && selectedFinish) },
+    { label: "Finalize Order", complete: Boolean(selectedQty || customQty) },
+  ];
+  const completedSteps = progressSteps.filter((step) => step.complete).length;
+
+  useEffect(() => {
+    if (!product?.gallery?.length) return;
+    if (selectedSideLower.includes("back") && product.gallery[1]) {
+      setSelectedImage(product.gallery[1]);
+    } else if (selectedSideLower.includes("front") && product.gallery[0]) {
+      setSelectedImage(product.gallery[0]);
+    }
+  }, [product, selectedSideLower]);
+
+  const materialDisplayPrice = useMemo(() => {
+    if (!selectedMaterial?.price) return "Included";
+    const numeric = extractNumericPrice(selectedMaterial.price);
+    if (!numeric) return "Included";
+    return `+ ${formatPrice(numeric)}`;
+  }, [selectedMaterial]);
+
   const handleQuoteChange = (e) => {
     const { name, value } = e.target;
-    setQuoteForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setQuoteForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleQuoteSubmit = async (e) => {
@@ -356,7 +453,6 @@ function ProductDetail() {
           finishing: quoteForm.finishing,
           printing: quoteForm.printing,
           processing: quoteForm.processing,
-          delivery: quoteForm.delivery,
           other: quoteForm.other,
         }),
       });
@@ -401,8 +497,12 @@ function ProductDetail() {
   };
 
   const handleAddToCart = () => {
-    if (!selectedQty || !selectedShipping) {
-      alert("Please select quantity and shipping before adding to cart.");
+    if (!selectedQty) {
+      setNoticeModal({
+        title: "Complete your options",
+        message: "Please select quantity before adding to cart.",
+        tone: "info",
+      });
       return;
     }
 
@@ -410,16 +510,19 @@ function ProductDetail() {
       id: product.id,
       productId: product.id,
       title: product.title,
-      price: extractNumericPrice(selectedQty.price),
+      price: grandTotal,
       size: selectedSize,
-      material: selectedMaterial,
+      material: {
+        label: selectedMaterial?.label || "",
+        price: selectedMaterial?.price || "",
+      },
       sides: selectedSide,
       finishing: selectedFinish,
       quantity: selectedQty,
-      shipping: selectedShipping,
       design: activeDesign || null,
       images: product.images,
     });
+
 
     setSuccessMessage("✓ Added to cart!");
     setTimeout(() => {
@@ -478,8 +581,23 @@ function ProductDetail() {
               ))}
             </div>
 
-            <div className="pd-main-image">
-              <img src={selectedImage} alt={product.title} />
+            <div className={`pd-main-image ${previewClasses}`}>
+              <div className="pd-preview-stage">
+                <img src={selectedImage} alt={product.title} />
+                {isJerseyProduct && (
+                  <>
+                    <span className="pd-print-zone pd-zone-front">Front print area</span>
+                    <span className="pd-print-zone pd-zone-back">Back print area</span>
+                    <span className="pd-print-zone pd-zone-sleeve">Sleeve print</span>
+                    <span className="pd-embroidery-badge">Embroidery</span>
+                    <span className="pd-fabric-shine" />
+                  </>
+                )}
+              </div>
+              <div className="pd-preview-status">
+                <span>{previewSurface === "back" ? "Back view" : previewSurface === "sleeve" ? "Sleeve focus" : "Front view"}</span>
+                <strong>{selectedFinish || "Standard finish"}</strong>
+              </div>
             </div>
 
             {/* Mobile: swipeable snap carousel */}
@@ -557,9 +675,9 @@ function ProductDetail() {
               <div className="pd-tab-content">
                 <ul className="pd-features">
                   <li>
-                    <strong>Free delivery</strong>
+                    <strong>Fast in-store pickup</strong>
                   </li>
-                  <li>Printed locally, fast delivery</li>
+                  <li>Printed locally with premium finish</li>
                   <li>Choose from premium print options</li>
                 </ul>
 
@@ -695,100 +813,33 @@ function ProductDetail() {
               </div>
             )}
 
-            {!customSizeSelected && (
-              <div className="pd-order-card">
-                <div className="pd-order-head">
-                  <span>Ready to print</span>
-                  <strong>
-                    {formatPrice(
-                      extractNumericPrice(selectedQty?.price) +
-                        extractNumericPrice(selectedShipping?.price),
-                    )}
-                  </strong>
-                </div>
 
-                <div className="pd-order-details">
-                  <span>
-                    <strong>Size</strong>
-                    {selectedSize || "Select one"}
-                  </span>
-                  <span>
-                    <strong>Material</strong>
-                    {selectedMaterial || "Select one"}
-                  </span>
-                  <span>
-                    <strong>Print</strong>
-                    {selectedSide || "Select one"}
-                  </span>
-                  <span>
-                    <strong>Qty</strong>
-                    {selectedQty?.label || customQty || "Select one"}
-                  </span>
-                </div>
-
-                <div className="pd-order-price-lines">
-                  <p>
-                    <span>Product</span>
-                    <strong>{selectedQty?.price}</strong>
-                  </p>
-                  <p>
-                    <span>Delivery</span>
-                    <strong>{selectedShipping?.price}</strong>
-                  </p>
-                </div>
-
-                {successMessage && (
-                  <div className="pd-success-message">
-                    <FaCheckCircle /> {successMessage}
-                  </div>
-                )}
-                {activeDesign && (
-                  <div className="pd-design-attached">
-                    {Object.values(activeDesign.zones || {})
-                      .filter((z) => z?.imageUrl)
-                      .map((z, i) => (
-                        <img
-                          key={i}
-                          src={z.imageUrl}
-                          alt={`design zone ${i + 1}`}
-                          className="pd-design-thumb"
-                        />
-                      ))}
-                    {!Object.values(activeDesign.zones || {}).some(
-                      (z) => z?.imageUrl,
-                    ) &&
-                      activeDesign.generatedImageUrl && (
-                        <img
-                          src={activeDesign.generatedImageUrl}
-                          alt="design preview"
-                          className="pd-design-thumb"
-                        />
-                      )}
-                    <span>AI design attached</span>
-                    <button
-                      type="button"
-                      className="pd-design-remove"
-                      onClick={() => setActiveDesign(null)}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  className="pd-cart-btn"
-                  onClick={handleAddToCart}
-                >
-                  ADD TO CART
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
+        <div className="pd-progress-panel">
+          <div className="pd-progress-track">
+            <span style={{ width: `${(completedSteps / progressSteps.length) * 100}%` }} />
+          </div>
+          <div className="pd-progress-steps">
+            {progressSteps.map((step, index) => (
+              <div key={step.label} className={step.complete ? "complete" : index === completedSteps ? "current" : ""}>
+                <span>{step.complete ? "✓" : index + 1}</span>
+                {step.label}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="pd-floating-perks" aria-label="Product highlights">
+          {["Premium Fabric", "Fade Resistant", "Fast Production", "Locally Printed"].map((perk, index) => (
+            <span key={perk} style={{ "--perk-delay": `${index * 0.18}s` }}>{perk}</span>
+          ))}
+        </div>
+
         <div className="pd-sections">
-          <section className="pd-section">
-            <h2>1. Select size</h2>
+          <section className={`pd-section ${selectedSize && !customSizeSelected ? "pd-step-complete" : "pd-step-current"}`}>
+            <h2>1. Select size <span>{selectedSize && !customSizeSelected ? "✓" : ""}</span></h2>
 
             <div className="pd-line-options">
               {product.sizes.map((size) => (
@@ -833,27 +884,37 @@ function ProductDetail() {
 
           {!customSizeSelected && (
             <>
-              <section className="pd-section">
-                <h2>2. Select material</h2>
+              <section className={`pd-section ${selectedMaterial ? "pd-step-complete" : "pd-step-current"}`}>
+                <h2>2. Select material <span>{selectedMaterial ? "✓" : ""}</span></h2>
                 {product.materials.map((material) => (
                   <label
-                    key={material}
-                    className={`pd-line-option ${selectedMaterial === material ? "selected" : ""}`}
+                    key={`${material.label}-${material.price}`}
+                    className={`pd-line-option pd-price-option ${selectedMaterial?.label === material.label ? "selected" : ""}`}
+                    data-tip={
+                      String(material.label).toLowerCase().includes("mesh")
+                        ? "Breathable texture preview"
+                        : "Smooth premium fabric"
+                    }
                   >
                     <input
                       type="radio"
                       name="material"
-                      value={material}
-                      checked={selectedMaterial === material}
+                      value={material.label}
+                      checked={selectedMaterial?.label === material.label}
                       onChange={() => setSelectedMaterial(material)}
                     />
-                    <span>{material}</span>
+                    <span>{material.label}</span>
+                    <strong>
+                      {material.price
+                        ? `+ ${formatPrice(extractNumericPrice(material.price))}`
+                        : "Included"}
+                    </strong>
                   </label>
                 ))}
               </section>
 
-              <section className="pd-section">
-                <h2>3. Select printed sides</h2>
+              <section className={`pd-section ${selectedSide ? "pd-step-complete" : "pd-step-current"}`}>
+                <h2>3. Select printed sides <span>{selectedSide ? "✓" : ""}</span></h2>
                 {product.sides.map((side) => (
                   <label
                     key={side}
@@ -871,12 +932,21 @@ function ProductDetail() {
                 ))}
               </section>
 
-              <section className="pd-section">
-                <h2>4. Select finishing</h2>
+              <section className={`pd-section ${selectedFinish ? "pd-step-complete" : "pd-step-current"}`}>
+                <h2>4. Select finishing <span>{selectedFinish ? "✓" : ""}</span></h2>
                 {product.finishing.map((finish) => (
                   <label
                     key={finish}
                     className={`pd-line-option ${selectedFinish === finish ? "selected" : ""}`}
+                    data-tip={
+                      String(finish).toLowerCase().includes("embroider")
+                        ? "Raised stitched detail"
+                        : String(finish).toLowerCase().includes("sublimation")
+                          ? "All-over fabric color"
+                          : String(finish).toLowerCase().includes("screen")
+                            ? "Bold ink overlay"
+                            : "Clean standard finish"
+                    }
                   >
                     <input
                       type="radio"
@@ -890,92 +960,153 @@ function ProductDetail() {
                 ))}
               </section>
 
-              <section className="pd-section">
-                <h2>5. Select quantity</h2>
+              <section className="pd-section pd-quantity-stage">
+                <div className="pd-quantity-head">
+                  <h2>5. Select quantity</h2>
+                  <span className="pd-stage-pill">Final step before cart</span>
+                </div>
+
                 {product.quantity_mode === "text" ? (
-                  <div
-                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                  >
+                  <div className="pd-qty-custom-wrap">
                     <input
                       type="number"
                       min={1}
+                      className="pd-qty-custom-input"
                       value={customQty}
                       onChange={(e) => {
                         const v = e.target.value;
                         setCustomQty(v);
-                        const n = parseInt(v) || 0;
+                        const n = parseInt(v, 10) || 0;
                         if (n <= 0) return;
-                        // If threshold is set and exceeded -> auto-select contact/quote
-                        if (
-                          product.quantity_count &&
-                          n > product.quantity_count
-                        ) {
+
+                        if (product.quantity_count && n > product.quantity_count) {
                           setCustomSizeSelected(true);
                           scrollToQuote();
                         } else {
-                          // synthesize a selectedQty object so summary and add-to-cart work
                           setSelectedQty({
                             label: `${n} pcs`,
-                            price: formatPrice((product.price || 0) * n),
+                            price: formatPrice(extractNumericPrice(product.price) * n),
                             quantityNumber: n,
                           });
                           setCustomSizeSelected(false);
                         }
                       }}
                       placeholder="Enter quantity (e.g., 10)"
-                      style={{
-                        padding: "8px 10px",
-                        borderRadius: 6,
-                        border: "1px solid #d1d5db",
-                      }}
                     />
                     {product.quantity_count ? (
-                      <div style={{ fontSize: 12, color: "#6b7280" }}>
-                        Quantities greater than {product.quantity_count} will be
-                        handled via Quote/Contact.
+                      <div className="pd-qty-note">
+                        Quantities greater than {product.quantity_count} will be handled via
+                        Quote/Contact.
                       </div>
                     ) : null}
                   </div>
                 ) : (
-                  product.quantities.map((qty) => (
-                    <label
-                      key={qty.label}
-                      className={`pd-line-option pd-price-option ${
-                        selectedQty?.label === qty.label ? "selected" : ""
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="quantity"
-                        checked={selectedQty?.label === qty.label}
-                        onChange={() => setSelectedQty(qty)}
-                      />
-                      <span>{qty.label}</span>
-                      <strong>{qty.price}</strong>
-                    </label>
-                  ))
+                  <div className="pd-qty-grid">
+                    {product.quantities.map((qty) => (
+                      <label
+                        key={qty.label}
+                        className={`pd-line-option pd-price-option ${
+                          selectedQty?.label === qty.label ? "selected" : ""
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="quantity"
+                          checked={selectedQty?.label === qty.label}
+                          onChange={() => setSelectedQty(qty)}
+                        />
+                        <span>{qty.label}</span>
+                        <strong>{qty.price}</strong>
+                      </label>
+                    ))}
+                  </div>
                 )}
-              </section>
 
-              <section className="pd-section">
-                <h2>6. Select shipping</h2>
-                {product.shipping.map((ship) => (
-                  <label
-                    key={ship.label}
-                    className={`pd-line-option pd-price-option ${
-                      selectedShipping?.label === ship.label ? "selected" : ""
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="shipping"
-                      checked={selectedShipping?.label === ship.label}
-                      onChange={() => setSelectedShipping(ship)}
-                    />
-                    <span>{ship.label}</span>
-                    <strong>{ship.price}</strong>
-                  </label>
-                ))}
+                <div className="pd-order-card pd-order-card-inline">
+                  <div className="pd-order-head">
+                    <span>Ready to print</span>
+                    <strong key={grandTotal} className="pd-animated-price">
+                      <AnimatedPrice value={grandTotal} />
+                    </strong>
+                  </div>
+
+                  <div className="pd-order-details">
+                    <span>
+                      <strong>Size</strong>
+                      {selectedSize || "Select one"}
+                    </span>
+                    <span>
+                      <strong>Material</strong>
+                      {selectedMaterial?.label || "Select one"}
+                    </span>
+                    <span>
+                      <strong>Print</strong>
+                      {selectedSide || "Select one"}
+                    </span>
+                    <span>
+                      <strong>Qty</strong>
+                      {selectedQty?.label || customQty || "Select one"}
+                    </span>
+                  </div>
+
+                  <div className="pd-order-price-lines">
+                    <p>
+                      <span>Quantity price</span>
+                      <strong>{selectedQty?.price || formatPrice(0)}</strong>
+                    </p>
+                    <p>
+                      <span>Material add-on</span>
+                      <strong>{materialDisplayPrice}</strong>
+                    </p>
+                    <p className="pd-order-total-line">
+                      <span>Total</span>
+                      <strong key={`total-${grandTotal}`} className="pd-animated-price">
+                        <AnimatedPrice value={grandTotal} />
+                      </strong>
+                    </p>
+                  </div>
+
+                  {successMessage && (
+                    <div className="pd-success-message">
+                      <FaCheckCircle /> {successMessage}
+                    </div>
+                  )}
+
+                  {activeDesign && (
+                    <div className="pd-design-attached">
+                      {Object.values(activeDesign.zones || {})
+                        .filter((z) => z?.imageUrl)
+                        .map((z, i) => (
+                          <img
+                            key={i}
+                            src={z.imageUrl}
+                            alt={`design zone ${i + 1}`}
+                            className="pd-design-thumb"
+                          />
+                        ))}
+                      {!Object.values(activeDesign.zones || {}).some((z) => z?.imageUrl) &&
+                        activeDesign.generatedImageUrl && (
+                          <img
+                            src={activeDesign.generatedImageUrl}
+                            alt="design preview"
+                            className="pd-design-thumb"
+                          />
+                        )}
+                      <span>AI design attached</span>
+                      <button
+                        type="button"
+                        className="pd-design-remove"
+                        onClick={() => setActiveDesign(null)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+
+                  <button type="button" className="pd-cart-btn" onClick={handleAddToCart}>
+                    ADD TO CART
+                  </button>
+                </div>
               </section>
             </>
           )}
@@ -983,17 +1114,18 @@ function ProductDetail() {
           {customSizeSelected && (
             <section className="pd-section pd-quote-section" ref={quoteRef}>
               <h2 className="pd-quote-title">Request a quote.</h2>
-              <p className="pd-quote-desc">
-                Are you looking for a product that is not on our website? Or
-                have you found a product on our website, but it doesn't quite
-                fit your needs? Let our team of experts send you a quote that
-                matches your expectations in terms of price, quality and
-                delivery time. Simply fill in the form below and we will quickly
-                send you a quote.
-              </p>
+                <p className="pd-quote-desc">
+                  Are you looking for a product that is not on our website? Or
+                  have you found a product on our website, but it doesn't quite
+                  fit your needs? Let our team of experts send you a quote that
+                  matches your expectations in terms of price and quality.
+                  Simply fill in the form below and we will quickly send you a
+                  quote.
+                </p>
+
 
               <form className="pd-quote-box" onSubmit={handleQuoteSubmit}>
-                <div className="pd-quote-row">
+                <div className="pd-quote-row pd-quote-row-wide">
                   <label htmlFor="subject">Subject:</label>
                   <input
                     id="subject"
@@ -1114,8 +1246,8 @@ function ProductDetail() {
                     onChange={handleQuoteChange}
                   >
                     {product.materials.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
+                      <option key={m.label} value={m.label}>
+                        {m.label}
                       </option>
                     ))}
                   </select>
@@ -1169,23 +1301,8 @@ function ProductDetail() {
                   </select>
                 </div>
 
-                <div className="pd-quote-row">
-                  <label htmlFor="delivery">Delivery:</label>
-                  <select
-                    id="delivery"
-                    name="delivery"
-                    value={quoteForm.delivery}
-                    onChange={handleQuoteChange}
-                  >
-                    {product.shipping.map((s) => (
-                      <option key={s.label} value={s.label}>
-                        {s.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
 
-                <div className="pd-quote-row pd-quote-row-top">
+                <div className="pd-quote-row pd-quote-row-wide pd-quote-row-top">
                   <label htmlFor="other">Other:</label>
                   <textarea
                     id="other"
@@ -1275,6 +1392,13 @@ function ProductDetail() {
           </section>
         )}
       </div>
+      <AppModal
+        open={Boolean(noticeModal)}
+        title={noticeModal?.title}
+        message={noticeModal?.message}
+        tone={noticeModal?.tone}
+        onConfirm={() => setNoticeModal(null)}
+      />
     </div>
   );
 }

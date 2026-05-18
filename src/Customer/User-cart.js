@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./User-cart.css";
-import { FaArrowLeft, FaTrash, FaMinus, FaPlus } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaTrash,
+  FaMinus,
+  FaPlus,
+  FaShoppingBag,
+} from "react-icons/fa";
 import CheckoutModal from "./CheckoutModal";
 import { useCart } from "../hooks/useCart";
-import { extractNumericPrice } from "../utils/priceUtils";
 import Header from "../components/Header";
 
 function UserCartPage() {
@@ -51,17 +56,7 @@ function UserCartPage() {
     (acc, item) => acc + item.price * item.qty,
     0,
   );
-  // Get shipping cost from first item's customizations (all items should have same shipping)
-  let shipping = 0;
-  if (cartItems.length > 0) {
-    const shippingPrice = cartItems[0].customizations?.shippingPrice;
-    shipping = extractNumericPrice(shippingPrice);
-    // Ensure shipping is a valid number, not NaN
-    if (isNaN(shipping)) {
-      shipping = 0;
-    }
-  }
-  const total = subtotal + shipping;
+  const total = subtotal;
 
   const formatPeso = (n) =>
     new Intl.NumberFormat("en-PH", {
@@ -104,20 +99,25 @@ function UserCartPage() {
       <div>
         <Header />
         <div className="ucart-page">
-          <div className="ucart-topbar-alt">
-            <button className="uo-back" type="button" onClick={() => navigate(-1)}>
-              <FaArrowLeft /> Back
-            </button>
-            <h1 className="uo-title">My Cart</h1>
+          <div className="ucart-moving-bg" aria-hidden="true">
+            <span />
+            <span />
+            <span />
           </div>
-          <div className="ucart-wrap">
-            <div
-              className="ucart-card"
-              style={{ textAlign: "center", padding: "60px 20px" }}
-            >
-              <p style={{ fontSize: "18px", color: "#666", marginBottom: "20px" }}>
-                Your cart is empty
-              </p>
+          <div className="ucart-topbar-alt">
+            <button className="ucart-back" type="button" onClick={() => navigate(-1)}>
+              <FaArrowLeft />
+              Back
+            </button>
+            <h1 className="ucart-empty-title">My Cart</h1>
+          </div>
+          <div className="ucart-empty-wrap">
+            <div className="ucart-empty-card">
+              <div className="ucart-empty-icon">
+                <FaShoppingBag />
+              </div>
+              <h2>Your cart is empty</h2>
+              <p>Start adding products to your cart and they will appear here.</p>
               <button
                 className="ucart-continue"
                 type="button"
@@ -136,6 +136,12 @@ function UserCartPage() {
     <div>
       <Header />
       <div className="ucart-page">
+        <div className="ucart-moving-bg" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+        {/* TOP BAR */}
         <div className="ucart-topbar-alt">
           <button className="uo-back" type="button" onClick={() => navigate(-1)}>
             <FaArrowLeft /> Back
@@ -238,10 +244,6 @@ function UserCartPage() {
               <span>Subtotal</span>
               <span>{formatPeso(subtotal)}</span>
             </div>
-            <div className="ucart-row">
-              <span>Shipping</span>
-              <span>{shipping > 0 ? formatPeso(shipping) : "Free"}</span>
-            </div>
             <div className="ucart-divider" />
             <div className="ucart-total">
               <span>Total</span>
@@ -269,7 +271,7 @@ function UserCartPage() {
           <CheckoutModal
             cartItems={cartItems}
             total={total}
-            userId={userId}
+            subtotal={subtotal}
             onClose={() => setShowCheckout(false)}
             onComplete={handleCheckoutComplete}
           />

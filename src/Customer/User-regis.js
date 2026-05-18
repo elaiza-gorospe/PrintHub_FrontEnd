@@ -218,9 +218,19 @@ function UserRegistrationPage() {
 
   return (
     <div className="user-registration-container">
+      <div className="auth-ink-drops" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
       <button
-        className="back-button"
-        onClick={() => navigate("/User-login")}
+        className="back-button auth-back-button"
+        onClick={() => {
+          if (window.history.length > 1) navigate(-1);
+          else navigate("/user-login");
+        }}
         title="Go back"
       >
         ← Back
@@ -229,9 +239,13 @@ function UserRegistrationPage() {
       <div className="registration-split">
         <div className="registration-form-section">
           <div className="registration-card">
+            <div className="auth-mini-brand">
+              <span>P</span>
+              <strong>PrintHub</strong>
+            </div>
             <div className="registration-header">
               <h1>Create Account</h1>
-              <p>Join PMG Printing House!</p>
+              <p>Join PMG Printing House and start creating.</p>
             </div>
 
             {error && <div className="error-message">{error}</div>}
@@ -416,9 +430,13 @@ function UserRegistrationPage() {
             <div className="registration-footer">
               <p>
                 Already have an account?{" "}
-                <a href="#" onClick={() => navigate("/user-login")}>
+                <button
+                  type="button"
+                  className="auth-text-link"
+                  onClick={() => navigate("/user-login")}
+                >
                   Sign in here
-                </a>
+                </button>
               </p>
             </div>
 
@@ -661,7 +679,39 @@ function UserRegistrationPage() {
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
-        />
+        >
+          <div className="auth-visual-card">
+            <div className="auth-bg-type" aria-hidden="true">PRINT CREATE DESIGN CUSTOMIZE</div>
+            <div className="auth-marquee" aria-hidden="true">
+              <span>CUSTOM APPAREL • PRINTING • PACKAGING • STICKERS • SIGNAGE • </span>
+              <span>CUSTOM APPAREL • PRINTING • PACKAGING • STICKERS • SIGNAGE • </span>
+            </div>
+            <div className="auth-product-cloud" aria-hidden="true">
+              <i className="auth-mock-shirt" />
+              <i className="auth-mock-card" />
+              <i className="auth-mock-sticker" />
+              <i className="auth-mock-dieline" />
+              <i className="auth-mock-brochure" />
+            </div>
+            <span>YOUR ONE STOP PRINTING SHOP</span>
+            <h2 className="auth-kinetic-title">
+              {["Bring", "every", "idea", "into", "print."].map((word, index) => (
+                <b key={word} style={{ "--word-delay": `${index * 0.09}s` }}>{word}</b>
+              ))}
+            </h2>
+            <p>
+              Build your account to browse products, customize orders, track
+              payments, and message PMG from one place.
+            </p>
+            <div className="auth-color-row" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

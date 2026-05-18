@@ -5,10 +5,18 @@ export default function BusinessCardCustomizerPanel(props) {
   return (
     <TshirtCustomizerPanel
       {...props}
-      modelPath="/models/business_card.glb"
+      modelPath={null}
       PreviewComponent={BusinessCardPreview3D}
       designType="business_card"
       productLabel="business card"
+      previewProps={{
+        projectionMode: "plane",
+        flatShape: { width: 3.5, height: 2, depth: 0.035 },
+        decalScale: {
+          front: { w: 1, h: 1, surfaceOffset: 0.08 },
+          back: { w: 1, h: 1, surfaceOffset: 0.08 },
+        },
+      }}
     />
   );
 }

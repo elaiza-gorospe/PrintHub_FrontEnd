@@ -1,21 +1,18 @@
 import TshirtCustomizerPanel from "../TshirtCustomizer/TshirtCustomizerPanel";
 import GenericProductPreview3D from "../GenericProductCustomizer/GenericProductPreview3D";
 
-export default function BrochureCustomizerPanel(props) {
+export default function StickerCustomizerPanel(props) {
   return (
     <TshirtCustomizerPanel
       {...props}
       modelPath={null}
       PreviewComponent={GenericProductPreview3D}
-      designType="brochure"
-      productLabel="brochure"
+      designType="sticker"
+      productLabel="sticker"
       previewProps={{
         projectionMode: "plane",
-        flatShape: { width: 2.97, height: 2.1, depth: 0.035, foldLines: 2 },
-        decalScale: {
-          front: { w: 1, h: 1, surfaceOffset: 0.08 },
-          back: { w: 1, h: 1, surfaceOffset: 0.08 },
-        },
+        flatShape: { width: 2.3, height: 2.3, depth: 0.03, radius: 1 },
+        decalScale: { front: { w: 0.9, h: 0.9, surfaceOffset: 0.08 } },
       }}
     />
   );

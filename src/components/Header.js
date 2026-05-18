@@ -1,23 +1,26 @@
 import React, { useEffect, useRef, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
-  FaSearch,
   FaShoppingCart,
   FaUserCircle,
   FaKey,
-  FaCog,
   FaEdit,
   FaBoxOpen,
   FaFileInvoiceDollar,
   FaBars,
   FaTimes,
+  FaHome,
+  FaCubes,
+  FaArrowLeft,
 } from "react-icons/fa";
 import { useCart } from "../hooks/useCart";
 import "./Header.css";
 import { buildApiUrl } from "../config/api";
+import pmgNavLogo from "../assets/brand/pmg-printing-house.png";
 
 function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -129,28 +132,62 @@ function Header() {
     navigate("/");
   };
 
+  const handleLogoClick = () => {
+    navigate(isLoggedIn ? "/user-home" : "/");
+  };
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate(isLoggedIn ? "/user-home" : "/");
+    }
+  };
+
+  const goToLandingSection = (sectionId) => {
+    navigate("/", { state: { scrollTo: sectionId } });
+  };
+
+  const isActive = (paths) => paths.includes(location.pathname);
+
   return (
     <nav className="uh-nav">
-      <div className="uh-logo" onClick={() => navigate("/user-home")}>
-        <span className="uh-logo-text">PMG</span>
-        <span className="uh-logo-sub">PRINTING HOUSE</span>
+      <div className="uh-brand-row">
+        <button className="uh-back-btn" type="button" onClick={handleBack}>
+          <FaArrowLeft />
+        </button>
+
+        <button className="uh-logo" type="button" onClick={handleLogoClick}>
+          <span className="uh-logo-mark">
+            <img src={pmgNavLogo} alt="PMG Printing House" />
+          </span>
+        </button>
       </div>
 
-      <div className="uh-search">
-        <input
-          type="text"
-          placeholder="Search products or services"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={handleSearchKey}
-        />
+      <div className="uh-center-nav" aria-label="Main navigation">
         <button
-          className="uh-search-btn"
+          className={`uh-nav-pill ${isActive(["/", "/user-home"]) ? "active" : ""}`}
           type="button"
-          aria-label="Search"
-          onClick={handleSearch}
+          onClick={() => navigate(isLoggedIn ? "/user-home" : "/")}
         >
-          <FaSearch />
+          <FaHome />
+          <span>Home</span>
+        </button>
+        <button
+          className={`uh-nav-pill ${isActive(["/product-overview"]) ? "active" : ""}`}
+          type="button"
+          onClick={() => navigate("/product-overview")}
+        >
+          <FaCubes />
+          <span>Products</span>
+        </button>
+        <button
+          className={`uh-nav-pill ${isActive(["/user-orders"]) ? "active" : ""}`}
+          type="button"
+          onClick={() => navigate("/user-orders")}
+        >
+          <FaBoxOpen />
+          <span>Orders</span>
         </button>
       </div>
 
@@ -165,10 +202,18 @@ function Header() {
           {cartCount > 0 && <span className="uh-cart-badge">{cartCount}</span>}
         </button>
 
-        <button className="uh-link uh-desktop-only" type="button">
+        <button
+          className="uh-link uh-desktop-only"
+          type="button"
+          onClick={() => goToLandingSection("about")}
+        >
           About
         </button>
-        <button className="uh-link uh-desktop-only" type="button">
+        <button
+          className="uh-link uh-desktop-only"
+          type="button"
+          onClick={() => goToLandingSection("contact")}
+        >
           Contact
         </button>
 
@@ -294,10 +339,39 @@ function Header() {
 
               {isMobileMenuOpen && (
                 <div className="uh-mobile-menu">
-                  <button className="uh-mobile-item" type="button">
+                  <button
+                    className="uh-mobile-item"
+                    type="button"
+                    onClick={() => navigate(isLoggedIn ? "/user-home" : "/")}
+                  >
+                    Home
+                  </button>
+                  <button
+                    className="uh-mobile-item"
+                    type="button"
+                    onClick={() => navigate("/product-overview")}
+                  >
+                    Products
+                  </button>
+                  <button
+                    className="uh-mobile-item"
+                    type="button"
+                    onClick={() => navigate("/user-orders")}
+                  >
+                    Orders
+                  </button>
+                  <button
+                    className="uh-mobile-item"
+                    type="button"
+                    onClick={() => goToLandingSection("about")}
+                  >
                     About
                   </button>
-                  <button className="uh-mobile-item" type="button">
+                  <button
+                    className="uh-mobile-item"
+                    type="button"
+                    onClick={() => goToLandingSection("contact")}
+                  >
                     Contact
                   </button>
                 </div>

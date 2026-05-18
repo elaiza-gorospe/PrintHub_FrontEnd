@@ -70,7 +70,10 @@ function UserPayments() {
           >
             <FaArrowLeft /> Back
           </button>
-          <h1>Payment Logs & Invoices</h1>
+          <div>
+            <h1>Payment Logs & Invoices</h1>
+            <p className="upay-subtitle">Keep every receipt, status, and payment trail in one lively dashboard.</p>
+          </div>
         </div>
 
         {loading && <div className="upay-state">Loading payment logs...</div>}
