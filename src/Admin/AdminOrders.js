@@ -49,6 +49,8 @@ function AdminOrders() {
             : "Unknown",
           total: parseFloat(order.total),
           status: order.status || "pending",
+          proofApproved: Boolean(order.proofApproved),
+          paymentStatus: order.payment_status || "unpaid",
           date: new Date(order.createdAt).toISOString().slice(0, 10),
           dbId: order.id,
           items: order.items || [],
@@ -137,6 +139,43 @@ function AdminOrders() {
 
   const handleDeleteOrder = (order) => {
     setDeleteOrderTarget(order);
+  };
+
+  const approveOrderDesign = async (order) => {
+    try {
+      const res = await fetch(
+        buildApiUrl(`/api/orders/${order.dbId}/approve-design`),
+        { method: "POST" },
+      );
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to approve design");
+      }
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.dbId === order.dbId ? { ...o, proofApproved: true } : o,
+        ),
+      );
+      setDetailOrder((current) =>
+        current?.dbId === order.dbId
+          ? { ...current, proofApproved: true }
+          : current,
+      );
+      setNoticeModal({
+        title: "Design approved",
+        message: `${order.id} is approved. The customer can now pay.`,
+        tone: "success",
+      });
+    } catch (err) {
+      console.error("Error approving design:", err);
+      setNoticeModal({
+        title: "Could not approve design",
+        message: err.message || "Error approving design",
+        tone: "danger",
+      });
+    }
   };
 
   // ✅ Update order status
@@ -383,6 +422,50 @@ function AdminOrders() {
                           ? "Hide Items"
                           : `Items (${o.items.length})`}
                       </button>
+                      {!o.proofApproved &&
+                        o.paymentStatus !== "paid" &&
+                        !["cancelled", "completed"].includes(o.status) && (
+                          <button
+                            type="button"
+                            onClick={() => approveOrderDesign(o)}
+                            title="Approve design and allow payment"
+                            style={{
+                              background: "#16a34a",
+                              color: "#fff",
+                              border: "none",
+                              padding: "6px 8px",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "11px",
+                              display: "flex",
+                              alignItems: "left",
+                              gap: "3px",
+                            }}
+                          >
+                            <FaCheck size={11} />
+                            Approve
+                          </button>
+                        )}
+                      {o.proofApproved && o.paymentStatus !== "paid" && (
+                        <span
+                          title="Design approved; waiting for customer payment"
+                          style={{
+                            background: "#dcfce7",
+                            color: "#166534",
+                            border: "1px solid #bbf7d0",
+                            padding: "6px 8px",
+                            borderRadius: "4px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "3px",
+                          }}
+                        >
+                          <FaCheck size={11} />
+                          Approved
+                        </span>
+                      )}
                       {/* Process button - only for pending orders */}
                       {o.status === "pending" && (
                         <button
@@ -761,6 +844,52 @@ function AdminOrders() {
                 <div
                   style={{ fontSize: 11, color: "#667085", marginBottom: 2 }}
                 >
+                  DESIGN
+                </div>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "6px 10px",
+                    borderRadius: 999,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    background: detailOrder.proofApproved
+                      ? "#dcfce7"
+                      : "#fff7ed",
+                    color: detailOrder.proofApproved ? "#166534" : "#9a3412",
+                  }}
+                >
+                  {detailOrder.proofApproved ? (
+                    <>
+                      <FaCheckCircle />
+                      Approved
+                    </>
+                  ) : (
+                    <>
+                      <FaClock />
+                      Needs approval
+                    </>
+                  )}
+                </span>
+              </div>
+              <div style={{ flex: 1, minWidth: 120 }}>
+                <div
+                  style={{ fontSize: 11, color: "#667085", marginBottom: 2 }}
+                >
+                  PAYMENT
+                </div>
+                <div
+                  style={{ fontSize: 14, fontWeight: 600, color: "#2f3a45" }}
+                >
+                  {detailOrder.paymentStatus?.replace(/_/g, " ") || "unpaid"}
+                </div>
+              </div>
+              <div style={{ flex: 1, minWidth: 120 }}>
+                <div
+                  style={{ fontSize: 11, color: "#667085", marginBottom: 2 }}
+                >
                   ORDER TOTAL
                 </div>
                 <div
@@ -770,6 +899,40 @@ function AdminOrders() {
                 </div>
               </div>
             </div>
+
+            {!detailOrder.proofApproved &&
+              detailOrder.paymentStatus !== "paid" &&
+              !["cancelled", "completed"].includes(detailOrder.status) && (
+                <div
+                  style={{
+                    padding: "14px 20px",
+                    borderBottom: "1px solid #e4e9f0",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => approveOrderDesign(detailOrder)}
+                    style={{
+                      background: "#16a34a",
+                      color: "#fff",
+                      border: "none",
+                      padding: "9px 14px",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    <FaCheck size={12} />
+                    Approve Design
+                  </button>
+                </div>
+              )}
 
             {/* Items */}
             <div style={{ padding: "16px 20px" }}>
