@@ -381,7 +381,11 @@ function Header() {
             <button
               className="uh-login-btn"
               type="button"
-              onClick={() => navigate("/user-login")}
+              onClick={() =>
+                navigate("/user-login", {
+                  state: { from: `${location.pathname}${location.search}` },
+                })
+              }
             >
               Login
             </button>

@@ -34,6 +34,11 @@ function ProductOverview() {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    setSearchQuery(params.get("search") || "");
+  }, [location.search]);
+
+  useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
@@ -231,7 +236,9 @@ function ProductOverview() {
             localStorage.removeItem("cartItems");
             localStorage.removeItem("userCart");
             setShowLoginModal(false);
-            navigate("/user-login");
+            navigate("/user-login", {
+              state: { from: `${location.pathname}${location.search}` },
+            });
           }}
           onRegister={() => {
             localStorage.removeItem("cart");

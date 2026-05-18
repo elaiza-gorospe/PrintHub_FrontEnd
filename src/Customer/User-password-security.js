@@ -20,6 +20,11 @@ function UserPasswordSecurityPage() {
   const userId = storedUser?.id;
   const email = storedUser?.email;
 
+  const normalizeOtpMessage = (message) =>
+    String(message || "").toLowerCase().includes("dev mode")
+      ? "OTP sent. Please check your email."
+      : message || "OTP sent to your email.";
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -85,7 +90,7 @@ function UserPasswordSecurityPage() {
         return;
       }
 
-      setOtpMsg(data.message || "OTP sent to your email.");
+      setOtpMsg(normalizeOtpMessage(data.message));
       setOtpErr("");
     } catch (e) {
       setOtpMsg("");

@@ -16,6 +16,7 @@ import {
 import "./Admin-dashboard.css";
 import { buildApiUrl } from "../config/api";
 import TshirtPreview3D from "../components/TshirtCustomizer/TshirtPreview3D";
+import AppModal from "../components/AppModal";
 
 function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -27,6 +28,8 @@ function AdminOrders() {
   const [detailOrder, setDetailOrder] = useState(null);
   const [aiPreviewModal, setAiPreviewModal] = useState(null); // { imageUrl, productName }
   const [ai3DPreviewModal, setAi3DPreviewModal] = useState(null); // { imageUrl, productName }
+  const [deleteOrderTarget, setDeleteOrderTarget] = useState(null);
+  const [noticeModal, setNoticeModal] = useState(null);
 
   // Fetch orders from API
   useEffect(() => {
@@ -101,25 +104,39 @@ function AdminOrders() {
   };
 
   // ✅ Delete order
-  const handleDeleteOrder = async (order) => {
-    if (!window.confirm(`Delete order "${order.id}"? This cannot be undone.`))
-      return;
+  const confirmDeleteOrder = async () => {
+    const order = deleteOrderTarget;
+    if (!order) return;
+    setDeleteOrderTarget(null);
 
     try {
       const res = await fetch(buildApiUrl(`/api/orders/${order.dbId}`), {
         method: "DELETE",
       });
+      const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) throw new Error("Failed to delete order");
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to delete order");
+      }
 
-      // ✅ Immediately remove from UI
       setOrders((prev) => prev.filter((o) => o.dbId !== order.dbId));
-
-      alert("Order deleted successfully!");
+      setNoticeModal({
+        title: "Order deleted",
+        message: `${order.id} was deleted and stock was restored.`,
+        tone: "success",
+      });
     } catch (err) {
       console.error("Error deleting order:", err);
-      alert(err.message || "Error deleting order");
+      setNoticeModal({
+        title: "Could not delete order",
+        message: err.message || "Error deleting order",
+        tone: "danger",
+      });
     }
+  };
+
+  const handleDeleteOrder = (order) => {
+    setDeleteOrderTarget(order);
   };
 
   // ✅ Update order status
@@ -1215,6 +1232,29 @@ function AdminOrders() {
           </div>
         </div>
       )}
+
+      <AppModal
+        open={Boolean(deleteOrderTarget)}
+        title="Delete this order?"
+        message={
+          deleteOrderTarget
+            ? `Delete ${deleteOrderTarget.id}? This will restore item stock.`
+            : ""
+        }
+        tone="danger"
+        confirmText="Delete Order"
+        cancelText="Cancel"
+        onCancel={() => setDeleteOrderTarget(null)}
+        onConfirm={confirmDeleteOrder}
+      />
+
+      <AppModal
+        open={Boolean(noticeModal)}
+        title={noticeModal?.title}
+        message={noticeModal?.message}
+        tone={noticeModal?.tone}
+        onConfirm={() => setNoticeModal(null)}
+      />
     </div>
   );
 }

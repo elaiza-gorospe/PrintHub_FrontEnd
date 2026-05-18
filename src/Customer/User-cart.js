@@ -269,11 +269,12 @@ function UserCartPage() {
         {/* Checkout modal */}
         {showCheckout && (
           <CheckoutModal
+            userId={userId}
             cartItems={cartItems}
             total={total}
             subtotal={subtotal}
             onClose={() => setShowCheckout(false)}
-            onComplete={handleCheckoutComplete}
+            onSuccess={handleCheckoutComplete}
           />
         )}
 

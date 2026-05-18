@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./User-login.css";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import backgroundImage from "../assets/images/pmg-image.jpg";
@@ -8,6 +8,7 @@ import AppModal from "../components/AppModal";
 
 function UserLoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,7 +40,7 @@ function UserLoginPage() {
     localStorage.removeItem("adminUser");
     localStorage.setItem("user", JSON.stringify(loggedInUser));
     localStorage.setItem("userId", loggedInUser.id);
-    navigate("/user-home");
+    navigate(location.state?.from || "/user-home", { replace: true });
   };
 
   const handleSubmit = async (e) => {
@@ -172,7 +173,8 @@ function UserLoginPage() {
       <button
         className="back-button auth-back-button"
         onClick={() => {
-          if (window.history.length > 1) navigate(-1);
+          if (location.state?.from) navigate(location.state.from, { replace: true });
+          else if (window.history.length > 1) navigate(-1);
           else navigate("/");
         }}
       >

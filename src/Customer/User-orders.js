@@ -21,12 +21,17 @@ function getOrderBucket(order) {
   if (order.payment_status !== "paid" && order.status !== "cancelled") {
     return "to_pay";
   }
-  if (order.payment_status === "paid" && order.status === "delivered") {
+  if (
+    order.payment_status === "paid" &&
+    ["delivered", "completed"].includes(order.status)
+  ) {
     return "to_review";
   }
   if (
     order.payment_status === "paid" &&
-    !["delivered", "cancelled", "return_requested"].includes(order.status)
+    !["delivered", "completed", "cancelled", "return_requested"].includes(
+      order.status,
+    )
   ) {
     return "to_receive";
   }
@@ -61,7 +66,7 @@ function UserOrders() {
   const fetchOrders = async () => {
     try {
       if (!currentUser?.id) {
-        navigate("/user-login");
+        navigate("/user-login", { state: { from: "/user-orders" } });
         return;
       }
 
@@ -179,6 +184,35 @@ function UserOrders() {
       setNoticeModal({
         title: "Receipt unavailable",
         message: err.message || "Could not load e-receipt.",
+        tone: "danger",
+      });
+    }
+  };
+
+  const handleOrderReceived = async (orderId) => {
+    try {
+      const res = await fetch(buildApiUrl(`/api/orders/${orderId}`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "completed" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to update order");
+
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === orderId ? { ...order, status: "completed" } : order,
+        ),
+      );
+      setNoticeModal({
+        title: "Order received",
+        message: "Your order has been marked as completed.",
+        tone: "success",
+      });
+    } catch (err) {
+      setNoticeModal({
+        title: "Could not update order",
+        message: err.message || "Please try again.",
         tone: "danger",
       });
     }
@@ -381,6 +415,19 @@ function UserOrders() {
             </button>
           )}
 
+          {order.payment_status === "paid" &&
+            !["completed", "cancelled", "return_requested"].includes(
+              order.status,
+            ) && (
+              <button
+                type="button"
+                className="uo-return-btn"
+                onClick={() => handleOrderReceived(order.id)}
+              >
+                Order Received
+              </button>
+            )}
+
           {order.payment_status === "paid" && order.status === "delivered" && (
             <button
               type="button"
@@ -504,7 +551,7 @@ function UserOrders() {
               {receipt.paymentReference || "Pending confirmation"}
             </p>
             <div className="uo-receipt-items">
-              {receipt.items.map((item) => (
+              {(receipt.items || []).map((item) => (
                 <div key={item.id}>
                   <span>
                     {item.productName} x {item.quantity}
@@ -519,9 +566,9 @@ function UserOrders() {
             </div>
             <div className="uo-mock-email">
               <strong>Mock email notification</strong>
-              <p>To: {receipt.mockEmail.to || receipt.customerEmail}</p>
-              <p>Subject: {receipt.mockEmail.subject}</p>
-              <p>{receipt.mockEmail.body}</p>
+              <p>To: {receipt.mockEmail?.to || receipt.customerEmail}</p>
+              <p>Subject: {receipt.mockEmail?.subject || "Payment update"}</p>
+              <p>{receipt.mockEmail?.body || "Payment details are available in this receipt."}</p>
             </div>
           </div>
         </div>

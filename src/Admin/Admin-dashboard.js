@@ -286,7 +286,6 @@ function AdminDashboard() {
     setIsMobileSidebarOpen(false);
     setShowLogoutModal(false);
     setTimeout(() => navigate("/"), 100);
-    alert("You have been logged out successfully!");
   };
 
   // ✅ NEW: open confirm modal instead of immediate logout

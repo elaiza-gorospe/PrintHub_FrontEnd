@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaTimes, FaSpinner, FaCheckCircle } from "react-icons/fa";
 import "./CheckoutModal.css";
 import { extractNumericPrice } from "../utils/priceUtils";
@@ -23,6 +23,39 @@ function CheckoutModal({
   });
 
   const [orderData, setOrderData] = useState(null);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    let cancelled = false;
+
+    const loadSavedAddress = async () => {
+      try {
+        const res = await fetch(buildApiUrl(`/api/user-profile/${userId}`));
+        const data = await res.json();
+        if (!res.ok || !data.address) return;
+
+        if (!cancelled) {
+          setFormData((prev) => {
+            if (prev.shipping_address.trim()) return prev;
+            return {
+              ...prev,
+              shipping_address: data.address,
+              billing_address: prev.sameAddress ? data.address : prev.billing_address,
+            };
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load saved checkout address:", err);
+      }
+    };
+
+    loadSavedAddress();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   const formatPeso = (n) => {
     let num = typeof n === "number" ? n : parseFloat(n) || 0;

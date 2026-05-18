@@ -123,6 +123,7 @@ const CUSTOMER_ROUTES = [
   "/user-home",
   "/user-cart",
   "/user-orders",
+  "/user-payments",
   "/user-inquiries",
   "/user-dashboard",
   "/user-customize-profile",

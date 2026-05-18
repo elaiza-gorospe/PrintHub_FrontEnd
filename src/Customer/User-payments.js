@@ -17,13 +17,13 @@ function UserPayments() {
       try {
         const stored = localStorage.getItem("user");
         if (!stored) {
-          navigate("/user-login");
+          navigate("/user-login", { state: { from: "/user-payments" } });
           return;
         }
 
         const user = JSON.parse(stored);
         if (!user?.id) {
-          navigate("/user-login");
+          navigate("/user-login", { state: { from: "/user-payments" } });
           return;
         }
 
@@ -105,7 +105,7 @@ function UserPayments() {
                 <div className="upay-card-side">
                   <strong>{formatCurrency(log.total)}</strong>
                   <button type="button" onClick={() => setSelected(log)}>
-                    View E-Receipt
+                    {log.paymentStatus === "paid" ? "View E-Receipt" : "View Invoice"}
                   </button>
                 </div>
               </article>
@@ -143,7 +143,7 @@ function UserPayments() {
               </p>
 
               <div className="upay-items">
-                {selected.items.map((item) => (
+                {(selected.items || []).map((item) => (
                   <div key={item.id}>
                     <span>
                       {item.productName} x {item.quantity}
@@ -162,9 +162,9 @@ function UserPayments() {
                 <FaEnvelope />
                 <div>
                   <strong>Mock email notification</strong>
-                  <p>To: {selected.mockEmail.to || selected.customerEmail}</p>
-                  <p>Subject: {selected.mockEmail.subject}</p>
-                  <p>{selected.mockEmail.body}</p>
+                  <p>To: {selected.mockEmail?.to || selected.customerEmail}</p>
+                  <p>Subject: {selected.mockEmail?.subject || "Payment update"}</p>
+                  <p>{selected.mockEmail?.body || "Payment details are available in this invoice."}</p>
                 </div>
               </div>
             </div>
