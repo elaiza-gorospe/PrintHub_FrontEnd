@@ -341,7 +341,8 @@ function CheckoutModal({
               Total: <strong>{formatPeso(orderData?.total)}</strong>
             </p>
             <p className="success-note">
-              You will be redirected to your dashboard shortly...
+              Your order was sent to admin for approval. You can pay after the
+              design is approved.
             </p>
           </div>
         )}

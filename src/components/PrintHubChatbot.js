@@ -10,6 +10,29 @@ const SUGGESTED = [
   "🔄 Returns policy",
 ];
 
+function localPrintHubReply(text) {
+  const q = String(text || "").toLowerCase();
+  if (q.includes("business card") || q.includes("calling card")) {
+    return "Yes, PrintHub offers business cards. Browse the product list, choose quantity and options, then customize before checkout.";
+  }
+  if (q.includes("delivery") || q.includes("shipping")) {
+    return "PrintHub supports pickup and delivery options. Available shipping choices can vary per product and order.";
+  }
+  if (q.includes("payment") || q.includes("pay")) {
+    return "Customers can pay after admin design approval. Once your order is approved, the Pay Now button becomes available in My Orders.";
+  }
+  if (q.includes("file") || q.includes("format") || q.includes("design")) {
+    return "For print designs, prepare clear files such as PDF, PNG, JPG, AI, or PSD. You can also use the product customizer where available.";
+  }
+  if (q.includes("return") || q.includes("refund")) {
+    return "For delivered orders, submit a return or complaint from My Orders. PrintHub staff will review it through the system.";
+  }
+  if (q.includes("bulk") || q.includes("discount")) {
+    return "Bulk orders are supported. For custom pricing, submit an inquiry or checkout request so the admin team can review the details.";
+  }
+  return "I can help with PrintHub products, pricing, customization, checkout, admin approval before payment, delivery, and order support. What would you like to print?";
+}
+
 function parseMarkdown(text) {
   return text
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
@@ -61,14 +84,18 @@ export default function PrintHubChatbot() {
         body: JSON.stringify({ messages: contents }),
       });
 
+      if (!res.ok) {
+        throw new Error(`Chat endpoint unavailable: ${res.status}`);
+      }
+
       const data = await res.json();
-      const reply = data.reply || "Sorry, I could not get a response.";
+      const reply = data.reply || localPrintHubReply(userText);
 
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "⚠️ Something went wrong. Please try again or contact us directly." },
+        { role: "assistant", content: localPrintHubReply(userText) },
       ]);
     } finally {
       setIsLoading(false);

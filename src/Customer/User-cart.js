@@ -161,25 +161,29 @@ function UserCartPage() {
                 <img
                   className="ucart-thumb"
                   src={
+                    item.productImage ||
                     item.image ||
                     item.images?.[0] ||
                     "https://via.placeholder.com/70"
                   }
-                  alt={item.name}
+                  alt={item.name || item.title}
                   onError={(e) => {
                     e.currentTarget.src =
                       "https://via.placeholder.com/70";
                   }}
                 />
                 <div className="ucart-info">
-                  <div className="ucart-name">{item.name}</div>
+                  <div className="ucart-name">{item.name || item.title}</div>
                   {item.customizations && (
                     <div className="ucart-desc">
                       {[
                         item.customizations.size &&
                           `Size: ${item.customizations.size}`,
                         item.customizations.material &&
-                          `Material: ${item.customizations.material}`,
+                          `Material: ${
+                            item.customizations.material?.label ||
+                            item.customizations.material
+                          }`,
                         item.customizations.finish &&
                           `Finish: ${item.customizations.finish}`,
                       ]

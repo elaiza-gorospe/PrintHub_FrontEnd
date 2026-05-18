@@ -273,6 +273,9 @@ function UserOrders() {
   const getStatusLabel = (order) => {
     if (order.status === "return_requested") return "Return requested";
     if (order.status === "cancelled") return "Cancelled";
+    if (order.payment_status !== "paid" && !order.proofApproved) {
+      return "Waiting for approval";
+    }
     if (order.payment_status !== "paid") return "Payment pending";
     if (order.status === "delivered") return "Delivered";
     return order.status?.charAt(0).toUpperCase() + order.status?.slice(1);
@@ -394,14 +397,20 @@ function UserOrders() {
               >
                 {cancellingId === order.id ? "Cancelling..." : "Cancel Order"}
               </button>
-              <button
-                type="button"
-                className="uo-pay-btn"
-                disabled={payingId === order.id}
-                onClick={() => handlePayNow(order)}
-              >
-                {payingId === order.id ? "Redirecting..." : "Pay Now"}
-              </button>
+              {order.proofApproved ? (
+                <button
+                  type="button"
+                  className="uo-pay-btn"
+                  disabled={payingId === order.id}
+                  onClick={() => handlePayNow(order)}
+                >
+                  {payingId === order.id ? "Redirecting..." : "Pay Now"}
+                </button>
+              ) : (
+                <button type="button" className="uo-pay-btn" disabled>
+                  Waiting for admin approval
+                </button>
+              )}
             </>
           )}
 
