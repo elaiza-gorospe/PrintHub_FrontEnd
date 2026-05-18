@@ -25,6 +25,7 @@ export default function GenericProductPreview3D({
   zoneFaceMap = EMPTY_OBJECT,
   decalScale = EMPTY_OBJECT,
   projectionMode = "decal",
+  flatShape = null,
 }) {
   const mountRef = useRef(null);
   const modelRef = useRef(null);
@@ -86,6 +87,66 @@ export default function GenericProductPreview3D({
       }
     });
     return target;
+  }, []);
+
+  const createFlatModel = useCallback((shapeConfig = {}) => {
+    const {
+      width = 2.1,
+      height = 2.97,
+      depth = 0.035,
+      radius = 0,
+      foldLines = 0,
+      hole = false,
+    } = shapeConfig;
+
+    let geometry;
+    if (radius > 0) {
+      geometry = new THREE.CylinderGeometry(width / 2, width / 2, depth, 96);
+      geometry.rotateX(Math.PI / 2);
+      geometry.scale(1, height / width, 1);
+    } else {
+      geometry = new THREE.BoxGeometry(width, height, depth);
+    }
+
+    const material = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(colorRef.current),
+      roughness: 0.72,
+      metalness: 0.02,
+      side: THREE.DoubleSide,
+    });
+    const model = new THREE.Group();
+    const body = new THREE.Mesh(geometry, material);
+    body.name = "flat-print-body";
+    model.add(body);
+
+    if (foldLines > 0) {
+      const lineMaterial = new THREE.LineBasicMaterial({
+        color: 0x9aa4b2,
+        transparent: true,
+        opacity: 0.75,
+      });
+      for (let i = 1; i <= foldLines; i += 1) {
+        const x = -width / 2 + (width / (foldLines + 1)) * i;
+        const points = [
+          new THREE.Vector3(x, -height / 2, depth / 2 + 0.003),
+          new THREE.Vector3(x, height / 2, depth / 2 + 0.003),
+        ];
+        model.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), lineMaterial));
+      }
+    }
+
+    if (hole) {
+      const holeGeometry = new THREE.RingGeometry(width * 0.045, width * 0.075, 48);
+      const holeMaterial = new THREE.MeshBasicMaterial({
+        color: 0x1e2433,
+        side: THREE.DoubleSide,
+      });
+      const holeMesh = new THREE.Mesh(holeGeometry, holeMaterial);
+      holeMesh.position.set(0, height * 0.38, depth / 2 + 0.004);
+      model.add(holeMesh);
+    }
+
+    return model;
   }, []);
 
   const getZoneProjectionMode = useCallback(
@@ -282,7 +343,7 @@ export default function GenericProductPreview3D({
   }, [clearDecals, createPlaneOverlay, getTargetMesh, getZoneProjectionMode, decalScale, zoneFaceMap]);
 
   useEffect(() => {
-    if (!mountRef.current || !modelPath) return;
+    if (!mountRef.current || (!modelPath && !flatShape)) return;
 
     setReady(false);
     setError("");
@@ -312,32 +373,45 @@ export default function GenericProductPreview3D({
     controls.enableDamping = true;
     controls.dampingFactor = 0.07;
 
-    new GLTFLoader().load(
-      modelPath,
-      (gltf) => {
-        const model = gltf.scene;
-        modelRef.current = model;
-        scene.add(model);
-        applyBaseColor();
-        rebuildDecals();
+    const fitCameraToModel = (model) => {
+      const box = new THREE.Box3().setFromObject(model);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fov = camera.fov * (Math.PI / 180);
+      const dist = (maxDim / 2 / Math.tan(fov / 2)) * 2;
+      camera.position.set(center.x, center.y, center.z + dist);
+      camera.near = dist / 100;
+      camera.far = dist * 100;
+      camera.updateProjectionMatrix();
+      controls.target.copy(center);
+      controls.update();
+    };
 
-        const box = new THREE.Box3().setFromObject(model);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const fov = camera.fov * (Math.PI / 180);
-        const dist = (maxDim / 2 / Math.tan(fov / 2)) * 2;
-        camera.position.set(center.x, center.y, center.z + dist);
-        camera.near = dist / 100;
-        camera.far = dist * 100;
-        camera.updateProjectionMatrix();
-        controls.target.copy(center);
-        controls.update();
-        setReady(true);
-      },
-      undefined,
-      () => setError(`Failed to load 3D model: ${modelPath}`),
-    );
+    if (flatShape) {
+      const model = createFlatModel(flatShape);
+      modelRef.current = model;
+      scene.add(model);
+      applyBaseColor();
+      rebuildDecals();
+      fitCameraToModel(model);
+      setReady(true);
+    } else {
+      new GLTFLoader().load(
+        modelPath,
+        (gltf) => {
+          const model = gltf.scene;
+          modelRef.current = model;
+          scene.add(model);
+          applyBaseColor();
+          rebuildDecals();
+          fitCameraToModel(model);
+          setReady(true);
+        },
+        undefined,
+        () => setError(`Failed to load 3D model: ${modelPath}`),
+      );
+    }
 
     let rafId;
     const animate = () => {
@@ -378,7 +452,7 @@ export default function GenericProductPreview3D({
       modelRef.current = null;
       sceneRef.current = null;
     };
-  }, [applyBaseColor, clearDecals, modelPath, rebuildDecals]);
+  }, [applyBaseColor, clearDecals, createFlatModel, flatShape, modelPath, rebuildDecals]);
 
   useEffect(() => {
     if (!modelRef.current) return;

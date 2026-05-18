@@ -1,20 +1,20 @@
 import TshirtCustomizerPanel from "../TshirtCustomizer/TshirtCustomizerPanel";
 import GenericProductPreview3D from "../GenericProductCustomizer/GenericProductPreview3D";
 
-export default function BrochureCustomizerPanel(props) {
+export default function HangTagCustomizerPanel(props) {
   return (
     <TshirtCustomizerPanel
       {...props}
       modelPath={null}
       PreviewComponent={GenericProductPreview3D}
-      designType="brochure"
-      productLabel="brochure"
+      designType="hang_tag"
+      productLabel="hang tag"
       previewProps={{
         projectionMode: "plane",
-        flatShape: { width: 2.97, height: 2.1, depth: 0.035, foldLines: 2 },
+        flatShape: { width: 1.7, height: 3, depth: 0.04, hole: true },
         decalScale: {
-          front: { w: 1, h: 1, surfaceOffset: 0.08 },
-          back: { w: 1, h: 1, surfaceOffset: 0.08 },
+          front: { w: 0.92, h: 0.92, surfaceOffset: 0.08 },
+          back: { w: 0.92, h: 0.92, surfaceOffset: 0.08 },
         },
       }}
     />

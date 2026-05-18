@@ -17,6 +17,9 @@ import MugCustomizerPanel from "../components/MugCustomizer/MugCustomizerPanel";
 import PosterCustomizerPanel from "../components/PosterCustomizer/PosterCustomizerPanel";
 import FlyerCustomizerPanel from "../components/FlyerCustomizer/FlyerCustomizerPanel";
 import ThankYouCardCustomizerPanel from "../components/ThankYouCardCustomizer/ThankYouCardCustomizerPanel";
+import StickerCustomizerPanel from "../components/StickerCustomizer/StickerCustomizerPanel";
+import HangTagCustomizerPanel from "../components/HangTagCustomizer/HangTagCustomizerPanel";
+import TarpaulinCustomizerPanel from "../components/TarpaulinCustomizer/TarpaulinCustomizerPanel";
 import AppModal from "../components/AppModal";
 
 const RECENTLY_VIEWED_KEY = "printhub_recently_viewed_products";
@@ -44,6 +47,8 @@ const DEFAULT_PRODUCT_ZONES = {
   posters: ["front"],
   thank_you_card: ["front", "back"],
   banners: ["front"],
+  tarpaulin: ["front"],
+  tarpaulins: ["front"],
   stickers: ["front"],
   hang_tags: ["front", "back"],
   other: ["front", "back"],
@@ -60,15 +65,18 @@ function inferCustomizerCategory({ category, name, title }) {
 
   if (label.includes("flyer")) return "flyers";
   if (label.includes("poster")) return "posters";
-
-  if (rawCategory && !["service", "print", "other"].includes(rawCategory)) {
-    return rawCategory;
-  }
+  if (label.includes("sticker") || label.includes("label")) return "stickers";
+  if (label.includes("hang tag") || label.includes("hangtag")) return "hang_tags";
+  if (label.includes("tarpaulin") || label.includes("banner")) return "tarpaulin";
   if (label.includes("business card") || label.includes("calling card")) {
     return "business_card";
   }
   if (label.includes("thank you")) return "thank_you_card";
   if (label.includes("brochure")) return "brochures";
+
+  if (rawCategory && !["service", "print", "other"].includes(rawCategory)) {
+    return rawCategory;
+  }
   if (label.includes("notebook")) return "notebook";
   if (label.includes("jersey")) return "jersey";
   if (label.includes("cap") || label.includes("hat")) return "cap";
@@ -89,6 +97,11 @@ function getCustomizerPanel(category) {
   if (normalized === "flyer" || normalized === "flyers") return FlyerCustomizerPanel;
   if (normalized === "poster" || normalized === "posters") return PosterCustomizerPanel;
   if (normalized === "thank_you_card") return ThankYouCardCustomizerPanel;
+  if (normalized === "stickers") return StickerCustomizerPanel;
+  if (normalized === "hang_tags") return HangTagCustomizerPanel;
+  if (normalized === "tarpaulin" || normalized === "tarpaulins" || normalized === "banners") {
+    return TarpaulinCustomizerPanel;
+  }
   if (normalized === "cap") return CapCustomizerPanel;
   if (normalized === "jersey" || normalized === "jersery") return JerseyCustomizerPanel;
   if (normalized === "mug") return MugCustomizerPanel;
