@@ -36,6 +36,26 @@ textarea {
   font: inherit;
 }
 
+input.realtime-field-invalid,
+select.realtime-field-invalid,
+textarea.realtime-field-invalid {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+}
+
+.realtime-field-error {
+  width: 100%;
+  margin-top: 5px;
+  color: #b91c1c;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.realtime-field-error[hidden] {
+  display: none !important;
+}
+
 code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;

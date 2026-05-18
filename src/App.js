@@ -42,6 +42,210 @@ const RECENTLY_VIEWED_KEY = "printhub_recently_viewed_products";
 const fallbackProductImage = "https://via.placeholder.com/300x200?text=No+Image";
 const homeHeroWords = ["Vision", "Packaging", "Merch", "Marketing"];
 
+const REALTIME_VALIDATION_SKIP_TYPES = new Set([
+  "button",
+  "checkbox",
+  "color",
+  "file",
+  "hidden",
+  "image",
+  "radio",
+  "range",
+  "reset",
+  "search",
+  "submit",
+]);
+
+function getRealtimeFieldKey(field) {
+  return [
+    field.name,
+    field.id,
+    field.getAttribute("aria-label"),
+    field.placeholder,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function isRealtimeValidatedField(field) {
+  if (!field?.matches?.("input, textarea, select")) return false;
+  if (field.disabled || field.readOnly) return false;
+  if (field.dataset.noRealtimeValidation === "true") return false;
+  return !REALTIME_VALIDATION_SKIP_TYPES.has((field.type || "").toLowerCase());
+}
+
+function getConfirmPasswordPeer(field) {
+  const form = field.form || field.closest("form") || document;
+  return form.querySelector(
+    'input[type="password"]:not([name*="confirm" i]):not([id*="confirm" i])',
+  );
+}
+
+function getRealtimeValidationMessage(field) {
+  const value = String(field.value || "").trim();
+  const fieldKey = getRealtimeFieldKey(field);
+  const isRequired =
+    field.required || field.getAttribute("aria-required") === "true";
+
+  if (!value) {
+    return isRequired ? "This field is required." : "";
+  }
+
+  const validity = field.validity;
+  if (validity?.badInput) return "Enter a valid value.";
+  if (validity?.typeMismatch) {
+    return field.type === "email"
+      ? "Enter a valid email address."
+      : "Enter a valid value.";
+  }
+  if (validity?.patternMismatch) return field.title || "Use the required format.";
+  if (validity?.tooShort) {
+    return `Use at least ${field.minLength} characters.`;
+  }
+  if (validity?.tooLong) return `Use ${field.maxLength} characters or fewer.`;
+  if (validity?.rangeUnderflow) return `Use a value of at least ${field.min}.`;
+  if (validity?.rangeOverflow) return `Use a value no more than ${field.max}.`;
+
+  if (field.type === "email" || fieldKey.includes("email")) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+      ? ""
+      : "Enter a valid email address.";
+  }
+
+  if (
+    field.type === "tel" ||
+    fieldKey.includes("phone") ||
+    fieldKey.includes("mobile") ||
+    fieldKey.includes("contact")
+  ) {
+    const compact = value.replace(/[\s-]/g, "");
+    return /^(\+639\d{9}|09\d{9})$/.test(compact)
+      ? ""
+      : "Use a valid PH mobile number, like 09XXXXXXXXX or +639XXXXXXXXX.";
+  }
+
+  if (fieldKey.includes("otp")) {
+    return /^\d{6}$/.test(value) ? "" : "Enter the 6-digit OTP.";
+  }
+
+  if (field.type === "password" || fieldKey.includes("password")) {
+    if (value.length < 6) return "Password must be at least 6 characters.";
+    if (fieldKey.includes("new") || fieldKey.includes("register")) {
+      if (!/[A-Z]/.test(value)) return "Add at least one uppercase letter.";
+      if (!/[a-z]/.test(value)) return "Add at least one lowercase letter.";
+      if (!/\d/.test(value)) return "Add at least one number.";
+    }
+    if (fieldKey.includes("confirm")) {
+      const peer = getConfirmPasswordPeer(field);
+      if (peer?.value && value !== peer.value) return "Passwords do not match.";
+    }
+  }
+
+  if (
+    field.type === "number" ||
+    /\b(price|amount|total|stock|qty|quantity|width|height|depth)\b/.test(
+      fieldKey,
+    )
+  ) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return "Enter a valid number.";
+    if (/\b(qty|quantity|stock)\b/.test(fieldKey) && numeric < 1) {
+      return "Use a value of at least 1.";
+    }
+    if (numeric < 0) return "Use a positive value.";
+  }
+
+  if (
+    /\b(first name|last name|full name|customer name|name)\b/.test(fieldKey) &&
+    !fieldKey.includes("username") &&
+    !fieldKey.includes("product")
+  ) {
+    return /^[A-Za-z\s.'-]+$/.test(value)
+      ? ""
+      : "Names can only use letters, spaces, apostrophes, periods, and hyphens.";
+  }
+
+  return "";
+}
+
+function renderRealtimeValidation(field, forceTouched = false) {
+  if (!isRealtimeValidatedField(field)) return;
+
+  if (forceTouched || field.value) {
+    field.dataset.realtimeTouched = "true";
+  }
+
+  const touched = field.dataset.realtimeTouched === "true";
+  const message = touched ? getRealtimeValidationMessage(field) : "";
+  let feedback = field.nextElementSibling;
+
+  if (!feedback?.classList?.contains("realtime-field-error")) {
+    feedback = document.createElement("div");
+    feedback.className = "realtime-field-error";
+    field.insertAdjacentElement("afterend", feedback);
+  }
+
+  if (!feedback.id) {
+    feedback.id = `field-error-${Math.random().toString(36).slice(2, 10)}`;
+  }
+
+  if (message) {
+    field.classList.add("realtime-field-invalid");
+    field.setAttribute("aria-invalid", "true");
+    field.setAttribute("aria-describedby", feedback.id);
+    feedback.textContent = message;
+    feedback.hidden = false;
+  } else {
+    field.classList.remove("realtime-field-invalid");
+    field.removeAttribute("aria-invalid");
+    feedback.textContent = "";
+    feedback.hidden = true;
+  }
+}
+
+function RealtimeInputValidation() {
+  useEffect(() => {
+    const validateFromEvent = (event, forceTouched = false) => {
+      renderRealtimeValidation(event.target, forceTouched);
+      if (event.target?.type === "password") {
+        const form = event.target.form || event.target.closest("form");
+        form
+          ?.querySelectorAll('input[type="password"]')
+          .forEach((field) => renderRealtimeValidation(field));
+      }
+    };
+
+    const handleInput = (event) => validateFromEvent(event);
+    const handleChange = (event) => validateFromEvent(event, true);
+    const handleBlur = (event) => validateFromEvent(event, true);
+    const handleSubmit = (event) => {
+      const fields = Array.from(
+        event.target.querySelectorAll("input, textarea, select"),
+      ).filter(isRealtimeValidatedField);
+      fields.forEach((field) => renderRealtimeValidation(field, true));
+      if (fields.some((field) => getRealtimeValidationMessage(field))) {
+        event.preventDefault();
+        fields.find((field) => getRealtimeValidationMessage(field))?.focus();
+      }
+    };
+
+    document.addEventListener("input", handleInput, true);
+    document.addEventListener("change", handleChange, true);
+    document.addEventListener("blur", handleBlur, true);
+    document.addEventListener("submit", handleSubmit, true);
+
+    return () => {
+      document.removeEventListener("input", handleInput, true);
+      document.removeEventListener("change", handleChange, true);
+      document.removeEventListener("blur", handleBlur, true);
+      document.removeEventListener("submit", handleSubmit, true);
+    };
+  }, []);
+
+  return null;
+}
+
 function AnimatedWords({ text, highlight = "" }) {
   return (
     <>
@@ -231,6 +435,7 @@ function App() {
   return (
     <CartProvider>
       <BrowserRouter>
+        <RealtimeInputValidation />
         {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
         <Routes>
           <Route path="/" element={<HomePage />} />
