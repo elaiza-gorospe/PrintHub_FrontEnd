@@ -353,7 +353,7 @@ function NavbarComponent() {
           </span>
         </div>
 
-        <div className="navbar-search">
+        {false && <div className="navbar-search">
           <input
             type="text"
             placeholder="Search products…"
@@ -374,7 +374,7 @@ function NavbarComponent() {
               <path d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path>
             </svg>
           </button>
-        </div>
+        </div>}
 
         <ul className="navbar-menu">
           <li>
@@ -596,8 +596,8 @@ function SplashScreen({ onComplete }) {
         <div className="pmg-splash-icon" aria-hidden="true">
           <img src={pmgWebsiteLogo} alt="" />
         </div>
-        <h1>PMG PRINTING</h1>
-        <p>YOUR ONE STOP PRINTING SHOP</p>
+        <h1>PMG PRINTING HOUSE</h1>
+        <p>CUSTOM PRINTS, APPAREL, PACKAGING & SIGNAGE</p>
         <div className="pmg-splash-loading" aria-hidden="true">
           <span onAnimationEnd={onComplete} />
         </div>
@@ -635,8 +635,6 @@ function BestSellerCarousel({ products, navigate }) {
       <div className="bestseller-floaters" aria-hidden="true">
         <span className="seller-tag">Fast pickup</span>
         <span className="seller-tag">Premium finish</span>
-        <span className="seller-swatch" />
-        <span className="seller-swatch" />
       </div>
       <div className="bestseller-copy">
         <span>Top 4 Best Sellers</span>
@@ -721,13 +719,7 @@ function BestSellerCarousel({ products, navigate }) {
             onClick={() => setActiveIndex(index)}
             aria-label={`Show ${item.name}`}
           >
-            <img
-              src={item.images?.[0] || fallbackProductImage}
-              alt=""
-              onError={(e) => {
-                e.target.src = fallbackProductImage;
-              }}
-            />
+            <span />
           </button>
         ))}
       </div>
@@ -738,25 +730,25 @@ function BestSellerCarousel({ products, navigate }) {
 function ServicesSection() {
   const services = [
     {
-      icon: "P",
+      visual: "service-apparel-art",
       title: "Custom Apparel",
       text: "T-shirts, hoodies, and jerseys with your unique designs",
       tone: "cyan",
     },
     {
-      icon: "C",
+      visual: "service-marketing-art",
       title: "Marketing Materials",
       text: "Business cards, flyers, and promotional items",
       tone: "violet",
     },
     {
-      icon: "B",
+      visual: "service-packaging-art",
       title: "Packaging Design",
       text: "Custom boxes, labels, and branded packaging",
       tone: "orange",
     },
     {
-      icon: "*",
+      visual: "service-large-art",
       title: "Large Format",
       text: "Posters, banners, and exhibition displays",
       tone: "green",
@@ -785,7 +777,7 @@ function ServicesSection() {
             <span className="card-light" aria-hidden="true" />
             <span className="service-spill" aria-hidden="true" />
             <div className="home-service-icon" aria-hidden="true">
-              {service.icon}
+              <span className={`service-art ${service.visual}`} />
             </div>
             <h3>{service.title}</h3>
             <p>{service.text}</p>
@@ -798,12 +790,12 @@ function ServicesSection() {
 
 function PopularProductsSection({ navigate }) {
   const popular = [
-    { label: "Business Cards", icon: "BC" },
-    { label: "T-Shirts", icon: "TS" },
-    { label: "Posters", icon: "PT" },
-    { label: "Notebooks", icon: "NB" },
-    { label: "Stickers", icon: "ST" },
-    { label: "Banners", icon: "BN" },
+    { label: "Business Cards", visual: "popular-business-art" },
+    { label: "T-Shirts", visual: "popular-shirt-art" },
+    { label: "Posters", visual: "popular-poster-art" },
+    { label: "Notebooks", visual: "popular-notebook-art" },
+    { label: "Stickers", visual: "popular-sticker-art" },
+    { label: "Banners", visual: "popular-banner-art" },
   ];
 
   return (
@@ -832,7 +824,7 @@ function PopularProductsSection({ navigate }) {
             <span className="card-light" aria-hidden="true" />
             <span className="popular-print-line" aria-hidden="true" />
             <span className="popular-icon" aria-hidden="true">
-              {item.icon}
+              <span className={`popular-art ${item.visual}`} />
             </span>
             <span>{item.label}</span>
           </button>
@@ -845,9 +837,9 @@ function PopularProductsSection({ navigate }) {
 function FeaturesSection() {
   const features = [
     {
-      icon: "Z",
+      iconClass: "feature-speed-icon",
       title: "Fast Turnaround",
-      text: "Express delivery in 24-48 hours",
+      text: "Ready for pickup within 24-48 hours",
     },
     {
       icon: "S",
@@ -875,8 +867,8 @@ function FeaturesSection() {
             style={{ "--card-delay": `${index * 0.12}s` }}
           >
             <span className="card-light" aria-hidden="true" />
-            <div className="home-feature-icon" aria-hidden="true">
-              {feature.icon}
+            <div className={`home-feature-icon ${feature.iconClass || ""}`} aria-hidden="true">
+              {feature.icon || <span />}
             </div>
             <h3>{feature.title}</h3>
             <p>{feature.text}</p>
@@ -1167,51 +1159,43 @@ function HomePage() {
           <div className="about-story-grid">
             <article className="about-story-card about-main-card">
               <span className="card-light" aria-hidden="true" />
-              <span className="about-card-kicker">PMG</span>
-              <h3>Printing made easy, complete, and reliable.</h3>
-              <p>
-                Whether you need a single calling card or 500 fully sublimated
-                jerseys, we have the equipment, expertise, and supplies to get
-                it done.
-              </p>
-              <p>
-                We also provide printing machines and consumables as a straight
-                authorized dealer, so even fellow printing businesses trust us.
-              </p>
-            </article>
-
-            <article className="about-story-card">
-              <span className="card-light" aria-hidden="true" />
-              <span className="about-card-kicker">Prints</span>
-              <h3>What We Print And More</h3>
-              <ul className="home-info-list">
-                <li>T-shirt printing: DTF, sublimation, screen print</li>
-                <li>Cut & sew full custom apparel</li>
-                <li>Flyers, trifolds, invitations, stickers</li>
-                <li>Tarpaulin, sintra board, plaque</li>
-                <li>Calling cards, PVC ID, lanyards, mugs, caps</li>
-                <li>Embroidery and signage installation</li>
-              </ul>
-            </article>
-
-            <article className="about-story-card">
-              <span className="card-light" aria-hidden="true" />
               <span className="about-card-kicker">Why PMG</span>
-              <h3>Why Customers Come Back</h3>
-              <ul className="home-info-list">
-                <li>
-                  <strong>One-stop convenience</strong> - no need to go to five
-                  different shops.
-                </li>
-                <li>
-                  <strong>Machines + supplies</strong> - we help you print and
-                  run your own printing business.
-                </li>
-                <li>
-                  <strong>Fast, local, and hands-on</strong> - real people who
-                  answer calls and messages.
-                </li>
-              </ul>
+              <span className="about-visual about-visual-stack" aria-hidden="true" />
+              <h3>Built for fast, premium print work.</h3>
+              <p>
+                From single prints to bulk production. Made for brands that need
+                quality without the slow back-and-forth.
+              </p>
+              <div className="about-stat-grid">
+                <span><strong>500+</strong> Projects</span>
+                <span><strong>24-48h</strong> Rush-ready</span>
+                <span><strong>1-stop</strong> Print shop</span>
+              </div>
+            </article>
+
+            <article className="about-story-card">
+              <span className="card-light" aria-hidden="true" />
+              <span className="about-card-kicker">What We Print</span>
+              <span className="about-visual about-visual-pills" aria-hidden="true" />
+              <h3>Print categories ready to launch.</h3>
+              <div className="about-pill-cloud">
+                {["T-Shirts", "Packaging", "Stickers", "PVC IDs", "Signage", "Embroidery", "Flyers", "Lanyards"].map((item) => (
+                  <span key={item}>{item}</span>
+                ))}
+              </div>
+            </article>
+
+            <article className="about-story-card">
+              <span className="card-light" aria-hidden="true" />
+              <span className="about-card-kicker">Why Customers Stay</span>
+              <span className="about-visual about-visual-badges" aria-hidden="true" />
+              <h3>Practical support with polished output.</h3>
+              <div className="about-feature-grid">
+                <span>Fast Production</span>
+                <span>Custom Designs</span>
+                <span>Local Support</span>
+                <span>Premium Equipment</span>
+              </div>
             </article>
           </div>
         </section>

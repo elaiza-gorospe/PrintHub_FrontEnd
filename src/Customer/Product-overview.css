@@ -390,3 +390,109 @@
     font-size: 38px;
   }
 }
+
+/* Mobile responsiveness pass */
+.po-page {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 900px) {
+  .po-page {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .po-hero {
+    min-height: auto;
+    padding: 34px 0 20px;
+  }
+
+  .po-title {
+    font-size: clamp(40px, 9vw, 66px);
+    line-height: 1;
+  }
+
+  .po-subtitle {
+    max-width: 100%;
+    font-size: 16px;
+  }
+
+  .po-toolbar {
+    gap: 12px;
+  }
+
+  .po-search,
+  .po-filter {
+    width: 100%;
+  }
+
+  .po-grid {
+    gap: 16px;
+  }
+
+  .po-card {
+    border-radius: 22px;
+  }
+
+  .po-img {
+    height: 190px;
+  }
+
+  .po-card-body {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .po-page {
+    padding: 74px 14px 38px;
+  }
+
+  .po-top {
+    gap: 18px;
+  }
+
+  .po-title {
+    font-size: clamp(34px, 12vw, 48px);
+  }
+
+  .po-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .po-img {
+    height: 138px;
+  }
+
+  .po-img img {
+    padding: 10px;
+  }
+
+  .po-card-body {
+    padding: 13px;
+  }
+
+  .po-name {
+    font-size: 14px;
+  }
+
+  .po-price {
+    font-size: 15px;
+  }
+
+  .po-card-meta {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 380px) {
+  .po-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .po-img {
+    height: 170px;
+  }
+}

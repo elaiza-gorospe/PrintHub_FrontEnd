@@ -1764,3 +1764,147 @@
     width: 100% !important;
   }
 }
+
+/* Mobile responsiveness pass */
+.pd-page {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 900px) {
+  .pd-page {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .pd-top {
+    gap: 24px;
+  }
+
+  .pd-info h1 {
+    font-size: clamp(34px, 7vw, 56px);
+    line-height: 1.02;
+  }
+
+  .pd-floating-perks,
+  .pd-progress-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pd-recently-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  .pd-page {
+    padding: 74px 14px calc(92px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .pd-breadcrumb {
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+
+  .pd-breadcrumb::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pd-gallery,
+  .pd-info,
+  .pd-section,
+  .pd-order-card,
+  .pd-summary-box,
+  .pd-quote-box,
+  .pd-progress-panel {
+    border-radius: 18px;
+  }
+
+  .pd-main-image {
+    min-height: 260px;
+    padding: 12px;
+  }
+
+  .pd-main-image img {
+    max-height: 280px;
+  }
+
+  .pd-info h1 {
+    font-size: clamp(30px, 10vw, 42px);
+  }
+
+  .pd-tabs {
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+
+  .pd-tabs button {
+    flex: 0 0 auto;
+    min-height: 38px;
+    padding: 0 13px;
+    font-size: 13px;
+  }
+
+  .pd-floating-perks,
+  .pd-progress-steps,
+  .pd-order-details,
+  .pd-card-options,
+  .pd-line-options,
+  .pd-qty-grid,
+  .pd-recently-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pd-card-options {
+    display: grid;
+    overflow: visible;
+  }
+
+  .pd-option-card,
+  .pd-line-option,
+  .pd-price-option {
+    min-width: 0;
+  }
+
+  .pd-quantity-head,
+  .pd-order-head,
+  .pd-recently-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pd-quote-row input,
+  .pd-quote-row textarea,
+  .pd-quote-row select {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .pd-main-image,
+  .pd-img-slide {
+    min-height: 220px;
+  }
+
+  .pd-main-image img,
+  .pd-img-slide img {
+    max-height: 230px;
+  }
+
+  .pd-section,
+  .pd-order-card,
+  .pd-summary-box,
+  .pd-quote-box {
+    padding: 16px;
+  }
+
+  .pd-cart-btn,
+  .pd-quote-btn,
+  .pd-sticky-btn {
+    font-size: 14px;
+  }
+}

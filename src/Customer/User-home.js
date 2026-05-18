@@ -61,7 +61,6 @@ const heroSlides = [
   },
 ];
 
-const heroStats = ["500+ Orders", "Fast Turnaround", "Custom Packaging", "Top Rated Printing Shop"];
 const homeAnimatedWords = ["print run", "brand drop", "merch batch", "packaging launch"];
 
 function UserHomePage() {
@@ -188,7 +187,7 @@ function UserHomePage() {
               type="button"
               onClick={() => navigate("/Product-overview")}
             >
-              SHOP NOW &gt;&gt;
+              SHOP NOW
             </button>
             <button
               className="uh-hero-ghost"
@@ -222,13 +221,6 @@ function UserHomePage() {
           </div>
         </div>
 
-        <div className="uh-hero-stat-cards" aria-label="PMG highlights">
-          {heroStats.map((stat, index) => (
-            <div key={stat} style={{ "--stat-delay": `${index * 0.22}s` }}>
-              {stat}
-            </div>
-          ))}
-        </div>
       </section>
 
       <section className="uh-section">
@@ -356,7 +348,13 @@ function UserHomePage() {
 
         <div className="uh-cards">
           {products.map((p, index) => (
-            <div key={p.id} className="uh-card" style={{ "--card-delay": `${index * 0.06}s` }}>
+            <button
+              key={p.id}
+              type="button"
+              className="uh-card"
+              style={{ "--card-delay": `${index * 0.06}s` }}
+              onClick={() => navigate(`/product/${p.id}`)}
+            >
               <div className="uh-card-img">
                 <img
                   src={
@@ -373,18 +371,11 @@ function UserHomePage() {
               <div className="uh-card-body">
                 <h3>{p.name}</h3>
                 <p>{p.description || ""}</p>
-                <button
-                  type="button"
-                  className="uh-card-link"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/product/${p.id}`);
-                  }}
-                >
-                  SHOP NOW &gt;&gt;
-                </button>
+                <span className="uh-card-cta">
+                  Customize <b aria-hidden="true">›</b>
+                </span>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </section>
