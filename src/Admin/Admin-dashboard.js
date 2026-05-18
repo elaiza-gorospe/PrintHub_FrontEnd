@@ -7,6 +7,7 @@ import AdminManageAccounts from "./Admin-manageacc";
 import AdminOrders from "./AdminOrders";
 import AdminInquiries from "./AdminInquiries";
 import AdminProducts from "./AdminProducts";
+import AdminReports from "./AdminReports";
 import { buildApiUrl } from "../config/api";
 import { CATEGORY_DEFAULTS, CATEGORY_NAMES } from "../config/categoryDefaults";
 
@@ -15,9 +16,7 @@ import {
   FaMoneyBillWave,
   FaUserPlus,
   FaShoppingBag,
-  FaChartLine,
   FaCog,
-  FaPlus,
   FaCheckCircle,
 } from "react-icons/fa";
 
@@ -229,7 +228,7 @@ function AdminDashboard() {
 
   // ✅ ROLE-BASED ACCESS CONTROL: Only admins can access admin pages
   useEffect(() => {
-    if (!sidebarUser || role !== "admin" && role !== "staff") {
+    if (!sidebarUser || (role !== "admin" && role !== "staff")) {
       // Redirect non-admin and non-staff users to home page
       navigate("/");
       return;
@@ -243,6 +242,7 @@ function AdminDashboard() {
         label: "Dashboard",
       },
       { id: "orders", label: "Orders" },
+      { id: "reports", label: "Reports" },
       { id: "inquiries", label: "Inquiries" },
       { id: "products", label: "Products" },
       { id: "customers", label: "Manage Accounts" },
@@ -461,6 +461,7 @@ function AdminDashboard() {
     if (activeItem === "profile") return "Profile";
     if (activeItem === "customers") return "Manage Accounts";
     if (activeItem === "orders") return "Orders";
+    if (activeItem === "reports") return "Reports";
     if (activeItem === "inquiries") return "Inquiries";
     if (activeItem === "products") return "Products";
     if (activeItem === "settings") return "Settings";
@@ -1397,6 +1398,7 @@ function AdminDashboard() {
 
           {/* ✅ ORDERS - Dynamic component */}
           {activeItem === "orders" && <AdminOrders />}
+          {activeItem === "reports" && <AdminReports />}
 
           {/* ✅ INQUIRIES - Dynamic component */}
           {activeItem === "inquiries" && <AdminInquiries />}

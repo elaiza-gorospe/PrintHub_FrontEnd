@@ -34,6 +34,7 @@ import UserPasswordSecurityPage from "./Customer/User-password-security";
 import ProductDetail from "./Customer/Product-detail";
 import { buildApiUrl } from "./config/api";
 import PrintHubChatbot from './components/PrintHubChatbot';
+import Header from "./components/Header";
 import pmgWebsiteLogo from "./assets/brand/pmg-mark.png";
 import pmgNavLogo from "./assets/brand/pmg-printing-house.png";
 
@@ -68,6 +69,21 @@ function formatHomePrice(price) {
 }
 
 // ✅ PROTECTED ROUTE - Only admins and staff can access
+function getStoredCustomerUser() {
+  try {
+    const stored = localStorage.getItem("user");
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    const role = String(parsed?.role || "").toLowerCase();
+    if (!parsed?.id || role === "admin" || role === "staff" || role === "guest") {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 function ProtectedAdminRoute({ children }) {
   const storedUser = (() => {
     try {
@@ -228,6 +244,8 @@ function ChatbotRouteGate() {
 function NavbarComponent() {
   const navigate = useNavigate();
   const location = useLocation();
+  const customerUser = getStoredCustomerUser();
+  const isLoggedIn = Boolean(customerUser);
 
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
@@ -245,7 +263,10 @@ function NavbarComponent() {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <div className="navbar-logo" onClick={() => navigate("/")}>
+        <div
+          className="navbar-logo"
+          onClick={() => navigate(isLoggedIn ? "/user-home" : "/")}
+        >
           <span className="navbar-logo-mark brand-image">
             <img src={pmgNavLogo} alt="PMG Printing House" />
           </span>
@@ -253,7 +274,10 @@ function NavbarComponent() {
 
         <ul className="navbar-menu">
           <li>
-            <button className="navlink-btn" onClick={() => navigate("/")}>
+            <button
+              className="navlink-btn"
+              onClick={() => navigate(isLoggedIn ? "/user-home" : "/")}
+            >
               <span aria-hidden="true">⌂</span> Home
             </button>
           </li>
@@ -750,6 +774,7 @@ function HomePage() {
   const [products, setProducts] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const isLoggedIn = Boolean(getStoredCustomerUser());
   const [activeHeroWord, setActiveHeroWord] = useState(0);
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
@@ -864,7 +889,7 @@ function HomePage() {
         className="home-scroll-progress"
         style={{ transform: `scaleX(${scrollProgress})` }}
       />
-      <NavbarComponent />
+      {isLoggedIn ? <Header /> : <NavbarComponent />}
 
       {/* HERO */}
       <header className="App-header">

@@ -2,13 +2,17 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./User-orders.css";
 import Header from "../components/Header";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaCube, FaTimes } from "react-icons/fa";
 import { buildApiUrl } from "../config/api";
 import { Capacitor } from "@capacitor/core";
 import AppModal from "../components/AppModal";
+import OrderDesignPreview3D, {
+  has3DDesign,
+} from "../components/OrderDesignPreview3D";
 
 const ORDER_TABS = [
   { key: "all", label: "All" },
+  { key: "for_approval", label: "For approval" },
   { key: "to_pay", label: "To pay" },
   { key: "to_receive", label: "To receive" },
   { key: "to_review", label: "To review" },
@@ -17,6 +21,13 @@ const ORDER_TABS = [
 
 function getOrderBucket(order) {
   if (order.status === "return_requested") return "return";
+  if (
+    order.payment_status !== "paid" &&
+    order.status !== "cancelled" &&
+    !order.proofApproved
+  ) {
+    return "for_approval";
+  }
   if (order.payment_status !== "paid" && order.status !== "cancelled") {
     return "to_pay";
   }
@@ -47,6 +58,7 @@ function UserOrders() {
   const [submittingComplaint, setSubmittingComplaint] = useState(false);
   const [noticeModal, setNoticeModal] = useState(null);
   const [cancelTargetId, setCancelTargetId] = useState(null);
+  const [design3DPreview, setDesign3DPreview] = useState(null);
 
   const currentUser = useMemo(() => {
     try {
@@ -228,6 +240,9 @@ function UserOrders() {
   const getStatusLabel = (order) => {
     if (order.status === "return_requested") return "Return requested";
     if (order.status === "cancelled") return "Cancelled";
+    if (order.payment_status !== "paid" && !order.proofApproved) {
+      return "Waiting for design approval";
+    }
     if (order.payment_status !== "paid") return "Payment pending";
     if (order.status === "delivered") return "Delivered";
     return order.status?.charAt(0).toUpperCase() + order.status?.slice(1);
@@ -272,9 +287,12 @@ function UserOrders() {
                 .map((z) => z.imageUrl);
               const imgs = zoneImgs.length
                 ? zoneImgs
-                : design?.generatedImageUrl
-                  ? [design.generatedImageUrl]
-                  : [];
+                : [
+                    item.customizations?.imageUrl,
+                    item.customizations?.image_url,
+                    design?.generatedImageUrl,
+                    design?.imageUrl,
+                  ].filter(Boolean);
 
               return (
                 <div key={item.id} className="uo-item-row">
@@ -309,6 +327,18 @@ function UserOrders() {
                       </p>
                     )}
                     <p className="uo-item-qty">Qty: {item.quantity}</p>
+                    {has3DDesign(item) && (
+                      <button
+                        type="button"
+                        className="uo-3d-btn"
+                        onClick={() =>
+                          setDesign3DPreview({ item, productName })
+                        }
+                      >
+                        <FaCube />
+                        View 3D custom design
+                      </button>
+                    )}
                   </div>
                   <div className="uo-item-price">
                     {formatCurrency(item.unit_price)} x {item.quantity} ={" "}
@@ -346,14 +376,20 @@ function UserOrders() {
               >
                 {cancellingId === order.id ? "Cancelling..." : "Cancel Order"}
               </button>
-              <button
-                type="button"
-                className="uo-pay-btn"
-                disabled={payingId === order.id}
-                onClick={() => handlePayNow(order)}
-              >
-                {payingId === order.id ? "Redirecting..." : "Pay Now"}
-              </button>
+              {order.proofApproved ? (
+                <button
+                  type="button"
+                  className="uo-pay-btn"
+                  disabled={payingId === order.id}
+                  onClick={() => handlePayNow(order)}
+                >
+                  {payingId === order.id ? "Redirecting..." : "Pay Now"}
+                </button>
+              ) : (
+                <span className="uo-approval-note">
+                  Admin is reviewing your design before payment.
+                </span>
+              )}
             </>
           )}
 
@@ -541,6 +577,38 @@ function UserOrders() {
               {submittingComplaint ? "Submitting..." : "Submit complaint"}
             </button>
           </form>
+        </div>
+      )}
+
+      {design3DPreview && (
+        <div
+          className="uo-3d-modal"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setDesign3DPreview(null)}
+        >
+          <div
+            className="uo-3d-modal-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="uo-3d-modal-head">
+              <div>
+                <h2>3D Custom Design</h2>
+                <p>{design3DPreview.productName}</p>
+              </div>
+              <button
+                type="button"
+                className="uo-3d-close"
+                onClick={() => setDesign3DPreview(null)}
+                aria-label="Close 3D preview"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className="uo-3d-stage">
+              <OrderDesignPreview3D item={design3DPreview.item} />
+            </div>
+          </div>
         </div>
       )}
 

@@ -307,6 +307,25 @@
   font-size: 12px;
 }
 
+.uo-3d-btn {
+  margin-top: 8px;
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  color: #455073;
+  border-radius: 8px;
+  padding: 7px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.uo-3d-btn:hover {
+  background: #e0e7ff;
+}
+
 .uo-item-price {
   color: #0f352a;
   font-weight: 700;
@@ -319,6 +338,86 @@
   margin: 0;
   color: rgba(47, 58, 69, 0.7);
   font-size: 13px;
+}
+
+.uo-3d-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  background: rgba(15, 23, 42, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.uo-3d-modal-card {
+  width: min(920px, 100%);
+  height: min(720px, 88vh);
+  background: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.28);
+  display: flex;
+  flex-direction: column;
+}
+
+.uo-3d-modal-head {
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #e7ecea;
+}
+
+.uo-3d-modal-head h2 {
+  margin: 0;
+  color: #2f3a45;
+  font-size: 18px;
+}
+
+.uo-3d-modal-head p {
+  margin: 4px 0 0;
+  color: #667085;
+  font-size: 13px;
+}
+
+.uo-3d-close {
+  border: 0;
+  background: transparent;
+  color: #667085;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.uo-3d-stage {
+  flex: 1;
+  min-height: 0;
+  padding: 14px;
+}
+
+.uo-3d-stage > div {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.uo-3d-stage .tsc-preview-3d {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+  border-radius: 10px 10px 0 0;
+}
+
+.uo-3d-stage .tsc-zoom-row {
+  min-height: 54px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
 }
 
 /* SHIPPING SECTION */
@@ -441,6 +540,18 @@
 }
 .uo-pay-btn:hover {
   background: #219a52;
+}
+
+.uo-approval-note {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 9px;
+  background: #f5f3ff;
+  color: #6d28d9;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .uo-receipt-btn,

@@ -288,6 +288,11 @@ export default function TshirtCustomizerPanel({
       null;
     onDesignReady({
       type: designType,
+      previewType: designType,
+      previewConfig: {
+        modelPath,
+        ...previewProps,
+      },
       zones: zoneDesigns,
       shirtColor,
       productColor: shirtColor,

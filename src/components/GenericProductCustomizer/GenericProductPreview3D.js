@@ -30,6 +30,7 @@ export default function GenericProductPreview3D({
   const mountRef = useRef(null);
   const modelRef = useRef(null);
   const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
   const decalsRef = useRef([]);
   const colorRef = useRef(shirtColor);
   const designsRef = useRef(zoneDesigns);
@@ -361,6 +362,7 @@ export default function GenericProductPreview3D({
     scene.background = new THREE.Color(0x1e2433);
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    cameraRef.current = camera;
     camera.position.set(0, 0, 3);
 
     scene.add(new THREE.AmbientLight(0xffffff, 1.5));
@@ -451,8 +453,15 @@ export default function GenericProductPreview3D({
       }
       modelRef.current = null;
       sceneRef.current = null;
+      cameraRef.current = null;
     };
   }, [applyBaseColor, clearDecals, createFlatModel, flatShape, modelPath, rebuildDecals]);
+
+  useEffect(() => {
+    if (!cameraRef.current) return;
+    cameraRef.current.zoom = zoom / 100;
+    cameraRef.current.updateProjectionMatrix();
+  }, [zoom]);
 
   useEffect(() => {
     if (!modelRef.current) return;

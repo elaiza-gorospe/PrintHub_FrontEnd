@@ -16,6 +16,7 @@ export default function NotebookPreview3D({ modelPath, zoneDesigns = {} }) {
   const mountRef = useRef(null);
   const modelRef = useRef(null);
   const rendererRef = useRef(null);
+  const cameraRef = useRef(null);
   const designsRef = useRef(zoneDesigns);
   const meshesRef = useRef([]);
   const [ready, setReady] = useState(false);
@@ -102,6 +103,7 @@ export default function NotebookPreview3D({ modelPath, zoneDesigns = {} }) {
     scene.background = new THREE.Color(0x1e2433);
 
     const camera = new THREE.PerspectiveCamera(45, w0 / h0, 0.1, 1000);
+    cameraRef.current = camera;
     camera.position.set(0, 0, 3);
 
     scene.add(new THREE.AmbientLight(0xffffff, 1.5));
@@ -192,9 +194,16 @@ export default function NotebookPreview3D({ modelPath, zoneDesigns = {} }) {
         });
         modelRef.current = null;
       }
+      cameraRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modelPath]);
+
+  useEffect(() => {
+    if (!cameraRef.current) return;
+    cameraRef.current.zoom = zoom / 100;
+    cameraRef.current.updateProjectionMatrix();
+  }, [zoom]);
 
   // ── Rebuild planes when model is ready OR designs change ──────────
   useEffect(() => {

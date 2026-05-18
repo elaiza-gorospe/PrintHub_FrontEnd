@@ -224,6 +224,10 @@ export default function NotebookCustomizerPanel({
       null;
     onDesignReady({
       type: "notebook",
+      previewType: "notebook",
+      previewConfig: {
+        modelPath: NOTEBOOK_GLB,
+      },
       zones: zoneDesigns,
       generatedImageUrl: primaryImage,
       generatedAt: new Date().toISOString(),

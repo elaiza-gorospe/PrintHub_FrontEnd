@@ -12,10 +12,13 @@ import {
   FaTimes,
   FaDownload,
   FaCube,
+  FaMoneyBillWave,
 } from "react-icons/fa";
 import "./Admin-dashboard.css";
 import { buildApiUrl } from "../config/api";
-import TshirtPreview3D from "../components/TshirtCustomizer/TshirtPreview3D";
+import OrderDesignPreview3D, {
+  has3DDesign,
+} from "../components/OrderDesignPreview3D";
 
 function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -26,7 +29,7 @@ function AdminOrders() {
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [detailOrder, setDetailOrder] = useState(null);
   const [aiPreviewModal, setAiPreviewModal] = useState(null); // { imageUrl, productName }
-  const [ai3DPreviewModal, setAi3DPreviewModal] = useState(null); // { imageUrl, productName }
+  const [ai3DPreviewModal, setAi3DPreviewModal] = useState(null); // { item, productName }
 
   // Fetch orders from API
   useEffect(() => {
@@ -46,7 +49,12 @@ function AdminOrders() {
             : "Unknown",
           total: parseFloat(order.total),
           status: order.status || "pending",
+          paymentStatus: order.payment_status || "unpaid",
+          proofApproved: Boolean(order.proofApproved),
           date: new Date(order.createdAt).toISOString().slice(0, 10),
+          dueDate: order.due_date
+            ? new Date(order.due_date).toISOString().slice(0, 10)
+            : "",
           dbId: order.id,
           items: order.items || [],
         }));
@@ -89,10 +97,18 @@ function AdminOrders() {
   // Calculate stats from orders
   const ordersStats = useMemo(() => {
     const pending = orders.filter((o) => o.status === "pending").length;
+    const confirmed = orders.filter((o) => o.status === "confirmed").length;
     const processing = orders.filter((o) => o.status === "processing").length;
     const completed = orders.filter((o) => o.status === "completed").length;
     const cancelled = orders.filter((o) => o.status === "cancelled").length;
-    return { pending, processing, completed, cancelled, total: orders.length };
+    return {
+      pending,
+      confirmed,
+      processing,
+      completed,
+      cancelled,
+      total: orders.length,
+    };
   }, [orders]);
 
   const handleClearFilters = () => {
@@ -141,6 +157,7 @@ function AdminOrders() {
       );
 
       const messages = {
+        confirmed: "marked as ordered/paid",
         processing: "marked as processing",
         delivered: "marked as delivered",
         completed: "marked as completed",
@@ -152,28 +169,117 @@ function AdminOrders() {
     }
   };
 
+  const handleOnsitePayment = async (order) => {
+    if (!window.confirm(`Mark ${order.id} as paid onsite?`)) return;
+    try {
+      const res = await fetch(
+        buildApiUrl(`/api/orders/${order.dbId}/onsite-payment`),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ payment_reference: `ONSITE-${order.id}` }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to record payment");
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.dbId === order.dbId
+            ? { ...o, status: "confirmed", paymentStatus: "paid" }
+            : o,
+        ),
+      );
+      alert("Onsite payment recorded. Order moved to production queue.");
+    } catch (err) {
+      console.error("Error recording onsite payment:", err);
+      alert(err.message || "Error recording onsite payment");
+    }
+  };
+
+  const handleApproveDesign = async (order) => {
+    if (!window.confirm(`Approve the design for ${order.id}?`)) return;
+    try {
+      const res = await fetch(
+        buildApiUrl(`/api/orders/${order.dbId}/approve-design`),
+        { method: "POST" },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to approve design");
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.dbId === order.dbId ? { ...o, proofApproved: true } : o,
+        ),
+      );
+      if (detailOrder?.dbId === order.dbId) {
+        setDetailOrder((prev) =>
+          prev ? { ...prev, proofApproved: true } : prev,
+        );
+      }
+      alert("Design approved. Customer can now pay.");
+    } catch (err) {
+      console.error("Error approving design:", err);
+      alert(err.message || "Error approving design");
+    }
+  };
+
   // Handlers for different status transitions
   const handleProcessOrder = (order) => updateOrderStatus(order, "processing");
   const handleDeliverOrder = (order) => updateOrderStatus(order, "delivered");
   const handleCompleteOrder = (order) => updateOrderStatus(order, "completed");
 
+  const getItemDesignImages = (item) => {
+    const customizations = item.customizations || {};
+    const design = customizations.design || {};
+    const images = [];
+
+    const addImage = (url, label = "Customer upload", designData = design) => {
+      if (!url || typeof url !== "string") return;
+      if (images.some((image) => image.imageUrl === url)) return;
+      images.push({ imageUrl: url, label, design: designData });
+    };
+
+    addImage(customizations.imageUrl, "Customer upload", customizations);
+    addImage(customizations.image_url, "Customer upload", customizations);
+    addImage(design.generatedImageUrl, "AI design", design);
+    addImage(design.imageUrl, "Design image", design);
+
+    Object.entries(design.zones || {}).forEach(([zoneName, zone]) => {
+      addImage(zone?.imageUrl, `${zoneName} design`, design);
+    });
+
+    Object.entries(customizations.zones || {}).forEach(([zoneName, zone]) => {
+      addImage(zone?.imageUrl, `${zoneName} design`, customizations);
+    });
+
+    return images;
+  };
+
   // Download AI-generated image
-  const handleDownloadAiImage = async (imageUrl, productName) => {
+  const handleDownloadAiImage = async (
+    imageUrl,
+    productName,
+    label = "design",
+  ) => {
     try {
       const response = await fetch(imageUrl);
       if (!response.ok) throw new Error("Failed to download image");
 
       const blob = await response.blob();
+      const extension =
+        blob.type?.split("/")?.[1]?.replace("jpeg", "jpg") || "png";
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${productName.replace(/\s+/g, "-")}-ai-design.png`;
+      link.download = `${productName.replace(/\s+/g, "-")}-${label
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")}.${extension}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Error downloading AI image:", err);
+      console.error("Error downloading image:", err);
       alert("Failed to download image");
     }
   };
@@ -211,7 +317,14 @@ function AdminOrders() {
         </div>
 
         <div className="dashpage-stat-card">
-          <div className="dashpage-stat-label">Processing</div>
+          <div className="dashpage-stat-label">Ordered/Paid</div>
+          <div className="dashpage-stat-value blue">
+            {ordersStats.confirmed}
+          </div>
+        </div>
+
+        <div className="dashpage-stat-card">
+          <div className="dashpage-stat-label">In Process</div>
           <div className="dashpage-stat-value blue">
             {ordersStats.processing}
           </div>
@@ -247,6 +360,7 @@ function AdminOrders() {
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
+            <option value="confirmed">Ordered/Paid</option>
             <option value="processing">Processing</option>
             <option value="delivered">Delivered</option>
             <option value="completed">Completed</option>
@@ -295,6 +409,9 @@ function AdminOrders() {
                       {o.status === "pending" && (
                         <FaClock style={{ marginRight: 6 }} />
                       )}
+                      {o.status === "confirmed" && (
+                        <FaCheckCircle style={{ marginRight: 6 }} />
+                      )}
                       {o.status === "processing" && (
                         <FaClock style={{ marginRight: 6 }} />
                       )}
@@ -308,7 +425,22 @@ function AdminOrders() {
                         <FaExclamationTriangle style={{ marginRight: 6 }} />
                       )}
                       {o.status.replace(/_/g, " ")}
+                      {o.paymentStatus === "paid" && o.status !== "confirmed"
+                        ? " / paid"
+                        : ""}
                     </span>
+                    {!o.proofApproved && o.paymentStatus !== "paid" && (
+                      <div
+                        style={{
+                          marginTop: 5,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "#7c3aed",
+                        }}
+                      >
+                        Needs design approval
+                      </div>
+                    )}
                   </td>
                   <td data-label="Date">{o.date}</td>
                   <td data-label="Actions">
@@ -366,12 +498,59 @@ function AdminOrders() {
                           ? "Hide Items"
                           : `Items (${o.items.length})`}
                       </button>
-                      {/* Process button - only for pending orders */}
-                      {o.status === "pending" && (
+                      {!o.proofApproved && o.status !== "cancelled" && (
+                        <button
+                          type="button"
+                          onClick={() => handleApproveDesign(o)}
+                          title="Approve design so customer can pay"
+                          style={{
+                            background: "#7c3aed",
+                            color: "#fff",
+                            border: "none",
+                            padding: "6px 8px",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "11px",
+                            display: "flex",
+                            alignItems: "left",
+                            gap: "3px",
+                          }}
+                        >
+                          <FaCheckCircle size={11} />
+                          Approve design
+                        </button>
+                      )}
+
+                      {o.paymentStatus !== "paid" && o.status !== "cancelled" && (
+                        <button
+                          type="button"
+                          onClick={() => handleOnsitePayment(o)}
+                          disabled={!o.proofApproved}
+                          title="Record onsite/shop payment"
+                          style={{
+                            background: o.proofApproved ? "#16a34a" : "#9ca3af",
+                            color: "#fff",
+                            border: "none",
+                            padding: "6px 8px",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "11px",
+                            display: "flex",
+                            alignItems: "left",
+                            gap: "3px",
+                          }}
+                        >
+                          <FaMoneyBillWave size={11} />
+                          Paid onsite
+                        </button>
+                      )}
+
+                      {/* Process button - only for ordered/paid jobs */}
+                      {o.status === "confirmed" && (
                         <button
                           type="button"
                           onClick={() => handleProcessOrder(o)}
-                          title="Mark as processing"
+                          title="Move to in process"
                           style={{
                             background: "#3498db",
                             color: "#fff",
@@ -386,7 +565,7 @@ function AdminOrders() {
                           }}
                         >
                           <FaClock size={11} />
-                          Process
+                          In process
                         </button>
                       )}
 
@@ -490,6 +669,7 @@ function AdminOrders() {
                           const productImg = item.product?.images?.[0];
                           const productName =
                             item.product?.name || `Product #${item.productId}`;
+                          const designImages = getItemDesignImages(item);
                           return (
                             <div
                               key={item.id}
@@ -518,26 +698,32 @@ function AdminOrders() {
                                   }}
                                 />
                               )}
-                              {/* AI design thumbnail */}
-                              {design?.generatedImageUrl && (
-                                <div
+                              {designImages.map((image) => (
+                                <button
+                                  key={image.imageUrl}
+                                  type="button"
                                   style={{
                                     position: "relative",
                                     flexShrink: 0,
                                     cursor: "pointer",
+                                    border: 0,
+                                    padding: 0,
+                                    background: "transparent",
                                   }}
                                   onClick={() =>
                                     setAiPreviewModal({
-                                      imageUrl: design.generatedImageUrl,
+                                      imageUrl: image.imageUrl,
                                       productName,
-                                      design,
+                                      design: image.design,
+                                      label: image.label,
+                                      item,
                                     })
                                   }
-                                  title="Click to preview AI design"
+                                  title={`Preview ${image.label}`}
                                 >
                                   <img
-                                    src={design.generatedImageUrl}
-                                    alt="AI Design"
+                                    src={image.imageUrl}
+                                    alt={image.label}
                                     style={{
                                       width: 52,
                                       height: 52,
@@ -561,10 +747,10 @@ function AdminOrders() {
                                       borderRadius: "0 0 4px 4px",
                                     }}
                                   >
-                                    AI
+                                    {image.label === "AI design" ? "AI" : "IMG"}
                                   </span>
-                                </div>
-                              )}
+                                </button>
+                              ))}
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <p
                                   style={{
@@ -601,6 +787,31 @@ function AdminOrders() {
                                 >
                                   Qty: {item.quantity}
                                 </p>
+                                {has3DDesign(item) && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setAi3DPreviewModal({ item, productName })
+                                    }
+                                    style={{
+                                      marginTop: 6,
+                                      background: "#eef2ff",
+                                      color: "#455073",
+                                      border: "1px solid #c7d2fe",
+                                      padding: "5px 8px",
+                                      borderRadius: 5,
+                                      cursor: "pointer",
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: 5,
+                                    }}
+                                  >
+                                    <FaCube size={11} />
+                                    View 3D custom design
+                                  </button>
+                                )}
                               </div>
                               <div
                                 style={{
@@ -744,6 +955,23 @@ function AdminOrders() {
                 <div
                   style={{ fontSize: 11, color: "#667085", marginBottom: 2 }}
                 >
+                  DESIGN REVIEW
+                </div>
+                <span
+                  className={`dashpage-pill ${
+                    detailOrder.proofApproved
+                      ? "status-completed"
+                      : "status-return_requested"
+                  }`}
+                  style={{ fontSize: 12 }}
+                >
+                  {detailOrder.proofApproved ? "approved" : "needs approval"}
+                </span>
+              </div>
+              <div style={{ flex: 1, minWidth: 120 }}>
+                <div
+                  style={{ fontSize: 11, color: "#667085", marginBottom: 2 }}
+                >
                   ORDER TOTAL
                 </div>
                 <div
@@ -781,6 +1009,7 @@ function AdminOrders() {
                   const productImg = item.product?.images?.[0];
                   const productName =
                     item.product?.name || `Product #${item.productId}`;
+                  const designImages = getItemDesignImages(item);
                   return (
                     <div
                       key={item.id}
@@ -808,25 +1037,32 @@ function AdminOrders() {
                           }}
                         />
                       )}
-                      {design?.generatedImageUrl && (
-                        <div
+                      {designImages.map((image) => (
+                        <button
+                          key={image.imageUrl}
+                          type="button"
                           style={{
                             position: "relative",
                             flexShrink: 0,
                             cursor: "pointer",
+                            border: 0,
+                            padding: 0,
+                            background: "transparent",
                           }}
                           onClick={() =>
                             setAiPreviewModal({
-                              imageUrl: design.generatedImageUrl,
+                              imageUrl: image.imageUrl,
                               productName,
-                              design,
+                              design: image.design,
+                              label: image.label,
+                              item,
                             })
                           }
-                          title="Click to preview AI design"
+                          title={`Preview ${image.label}`}
                         >
                           <img
-                            src={design.generatedImageUrl}
-                            alt="AI Design"
+                            src={image.imageUrl}
+                            alt={image.label}
                             style={{
                               width: 56,
                               height: 56,
@@ -850,10 +1086,10 @@ function AdminOrders() {
                               borderRadius: "0 0 4px 4px",
                             }}
                           >
-                            AI
+                            {image.label === "AI design" ? "AI" : "IMG"}
                           </span>
-                        </div>
-                      )}
+                        </button>
+                      ))}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p
                           style={{
@@ -883,7 +1119,15 @@ function AdminOrders() {
                         )}
                         {item.customizations &&
                           Object.entries(item.customizations)
-                            .filter(([k]) => k !== "design")
+                            .filter(
+                              ([k]) =>
+                                ![
+                                  "design",
+                                  "imageUrl",
+                                  "image_url",
+                                  "zones",
+                                ].includes(k),
+                            )
                             .map(([k, v]) => {
                               // Format key for display (e.g., inquiry_id → Inquiry ID)
                               const displayKey = k
@@ -916,6 +1160,31 @@ function AdminOrders() {
                         >
                           Qty: {item.quantity}
                         </p>
+                        {has3DDesign(item) && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setAi3DPreviewModal({ item, productName })
+                            }
+                            style={{
+                              marginTop: 8,
+                              background: "#eef2ff",
+                              color: "#455073",
+                              border: "1px solid #c7d2fe",
+                              padding: "6px 9px",
+                              borderRadius: 5,
+                              cursor: "pointer",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 5,
+                            }}
+                          >
+                            <FaCube size={11} />
+                            View 3D custom design
+                          </button>
+                        )}
                       </div>
                       <div
                         style={{
@@ -949,7 +1218,7 @@ function AdminOrders() {
         </div>
       )}
 
-      {/* AI Image Preview Modal */}
+      {/* Design Image Preview Modal */}
       {aiPreviewModal && (
         <div
           onClick={() => setAiPreviewModal(null)}
@@ -986,7 +1255,7 @@ function AdminOrders() {
               }}
             >
               <h3 style={{ margin: 0, fontSize: 16, color: "#2f3a45" }}>
-                AI Generated Design
+                {aiPreviewModal.label || "Design Image"}
               </h3>
               <button
                 onClick={() => setAiPreviewModal(null)}
@@ -1014,7 +1283,7 @@ function AdminOrders() {
             >
               <img
                 src={aiPreviewModal.imageUrl}
-                alt="AI Design Preview"
+                alt={`${aiPreviewModal.label || "Design"} Preview`}
                 style={{
                   maxWidth: "100%",
                   maxHeight: "400px",
@@ -1052,16 +1321,16 @@ function AdminOrders() {
               </button>
               <button
                 onClick={() => {
-                  setAi3DPreviewModal({
-                    imageUrl: aiPreviewModal.imageUrl,
-                    productName: aiPreviewModal.productName,
-                    design: aiPreviewModal.design,
-                  });
+                  window.open(
+                    aiPreviewModal.imageUrl,
+                    "_blank",
+                    "noopener,noreferrer",
+                  );
                 }}
                 style={{
-                  background: "#667085",
-                  color: "#fff",
-                  border: "none",
+                  background: "#f8fafc",
+                  color: "#2f3a45",
+                  border: "1px solid #d7dde8",
                   padding: "8px 16px",
                   borderRadius: 6,
                   cursor: "pointer",
@@ -1072,14 +1341,41 @@ function AdminOrders() {
                   gap: 6,
                 }}
               >
-                <FaCube size={12} />
-                3D Preview
+                <FaEye size={12} />
+                Open
               </button>
+              {has3DDesign(aiPreviewModal.item) && (
+                <button
+                  onClick={() => {
+                    setAi3DPreviewModal({
+                      item: aiPreviewModal.item,
+                      productName: aiPreviewModal.productName,
+                    });
+                  }}
+                  style={{
+                    background: "#667085",
+                    color: "#fff",
+                    border: "none",
+                    padding: "8px 16px",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  <FaCube size={12} />
+                  3D Preview
+                </button>
+              )}
               <button
                 onClick={() => {
                   handleDownloadAiImage(
                     aiPreviewModal.imageUrl,
                     aiPreviewModal.productName,
+                    aiPreviewModal.label || "design",
                   );
                 }}
                 style={{
@@ -1111,24 +1407,24 @@ function AdminOrders() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.7)",
+            background: "rgba(15, 23, 42, 0.72)",
             zIndex: 2100,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: 16,
+            padding: 20,
           }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
               background: "#fff",
-              borderRadius: 12,
+              borderRadius: 16,
               width: "100%",
-              maxWidth: 900,
-              height: "min(720px, 86vh)",
+              maxWidth: 820,
+              height: "min(680px, 86vh)",
               overflow: "hidden",
-              boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+              boxShadow: "0 24px 70px rgba(15, 23, 42, 0.34)",
               display: "flex",
               flexDirection: "column",
             }}
@@ -1139,13 +1435,24 @@ function AdminOrders() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "16px 20px",
+                padding: "16px 22px",
                 borderBottom: "1px solid #e4e9f0",
               }}
             >
-              <h3 style={{ margin: 0, fontSize: 16, color: "#2f3a45" }}>
-                3D Design Preview
-              </h3>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 18, color: "#1f2937" }}>
+                  3D Custom Design
+                </h3>
+                <p
+                  style={{
+                    margin: "3px 0 0",
+                    fontSize: 13,
+                    color: "#667085",
+                  }}
+                >
+                  {ai3DPreviewModal.productName}
+                </p>
+              </div>
               <button
                 onClick={() => setAi3DPreviewModal(null)}
                 style={{
@@ -1163,27 +1470,16 @@ function AdminOrders() {
 
             {/* 3D Canvas */}
             <div
+              className="admin-order-3d-stage"
               style={{
                 flex: 1,
                 display: "block",
                 width: "100%",
-                height: "100%",
+                minHeight: 0,
+                background: "#111827",
               }}
             >
-              <TshirtPreview3D
-                modelPath="/models/tshirt.glb"
-                shirtColor={
-                  ai3DPreviewModal.design?.shirtColor ||
-                  ai3DPreviewModal.design?.productColor ||
-                  ai3DPreviewModal.design?.baseColor ||
-                  "#ffffff"
-                }
-                zoneDesigns={
-                  ai3DPreviewModal.design?.zones || {
-                    front: { imageUrl: ai3DPreviewModal.imageUrl },
-                  }
-                }
-              />
+              <OrderDesignPreview3D item={ai3DPreviewModal.item} />
             </div>
 
             {/* Modal Footer */}
