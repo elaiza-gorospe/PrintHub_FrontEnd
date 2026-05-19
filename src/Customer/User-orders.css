@@ -558,6 +558,53 @@
   margin: 0 0 16px;
 }
 
+.uo-qr-card {
+  width: min(420px, 100%);
+  text-align: center;
+}
+
+.uo-qr-copy,
+.uo-qr-note {
+  margin: 0 0 14px;
+  color: #5d6b7d;
+  line-height: 1.45;
+}
+
+.uo-qr-frame {
+  width: min(280px, 78vw);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+  padding: 12px;
+  border: 1px solid #dce5e7;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.uo-qr-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.uo-qr-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #f4f8fb;
+  color: #334155;
+}
+
+.uo-qr-total strong {
+  color: #0f5132;
+  font-size: 22px;
+}
+
 .uo-modal-card label {
   display: grid;
   gap: 8px;

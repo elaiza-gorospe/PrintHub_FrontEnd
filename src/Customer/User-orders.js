@@ -16,6 +16,24 @@ const ORDER_TABS = [
   { key: "return", label: "Return" },
 ];
 
+async function readApiResponse(response, fallbackMessage) {
+  const contentType = response.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return response.json();
+  }
+
+  const body = await response.text();
+  const looksLikeHtml = body.trim().startsWith("<");
+  return {
+    message: response.ok
+      ? fallbackMessage
+      : looksLikeHtml
+        ? "The payment service is not updated yet. Please restart or redeploy the backend."
+        : body || fallbackMessage,
+    nonJson: true,
+  };
+}
+
 function getOrderBucket(order) {
   if (order.status === "return_requested") return "return";
   if (order.payment_status !== "paid" && order.status !== "cancelled") {
@@ -54,6 +72,8 @@ function UserOrders() {
   const [submittingComplaint, setSubmittingComplaint] = useState(false);
   const [noticeModal, setNoticeModal] = useState(null);
   const [cancelTargetId, setCancelTargetId] = useState(null);
+  const [qrPayment, setQrPayment] = useState(null);
+  const [checkingQrPayment, setCheckingQrPayment] = useState(false);
 
   const currentUser = useMemo(() => {
     try {
@@ -152,17 +172,55 @@ function UserOrders() {
   const handlePayNow = async (order) => {
     setPayingId(order.id);
     try {
-      const returnBase = Capacitor.isNativePlatform()
-        ? "com.printhub.customer://"
+      if (Capacitor.isNativePlatform()) {
+        const res = await fetch(buildApiUrl("/api/payments/qrph"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: order.id }),
+        });
+        const data = await readApiResponse(res, "Failed to create QR payment");
+        if (!res.ok || !data.qr_image_url) {
+          throw new Error(
+            data.message ||
+              data.details?.[0]?.detail ||
+              "Could not create the GCash QR code. Please restart or redeploy the backend with the latest payment update.",
+          );
+        }
+
+        setQrPayment({
+          ...data,
+          order,
+          createdAt: Date.now(),
+        });
+        return;
+      }
+
+      const paymentReturnBase = Capacitor.isNativePlatform()
+        ? process.env.REACT_APP_PAYMENT_RETURN_BASE ||
+          process.env.REACT_APP_PUBLIC_FRONTEND_URL ||
+          "https://project-n80jh.vercel.app"
         : window.location.origin;
+
       const res = await fetch(buildApiUrl("/api/payments/checkout"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: order.id, returnBase }),
+        body: JSON.stringify({
+          orderId: order.id,
+          returnBase: paymentReturnBase,
+          compactCheckout: false,
+        }),
       });
-      const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.message || "Failed to create payment session");
+      const data = await readApiResponse(
+        res,
+        "Failed to create payment session",
+      );
+      if (!res.ok || !data.checkout_url) {
+        throw new Error(
+          data.message ||
+            data.details?.[0]?.detail ||
+            "Failed to create payment session",
+        );
+      }
       window.location.assign(data.checkout_url);
     } catch (err) {
       setNoticeModal({
@@ -172,6 +230,61 @@ function UserOrders() {
       });
       setPayingId(null);
     }
+  };
+
+  const handleCheckQrPayment = async () => {
+    if (!qrPayment?.order_id) return;
+    setCheckingQrPayment(true);
+    try {
+      const res = await fetch(
+        buildApiUrl(`/api/payments/${qrPayment.order_id}/status`),
+      );
+      const data = await readApiResponse(res, "Could not verify payment");
+      if (!res.ok) throw new Error(data.message || "Could not verify payment");
+
+      if (data.payment_status === "paid") {
+        setOrders((prev) =>
+          prev.map((order) =>
+            order.id === qrPayment.order_id
+              ? {
+                  ...order,
+                  payment_status: "paid",
+                  status: data.order?.status || "confirmed",
+                  payment_method: data.order?.payment_method || "qrph",
+                  payment_reference: data.order?.payment_reference,
+                }
+              : order,
+          ),
+        );
+        setQrPayment(null);
+        setPayingId(null);
+        setNoticeModal({
+          title: "Payment confirmed",
+          message: "Your payment was verified and your order is now confirmed.",
+          tone: "success",
+        });
+      } else {
+        setNoticeModal({
+          title: "Payment not confirmed yet",
+          message:
+            "If you already paid in GCash, wait a few seconds and tap Check Payment again.",
+          tone: "info",
+        });
+      }
+    } catch (err) {
+      setNoticeModal({
+        title: "Could not verify payment",
+        message: err.message || "Please try checking again.",
+        tone: "danger",
+      });
+    } finally {
+      setCheckingQrPayment(false);
+    }
+  };
+
+  const closeQrPayment = () => {
+    setQrPayment(null);
+    setPayingId(null);
   };
 
   const handleViewReceipt = async (orderId) => {
@@ -579,6 +692,43 @@ function UserOrders() {
               <p>Subject: {receipt.mockEmail?.subject || "Payment update"}</p>
               <p>{receipt.mockEmail?.body || "Payment details are available in this receipt."}</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {qrPayment && (
+        <div className="uo-modal" role="dialog" aria-modal="true">
+          <div className="uo-modal-card uo-qr-card">
+            <button
+              type="button"
+              className="uo-modal-close"
+              onClick={closeQrPayment}
+              aria-label="Close QR payment"
+            >
+              x
+            </button>
+            <h2>Scan to Pay</h2>
+            <p className="uo-qr-copy">
+              Open GCash, Maya, or any QR Ph banking app and scan this code.
+            </p>
+            <div className="uo-qr-frame">
+              <img src={qrPayment.qr_image_url} alt="GCash QR Ph payment code" />
+            </div>
+            <div className="uo-qr-total">
+              <span>Total Due</span>
+              <strong>{formatCurrency((qrPayment.amount || 0) / 100)}</strong>
+            </div>
+            <p className="uo-qr-note">
+              This QR is single-use and expires after about 30 minutes.
+            </p>
+            <button
+              type="button"
+              className="uo-submit-return"
+              onClick={handleCheckQrPayment}
+              disabled={checkingQrPayment}
+            >
+              {checkingQrPayment ? "Checking..." : "Check Payment"}
+            </button>
           </div>
         </div>
       )}

@@ -5,6 +5,7 @@ import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import backgroundImage from "../assets/images/pmg-image.jpg";
 import { buildApiUrl } from "../config/api";
 import AppModal from "../components/AppModal";
+import { Capacitor } from "@capacitor/core";
 
 function UserLoginPage() {
   const navigate = useNavigate();
@@ -30,6 +31,14 @@ function UserLoginPage() {
     const role = String(loggedInUser?.role || "").toLowerCase();
 
     if (role === "admin" || role === "staff") {
+      if (Capacitor.isNativePlatform()) {
+        localStorage.removeItem("adminUser");
+        localStorage.removeItem("user");
+        localStorage.removeItem("userId");
+        setError("Admin and staff accounts are available on the website only.");
+        return;
+      }
+
       localStorage.removeItem("user");
       localStorage.removeItem("userId");
       localStorage.setItem("adminUser", JSON.stringify(loggedInUser));

@@ -1,5 +1,7 @@
 import "./App.css";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 import {
   BrowserRouter,
   Routes,
@@ -10,11 +12,6 @@ import {
 } from "react-router-dom";
 import { CartProvider } from "./contexts/CartContext";
 import MobileFooterNav from "./components/MobileFooterNav";
-
-import AdminLoginPage from "./Admin/Admin-login";
-import AdminRegistrationPage from "./Admin/Admin-registration";
-import AdminDashboard from "./Admin/Admin-dashboard";
-import AdminManageAccounts from "./Admin/Admin-manageacc";
 
 import UserLoginPage from "./Customer/User-login";
 import UserRegistrationPage from "./Customer/User-regis";
@@ -37,6 +34,20 @@ import { buildApiUrl } from "./config/api";
 import PrintHubChatbot from './components/PrintHubChatbot';
 import pmgWebsiteLogo from "./assets/brand/pmg-mark.png";
 import pmgNavLogo from "./assets/brand/pmg-printing-house.png";
+
+const CUSTOMER_ONLY_BUILD = process.env.REACT_APP_CUSTOMER_ONLY === "true";
+const AdminLoginPage = CUSTOMER_ONLY_BUILD
+  ? CustomerOnlyRedirect
+  : lazy(() => import("./Admin/Admin-login"));
+const AdminRegistrationPage = CUSTOMER_ONLY_BUILD
+  ? CustomerOnlyRedirect
+  : lazy(() => import("./Admin/Admin-registration"));
+const AdminDashboard = CUSTOMER_ONLY_BUILD
+  ? CustomerOnlyRedirect
+  : lazy(() => import("./Admin/Admin-dashboard"));
+const AdminManageAccounts = CUSTOMER_ONLY_BUILD
+  ? CustomerOnlyRedirect
+  : lazy(() => import("./Admin/Admin-manageacc"));
 
 const RECENTLY_VIEWED_KEY = "printhub_recently_viewed_products";
 const fallbackProductImage = "https://via.placeholder.com/300x200?text=No+Image";
@@ -337,8 +348,39 @@ const CUSTOMER_ROUTES = [
   "/payment/return",
 ];
 
-function AppInner() {
+const isCustomerApk = () => CUSTOMER_ONLY_BUILD || Capacitor.isNativePlatform();
+
+function CustomerOnlyRedirect() {
+  return <Navigate to="/user-home" replace />;
+}
+
+function CustomerApkBodyClass() {
+  useEffect(() => {
+    if (!isCustomerApk()) return undefined;
+
+    document.documentElement.classList.add("printhub-native-app");
+    document.body.classList.add("printhub-native-app");
+
+    return () => {
+      document.documentElement.classList.remove("printhub-native-app");
+      document.body.classList.remove("printhub-native-app");
+    };
+  }, []);
+
+  return null;
+}
+
+function WebOnly({ children }) {
+  if (isCustomerApk()) {
+    return <CustomerOnlyRedirect />;
+  }
+
+  return <Suspense fallback={null}>{children}</Suspense>;
+}
+
+function AppRoutes() {
   const location = useLocation();
+  const customerApk = isCustomerApk();
   const showFooterNav =
     CUSTOMER_ROUTES.includes(location.pathname) ||
     location.pathname.startsWith("/product/");
@@ -346,38 +388,49 @@ function AppInner() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/"
+          element={customerApk ? <CustomerOnlyRedirect /> : <HomePage />}
+        />
 
         <Route
           path="/admin-login"
           element={
-            <AdminLoginRegisterGuard>
-              <AdminLoginPage />
-            </AdminLoginRegisterGuard>
+            <WebOnly>
+              <AdminLoginRegisterGuard>
+                <AdminLoginPage />
+              </AdminLoginRegisterGuard>
+            </WebOnly>
           }
         />
         <Route
           path="/admin-register"
           element={
-            <AdminLoginRegisterGuard>
-              <AdminRegistrationPage />
-            </AdminLoginRegisterGuard>
+            <WebOnly>
+              <AdminLoginRegisterGuard>
+                <AdminRegistrationPage />
+              </AdminLoginRegisterGuard>
+            </WebOnly>
           }
         />
         <Route
           path="/admin-dashboard"
           element={
-            <ProtectedAdminRoute>
-              <AdminDashboard />
-            </ProtectedAdminRoute>
+            <WebOnly>
+              <ProtectedAdminRoute>
+                <AdminDashboard />
+              </ProtectedAdminRoute>
+            </WebOnly>
           }
         />
         <Route
           path="/admin-manageaccount"
           element={
-            <ProtectedAdminRoute>
-              <AdminManageAccounts />
-            </ProtectedAdminRoute>
+            <WebOnly>
+              <ProtectedAdminRoute>
+                <AdminManageAccounts />
+              </ProtectedAdminRoute>
+            </WebOnly>
           }
         />
         <Route path="/user-login" element={<UserLoginPage />} />
@@ -395,6 +448,7 @@ function AppInner() {
         />
         <Route path="/user-cart" element={<UserCartPage />} />
         <Route path="/user-orders" element={<UserOrders />} />
+        <Route path="/user-payments" element={<UserPayments />} />
         <Route path="/payment/return" element={<UserPaymentReturn />} />
         <Route path="/user-inquiries" element={<UserInquiries />} />
         <Route path="/user-dashboard" element={<CustomerDashboard />} />
@@ -408,8 +462,10 @@ function AppInner() {
           element={<UserAccountSettings />}
         />
         <Route path="/product/:id" element={<ProductDetail />} />
+        {customerApk && <Route path="*" element={<CustomerOnlyRedirect />} />}
       </Routes>
       {showFooterNav && <MobileFooterNav />}
+      <ChatbotRouteGate />
     </>
   );
 }
@@ -436,76 +492,52 @@ function App() {
     <CartProvider>
       <BrowserRouter>
         <RealtimeInputValidation />
+        <CustomerApkBodyClass />
+        <NativeDeepLinkHandler />
         {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-
-          <Route
-            path="/admin-login"
-            element={
-              <AdminLoginRegisterGuard>
-                <AdminLoginPage />
-              </AdminLoginRegisterGuard>
-            }
-          />
-          <Route
-            path="/admin-register"
-            element={
-              <AdminLoginRegisterGuard>
-                <AdminRegistrationPage />
-              </AdminLoginRegisterGuard>
-            }
-          />
-          <Route
-            path="/admin-dashboard"
-            element={
-              <ProtectedAdminRoute>
-                <AdminDashboard />
-              </ProtectedAdminRoute>
-            }
-          />
-          <Route
-            path="/admin-manageaccount"
-            element={
-              <ProtectedAdminRoute>
-                <AdminManageAccounts />
-              </ProtectedAdminRoute>
-            }
-          />
-          <Route path="/user-login" element={<UserLoginPage />} />
-          <Route path="/user-register" element={<UserRegistrationPage />} />
-          <Route path="/user-forgot-otp" element={<UserForgotOtpPage />} />
-          <Route
-            path="/user-reset-password"
-            element={<UserResetPasswordPage />}
-          />
-          <Route path="/user-otp" element={<UserOtpPage />} />
-          <Route path="/user-home" element={<UserHomePage />} />
-          <Route
-            path="/user-password-security"
-            element={<UserPasswordSecurityPage />}
-          />
-          <Route path="/user-cart" element={<UserCartPage />} />
-          <Route path="/user-orders" element={<UserOrders />} />
-          <Route path="/user-payments" element={<UserPayments />} />
-          <Route path="/payment/return" element={<UserPaymentReturn />} />
-          <Route path="/user-inquiries" element={<UserInquiries />} />
-          <Route path="/user-dashboard" element={<CustomerDashboard />} />
-          <Route path="/product-overview" element={<ProductOverview />} />
-          <Route
-            path="/user-customize-profile"
-            element={<UserCustomizeProfile />}
-          />
-          <Route
-            path="/user-account-settings"
-            element={<UserAccountSettings />}
-          />
-          <Route path="/product/:id" element={<ProductDetail />} />
-        </Routes>
-        <ChatbotRouteGate />
+        <AppRoutes />
       </BrowserRouter>
     </CartProvider>
   );
+}
+
+function NativeDeepLinkHandler() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return undefined;
+
+    let listener;
+    const setupListener = async () => {
+      listener = await CapacitorApp.addListener("appUrlOpen", ({ url }) => {
+        if (!url) return;
+
+        try {
+          const parsedUrl = new URL(url);
+          const path =
+            parsedUrl.pathname ||
+            (parsedUrl.host ? `/${parsedUrl.host}` : "/");
+          const target = `${path}${parsedUrl.search || ""}`;
+
+          if (target.startsWith("/payment/return")) {
+            navigate(target, { replace: true });
+          }
+        } catch (error) {
+          console.warn("Unable to handle app URL:", url, error);
+        }
+      });
+    };
+
+    setupListener();
+
+    return () => {
+      if (listener) {
+        listener.remove();
+      }
+    };
+  }, [navigate]);
+
+  return null;
 }
 
 function ChatbotRouteGate() {
@@ -727,6 +759,11 @@ function HomeProductRail({ title, subtitle, products, emptyText, navigate }) {
 }
 
 function SplashScreen({ onComplete }) {
+  useEffect(() => {
+    const fallback = window.setTimeout(onComplete, 3600);
+    return () => window.clearTimeout(fallback);
+  }, [onComplete]);
+
   const colors = ["#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b"];
   const splatters = [
     { x: -44, y: 48, size: 16 },

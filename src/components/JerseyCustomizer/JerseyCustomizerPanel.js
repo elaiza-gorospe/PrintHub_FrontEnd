@@ -10,12 +10,12 @@ export default function JerseyCustomizerPanel(props) {
       designType="jersey"
       productLabel="jersey"
       previewProps={{
-        projectionMode: "plane",
+        projectionMode: "decal",
         decalScale: {
-          front: { w: 0.42, h: 0.42, surfaceOffset: 0.04 },
-          back: { w: 0.42, h: 0.42, surfaceOffset: 0.04 },
-          left_sleeve: { w: 0.24, h: 0.24, surfaceOffset: 0.04 },
-          right_sleeve: { w: 0.24, h: 0.24, surfaceOffset: 0.04 },
+          front: { w: 0.42, h: 0.42, depth: 0.16, surfaceOffset: 0.02 },
+          back: { w: 0.42, h: 0.42, depth: 0.16, surfaceOffset: 0.02 },
+          left_sleeve: { w: 0.24, h: 0.24, depth: 0.12, surfaceOffset: 0.02 },
+          right_sleeve: { w: 0.24, h: 0.24, depth: 0.12, surfaceOffset: 0.02 },
         },
       }}
     />
